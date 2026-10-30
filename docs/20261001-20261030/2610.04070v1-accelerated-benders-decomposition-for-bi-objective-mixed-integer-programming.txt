@@ -1,0 +1,547 @@
+Title: Accelerated Benders decomposition for bi-objective mixed integer programming
+
+URL Source: https://arxiv.org/pdf/2610.04070v1
+
+Published Time: Tue, 06 Oct 2026 00:20:58 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# Accelerated Benders decomposition for bi-objective mixed integer programming 
+
+Duleabom An a, ∗, Chungmok Lee b, Sophie N. Parragh a
+
+> aInstitute of Production and Logistics Management/JKU Business School, Johannes Kepler University Linz, Altenberger Strasse 69, Linz, 4040, UpperAustria, Austria
+> bDepartment of Industrial and Management Engineering, Hankuk University of Foreign Studies, 81 Oedae-ro, Mohyeon-eup, Cheoin-gu, Yongin-si, 17035, Gyeonggi-do, South Korea
+
+Abstract 
+
+We investigate bi-objective mixed integer programming to which Benders de-composition can be applied, a widely used technique for exploiting problem structures in real-world applications. Our study focuses on a sustainable sup-ply chain network design problem that aims to minimise both economic and environmental objectives. To address the bi-objective nature, we employ the weighted sum method, which requires solving similar problems repeatedly with different weight values. To tackle this, we propose a straightforward acceleration technique that reuses Benders cuts generated in previous it-erations of the weighted sum method. This approach enables the Benders decomposition master problem to be initialised with pre-generated cuts. Our computational experiments demonstrate that reusing these cuts significantly reduces computing time. 
+
+Keywords: Benders decomposition, Bi-objective optimisation, Mixed integer programming 
+
+1. Introduction 
+
+In the diverse fields of engineering and industry, decision-making pro-cesses often involve conflicting objectives, giving rise to multi-objective opti-misation problems. Such problems require finding a set of trade-off solutions, 
+
+> ∗Corresponding author. Email: dbomahn@gmail.com arXiv:2610.04070v1 [math.OC] 2 Oct 2026
+
+where the improvement of one objective cannot be achieved without a de-terioration in another objective. Furthermore, real-world applications are often large-scale, and they consequently pose significant computational lim-itations, making them challenging to solve within reasonable computation time. One approach that has demonstrated its effectiveness in the single-objective domain is Benders decomposition (BD) initially proposed by Ben-ders (1962). Based on our current understanding, only a limited number of studies have applied the classical BD framework to the bi-objective setting. In the domain of scalarisation-based methods, Mardan et al. (2019) com-bined weighted-sum scalarisation with Benders decomposition to address a bi-objective green closed-loop supply chain network design problem. Their acceleration strategies focus on warm-starting and problem-specific enhance-ments, while each scalarised problem is solved independently. Parragh et al. (2021) applied Benders’ idea to address the bi-objective stochastic facility location problem. The researchers integrated BD into the branch-and-bound scheme to compute the lower bound set. Their problem setting required only optimality cuts, which affected only one of the two objectives consid-ered. Dowson et al. (2022) studied bi-objective multistage stochastic linear programming problems and combined weighted-sum scalarisation with an L-shaped decomposition method. Their methodology exploits the continuous linear programming structure and solves each scalarised problem indepen-dently. Raith et al. (2025) proposed a theoretical framework for applying Benders decomposition to bi-objective linear programming and integrated it with the bi-objective simplex algorithm to generate a complete set of efficient solutions. One potential concern in employing a scalarisation-based method is the repeated need to solve similar problems with different weight values. There-fore, we propose a simple approach to reuse the generated Benders cuts, thereby accelerating the subsequently solved problems. 
+
+2. Accelerated Benders Decomposition for Bi-objective Mixed In-teger Programming 
+
+In this section, we present a general mathematical model for bi-objective BD and introduce an idea that accelerates the BD algorithm. 22.1. Bi-objective Benders Decomposition 
+
+We consider a bi-objective mixed integer programming problem defined as follows: 
+
+min 
+
+(
+
+f1y + c1xf2y + c2x s.t. Dy + Ex ≤ d, y ∈ Zn
+
+> ≥
+
+, x ∈ Rl
+
+> ≥
+
+, (BP) where f1, f 2 ∈ Rn 
+
+> ≥
+
+and c1, c 2 ∈ Rl 
+
+> ≥
+
+are the cost vectors associated with integer variables y ∈ Zn 
+
+> ≥
+
+and continuous variables x ∈ Rl
+
+> ≥
+
+, respectively. The matrix 
+
+D ∈ Rm×n captures the constraints associated with y, and E ∈ Rm×l those associated with x. The right-hand side is given by d ∈ Rm 
+
+> ≥
+
+.To address the bi-objective structure, we apply the weighted sum method (Aneja and Nair, 1979), which scalarises the objectives using a convex combi-nation based on a weight λ ∈ (0 , 1) . For a given weight λ, the objectives can be combined into f λy+cλx, where f λ = λf 1 +(1 −λ)f2, cλ = λc 1 +(1 −λ)c2.
+
+In BD, the original problem is divided into a master problem, which typically contains integer variables, and a subproblem, usually a linear pro-gramme, involving the remaining continuous variables. The algorithm pro-ceeds iteratively: at each iteration, the master problem provides a candidate solution for the integer variables, which is then passed to the subproblem for evaluation. In our approach, we solve the dual subproblem, whose feasibility depends on the current master problem solution, and from which Benders cuts are derived and added to the master problem accordingly to tighten the model. In the first stage of BD, we solve the following master problem MP λ, which accumulates feasibility and optimality cuts derived from the subproblem so-lutions. The objective is defined for a fixed weight λ from the weighted-sum method. 
+
+min  
+
+> y∈Zn
+> ≥,η ∈R
+
+f λy + η
+
+s.t. η ≥ (d − Dy )⊤πp, ∀p ∈ P λ (optimality cuts) 
+
+0 ≥ (d − Dy )⊤rq, ∀q ∈ Qλ (feasibility cuts) (MP λ)where η is an auxiliary variable underestimating the subproblem’s objective, and P λ, Qλ denote sets of generated optimality and feasibility cuts, respec-tively. 3For a fixed integer solution ˆy, the dual subproblem DSP λ(ˆ y) is: 
+
+max 
+
+> π∈Rl
+> ≥
+
+(d − Dˆy)⊤π
+
+s.t. E⊤π ≤ cλ.
+
+(DSP λ(ˆ y))If DSP λ(ˆ y) is unbounded, an extreme ray rq is obtained, leading to a fea-sibility cut added to MP λ to exclude infeasible y. If DSP λ(ˆ y) is bounded and has an optimal solution, an extreme point πp is obtained, resulting in an optimality cut to tighten MP λ and improve the lower bound on the objective. These cuts iteratively refine the master problem until convergence. 
+
+2.2. Accelerated Bi-objective Benders Decomposition 
+
+Assuming that the feasible region of DSP λ(ˆ y) is a bounded and pointed polyhedron, the following Benders optimality cuts are valid for the master problem (MP λ′
+
+) associated with a given weight λ′: η ≥ (d−Dy )B−1 
+
+> p
+
+cλ′
+
+∀p ∈
+
+P λ′
+
+, where Bp(λ′, ˆy) is the optimal basis matrix of DSP λ′
+
+.The feasibility cuts generated in MP λ for a given weight remain valid for other weights because the extreme rays of DSP λ(ˆ y) are determined by the constraint matrix and do not depend on the cost vector. When the weight changes, only the right-hand side of the constraints in DSP λ(ˆ y) varies, while the left-hand side remains unchanged. Therefore, the basis associated with the extreme point of the problem with a certain weight also defines an extreme point of the problem with a different weight. This allows us to express the optimality cut coefficient vector as πp = cλB−1 
+
+> p
+
+(λ, ˆy). Based on this observation, after obtaining the basis, we add pre-generated Benders cuts to MP λ before commencing with a new weight to accelerate the algorithm speed. To avoid explicitly forming and inverting the optimal basis matrix Bp,we employ CPLEX’s internal basis representation. After solving DSP λ(ˆ y),the optimal basis is retained internally. Using the CPLEX API, we first call CPXXgethead to retrieve the basis header, which identifies the order of basic variables. Then, we use CPXXbtrans to solve linear systems of the form 
+
+πB p = cλ, without computing B−1 
+
+> p
+
+directly. Specifically, we solve π1Bp =
+
+c1 and π2Bp = c2, obtaining two coefficient vectors π1 and π2. In practice, these vectors may contain negative components, so any cut based on their convex combination is valid only when the resulting vector is non-negative. For the detailed procedure to compute the optimality cut coefficient vector 
+
+πλ, we refer to Raith et al. (2025). 4Compared to our method, Raith et al. (2025) develop a theoretical frame-work for applying Benders decomposition to bi-objective linear programming by integrating it with a simplex algorithm, enabling the reuse of cuts within a single search process. In contrast, our method tackles mixed integer pro-gramming problems, where such integration with the simplex method is not directly applicable. Instead, we iteratively find optimal extreme points within a dichotomic search framework, which enables the reuse of generated cuts in subsequent searches and gives rise to a process resembling a branch-and-cut scheme. Furthermore, the “weighted optimality cuts” in Raith et al. (2025) should be generated from two “extreme” weight cases λ = 0 and λ = 1 by solv-ing the respective Benders subproblems. On the other hand, our approach can generate Benders cuts for a new weight λ from different weights, not nec-essarily either λ = 0 or λ = 1 , because we store the bases Bp that can yield a vaild optimality cut for any given weight. While this dichotomic search systematically explores the objective space, it cannot guarantee finding all efficient solutions of the bi-objective mixed integer programming problems. Instead, it produces a representative subset of efficient solutions correspond-ing to the weights considered. 
+
+3. Computational Study 
+
+We evaluate our accelerated Benders decomposition algorithm (AB) in comparison with the classical Benders decomposition approach (CB). In CB, each weighted sum problem is solved independently from scratch, and no cuts, either optimality or feasibility, are reused across iterations. By contrast, AB reuses optimality cuts generated in previous weighted sum problems. To inte-grate BD (both CB and AB) into the bi-objective dichotomic search scheme, we first obtain two extreme solutions using lexicographic optimisation. The weight is then computed based on the objective values, following the method described in Aneja and Nair (1979). For both CB and AB, optimality and feasibility cuts are generated during each iteration of the search. For AB, the optimal bases obtained from each subproblem are stored throughout the dichotomic search for use in subsequent iterations. From the second iteration onward, the previously generated optimality cuts are re-evaluated under the current weight. A cut is considered violated if its evaluated value exceeds the current master problem value. Among the violated cuts, a fixed number are selected in ascending order of violation and added to the master prob-lem. This strategy was adopted after preliminary experiments comparing 5different approaches, including the most violated optimality cuts and ran-domly selected optimality cuts. The number of pre-generated cuts added at each iteration was determined empirically through preliminary experiments. Cuts were increased in increments of 10, up to 100, and 40 cuts per iteration were selected (with a maximum of 40 cuts checked for violation), as this pro-vided the best computational performance in terms of total solution time. Feasibility cuts were not reused across iterations, since initial experiments indicated that their reuse did not have a noticeable impact on computational performance. 
+
+3.1. Test instances 
+
+We test the proposed scheme on a bi-objective mixed integer sustainable supply chain network design (SCND) problem adapted from Eskandarpour et al. (2021). The original setting is scaled down by reducing the number of facilities and products. The network comprises four layers: suppliers ( I), plants ( J), distribution centres ( K), and customers ( L), defined on a directed graph G = ( V, A ) with 
+
+V = I ∪ J ∪ K ∪ L. Products flow sequentially to meet deterministic demand. Plants and distribution centres (DCs) may use regular or green technolo-gies, and transport options between facilities include conventional and green modes. The objectives are: (1) minimise total logistics costs (facility, pro-duction, and transport) and (2) minimise CO 2 emissions. Decisions involve facility locations, technology levels, transport modes, and product flows. We generate ten small SCND instances, divided into two size classes. An instance is denoted as (|I|, |J|, |K|, |L|)_index , where |I|, |J|, |K|, and |L| are the numbers of candidate suppliers, plants, DCs, and customers, respectively, and index distinguishes instances of the same size. For all instances, |I| = |J|,
+
+|K| = 2 |I|, and |L| = 5 |I|, with two technologies and one product. For conciseness, the complete mathematical formulations are provided in Appendix A. 
+
+3.2. Experimental results 
+
+All experiments were conducted on a machine equipped with an Intel Core i5-8250U CPU @ 1.60 GHz (8 cores), 16 GB of RAM. CPLEX is em-ployed to solve the mathematical model. The dichotomic search algorithm is implemented in the programming language Julia. We observe that in some weighted sum problems CB and AB yield dif-ferent individual objective values, while still producing the same weighted 6sum objective value. When these discrepancies affect the weights calculated during the dichotomic search, resulting in different search paths for CB and AB, we perform additional experiments using the weights generated by AB to enable a fair comparison. The corresponding results are reported in Table B.6 in Appendix B. Table 1 presents the following results: the number of efficient solutions ob-tained and the total number of iterations in the dichotomic search (#ES/Iter), the number of added pre-generated optimality cuts (#Precut) in AB, the to-tal number of feasibility and optimality cuts (#Fcuts, #Ocuts) generated during the dichotomic search, the improvement achieved by AB (denoted as imp, in %), and the average total CPU time over five runs (denoted as CPUT, in seconds) required to complete the search. Table 1 shows that the numbers of feasibility and optimality cuts decrease significantly by adding pre-generated cuts from previous iterations. This nat-urally leads to a substantial reduction in total computing time. For instances such as (2,2,4,10)_2 and (2,2,4,10)_4, where no improvement in CPU time was observed, the time spent storing and retrieving cuts was a contributing factor. Table 2 provides an example illustrating this behaviour. Table 2 compares CB and AB for instance (2,2,4,10)_2 across each itera-tion of the dichotomic search. In addition to the previously defined columns (#Precut, #Fcuts, #Ocuts), the column (Weight) indicates the scalarisation weight used in the current iteration, while (subT and mpT) report the CPU time spent on solving the subproblem and master problem, respectively. While pre-generated cuts reduce the number of cuts and CPU time, AB without them required more time due to the extra computation needed to obtain and store the optimal basis, as reflected in the column mpT. Furthermore, we observe that the type of cut has a greater impact on performance than the number of cuts added, as shown in Table B.7 in Ap-pendix B. In the final iteration with weight 0.9071, adding a single cut drasti-cally reduced both the number of generated cuts and the computation time. Recall that we simply choose, at most, a predetermined number of violated Benders cuts from the pool of bases obtained from previous dichotomic search iterations. Recent studies have demonstrated that adding “stronger” Benders cuts can enhance the performance of the Benders algorithm. For example, Seo et al. (2022) proposed a reformulation technique of the Benders subprob-lem to identify “closer” Benders cuts to the relatively feasible solution. It is straightforward to implement a more “advanced cut selection” scheme with the proposed approach. Nonetheless, we would like to present this line of 7investigation as an interesting future research topic.                                                                                                                       
+
+> Instance #ES/Iter #Precut #Fcuts #Ocuts CPUT (sec) CB AB imp(%) CB AB imp(%) CB AB imp(%) (2,2,4,10)_1 2 / 5 40 279 254 9.0 24458 4007 83.6 53.3 16.5 69.0 (2,2,4,10)_2 4 / 8 80 562 473 15.8 75681 64531 14.7 112.9 133.7 -18.4 (2,2,4,10)_3 3 / 6 77 1277 1062 16.8 13531 9553 29.4 48.8 43.1 11.8 (2,2,4,10)_4 4 / 9 87 650 516 20.6 47130 38113 19.1 106.6 107.2 -0.6 (3,3,6,15)_1 3 / 6 43 757 605 20.1 35339 30669 13.2 315.9 291.5 7.7 (3,3,6,15)_2 4 / 9 52 852 686 19.5 99831 86897 13.0 433.4 389.1 10.2 (3,3,6,15)_3 4 / 9 58 1857 1665 10.3 46510 29947 35.6 308.1 269.3 12.6 (3,3,6,15)_4 4 / 9 19 761 636 16.4 303729 1522 99.5 921.8 19.2 97.9 (3,3,6,15)_5 4 / 9 44 798 749 6.1 8676 7843 9.6 210.6 199.7 5.2 (3,3,6,15)_6 5 / 10 88 1455 1277 12.2 71051 55802 21.5 347.9 317.9 8.6
+
+Table 1: Performance comparison between classical Benders (CB) and accelerated Benders (AB). Values in bold denote the better result between CB and AB for each metric. 
+
+Weight #Precut #Fcuts #Ocuts subT (sec) mpT (sec) CB AB CB AB CB AB CB AB 0.9373 0 61 61 51 51 ∼0 ∼0 0.2 0.2 0.8815 0 65 65 713 713 0.2 0.2 1.2 1.4 0.8233 0 85 85 861 861 0.2 0.2 1.3 1.8 0.6997 0 65 65 15197 15197 2.6 2.7 22.4 32.0 0.8855 40 62 21 334 0 0.1 ∼0 0.6 0.1 
+
+0.9079 0 80 80 688 688 0.1 0.2 1.1 1.5 0.8746 40 74 26 14314 3498 2.5 0.6 20.7 7.2 
+
+0.9316 0 70 70 43523 43523 7.3 7.6 55.6 84.4 
+
+Table 2: Comparison between classical Benders (CB) and accelerated Benders (AB) on instance (2,2,4,10)_2. Bold values indicate cases where BD’s performance improved with pre-generated cuts. 
+
+4. Conclusion 
+
+This study examined the application of Benders decomposition to bi-objective mixed integer programming problems, focusing on sustainable sup-ply chain network design. To address the bi-objective nature, we employed the weighted-sum method, which involves solving a sequence of problems with varying weights. Recognising the computational burden of this approach, we proposed an accelerated Benders decomposition technique that reuses cuts generated in previous iterations. Computational results demonstrated that 8our method significantly reduces both total solution time and the number of generated cuts compared to the classical approach. Furthermore, our find-ings indicate that the type of reused cut has a greater impact on performance than their quantity. This suggests a promising direction for future research: investigating strategies for selecting cuts or developing adaptive mechanisms to balance preprocessing effort with overall efficiency. Another direction for future work is to test the method on simpler problem instances to better understand its behaviour and performance characteristics. 
+
+References 
+
+Aneja, Y.P., Nair, K.P., 1979. Bicriteria transportation problem. Manage-ment Science 25, 73–78. Benders, J., 1962. Partitioning procedures for solving mixed-variables pro-gramming problems. Numerische Mathematik 4, 238–252. Dowson, O., Morton, D.P., Downward, A., 2022. Bi-objective multistage stochastic linear programming. Mathematical Programming 195, 1–27. Eskandarpour, M., Dejax, P., Péton, O., 2021. Multi-directional local search for sustainable supply chain network design. International Journal of Pro-duction Research 59, 412–428. Mardan, E., Govindan, K., Mina, H., Gholami-Zanjani, S.M., 2019. An ac-celerated Benders decomposition algorithm for a bi-objective green closed-loop supply chain network design problem. Journal of Cleaner Production 235, 1499–1514. Parragh, S.N., Tricoire, F., Gutjahr, W.J., 2021. A branch-and-Benders-cut algorithm for a bi-objective stochastic facility location problem. Or Spectrum , 1–41. Raith, A., Lusby, R., Yousefkhan, A.A.S., 2025. Benders decomposition for bi-objective linear programs. European Journal of Operational Research 322, 376–400. Seo, K., Joung, S., Lee, C., Park, S., 2022. A Closest Benders Cut Selec-tion Scheme for Accelerating the Benders Decomposition Algorithm. IN-FORMS Journal on Computing 34, 2804–2827. doi: 10.1287/ijoc.2022. 1207 .9Acknowledgement 
+
+This research was funded in whole, or in part, by the Austrian Science Fund (FWF) [P 31366 and P 32954]. This work was also supported by the National Research Foundation of Korea(NRF) grant funded by the Korea government (MSIT)(RS-2024-00452707). The authors would like to thank Markus Sinnl from the Institute of Business Analytics and Technology Trans-formation at Johannes Kepler University Linz for his valuable and insightful comments, which contributed meaningfully to this work. For the purpose of open access, the author has applied a CC BY public copyright licence to any Author Accepted Manuscript version arising from this submission. 10 Appendix A. Bi-Objective SCND Formulation 
+
+This section provides a description of the sets, parameters, and decision variables used in the mathematical model of the bi-objective SCND problem that we use as a test case. It has originally been proposed by Eskandarpour et al. (2021), and based on their assumptions, we scaled down the original problem setting by reducing the number of facilities and products. Tables A.3-A.5 provide details on the sets, parameters and decision variables used in the model. For a detailed description of each objective and constraint, we refer the reader to Eskandarpour et al. (2021). 
+
+Bi-objective SCND Model. 
+
+The following presents the scaled-down bi-objective model for the sustainable supply chain network design problem. To aid understanding of the subse-quent dual subproblem formulation, we first present the constraints related to the first-stage master problem and express the model in standard form. 
+
+min X
+
+> j∈J∪K
+
+X
+
+> t∈T
+
+ctj ytj + X
+
+> (i,j )∈A
+
+X
+
+> m∈M
+
+gmij umij + X
+
+> i∈I
+
+X
+
+> j∈J
+
+X
+
+> m∈M
+
+ami xmij 
+
++ X
+
+> j∈J∪K
+
+X
+
+> t∈T
+
+etj htj + X
+
+> (i,j )∈A
+
+X
+
+> m∈M
+
+vmij xmij 
+
+min X
+
+> i∈I
+
+X
+
+> j∈J
+
+X
+
+> m∈M
+
+bmi xmij + X
+
+> j∈J∪K
+
+X
+
+> t∈T
+
+qtj htj + X
+
+> (i,j )∈A
+
+X
+
+> m∈M
+
+rmij xmij 
+
+11 subject to: X
+
+> t∈T
+
+ytj ≤ 1 ∀j ∈ J ∪ K (A.1) 
+
+X
+
+> m∈M
+
+umij ≤ 1 ∀(i, j ) ∈ A (A.2) 
+
+X
+
+> j∈J
+
+X
+
+> t∈T
+
+ytj ≤ Jmax (A.3) 
+
+X
+
+> k∈K
+
+X
+
+> t∈T
+
+ytk ≤ Kmax (A.4) 
+
+X
+
+> i∈I
+
+X
+
+> m∈M
+
+xmij − X
+
+> k∈K
+
+X
+
+> m∈M
+
+xmjk = 0 ∀j ∈ J (A.5) 
+
+X
+
+> j∈J
+
+X
+
+> m∈M
+
+xmjk − X
+
+> l∈L
+
+X
+
+> m∈M
+
+xmkl = 0 ∀k ∈ K (A.6) 
+
+− X
+
+> i∈I
+
+X
+
+> m∈M
+
+xmij + X
+
+> t∈T
+
+htj = 0 ∀j ∈ J (A.7) 
+
+− X
+
+> j∈J
+
+X
+
+> m∈M
+
+xmjk + X
+
+> t∈T
+
+htk = 0 ∀k ∈ K (A.8) 
+
+X
+
+> k∈K
+
+X
+
+> m∈M
+
+xmkl ≥ dl ∀l ∈ L (A.9) 
+
+− X
+
+> j∈J
+
+X
+
+> m∈M
+
+xmij ≥ − cap i ∀i ∈ I (A.10) 
+
+−htj ≥ − cap j ytj ∀j ∈ J ∪ K, t ∈ T (A.11) 
+
+xmij ≤ ¯V mij umij ∀(i, j ) ∈ A, m ∈ M (A.12) 
+
+−xmij ≤ − V mij umij ∀(i, j ) ∈ A, m ∈ M (A.13) 
+
+ytj ∈ { 0, 1} ∀j ∈ J ∪ K, t ∈ T (A.14) 
+
+umij ∈ { 0, 1} ∀(i, j ) ∈ A, m ∈ M (A.15) 
+
+xmij ≥ 0 ∀(i, j ) ∈ A, m ∈ M (A.16) 
+
+htj ≥ 0 ∀j ∈ J ∪ K, t ∈ T (A.17) 
+
+Dual Subproblem of the Bi-objective SCND Model. 
+
+The dual subproblem corresponding to the bi-objective SCND model is for-mulated as follows, where λ denotes the weight determined by the dichotomic search technique and α denotes the set of dual variables corresponding to the constraint numbers in the primal model. 12 max X
+
+> l∈L
+
+dlα5l − X
+
+> i∈I
+
+cap iα6i − X
+
+> j∈J∪K
+
+X
+
+> t∈T
+
+cap j ˆytj αt
+
+> 7j
+
++ X
+
+> (i,j )∈A
+
+X
+
+> m∈M
+
+(Vmij − ¯V mij )ˆ umij αm
+
+> 8ij
+
+subject to: 
+
+α1j − α3j − α6i + αm 
+
+> 9ij
+
+≤ λ(ai + vmij ) + (1 − λ)( bi + rmij ) ∀i ∈ I, j ∈ J, m ∈ M
+
+(A.18) 
+
+−α1j + α2k − α4k + αm 
+
+> 10 jk
+
+≤ λv mjk + (1 − λ)rmjk ∀j ∈ J, k ∈ K, m ∈ M
+
+(A.19) 
+
+−α2k + α5l − αm 
+
+> 11 kl
+
+≤ vmkl + λr mkl ∀k ∈ K, l ∈ L, m ∈ M (A.20) 
+
+α3j − αt 
+
+> 7j
+
+≤ λe tj + (1 − λ)qtj ∀j ∈ J, t ∈ T (A.21) 
+
+α4k − αt 
+
+> 8k
+
+≤ λe tk + (1 − λ)qtk ∀k ∈ K, t ∈ T (A.22) 
+
+α1j , α 2k, α 3j , α 4k are free (A.23) 
+
+α5l ≥ 0 ∀l ∈ L (A.24) 
+
+α6i ≥ 0 ∀i ∈ I (A.25) 
+
+αt 
+
+> 7j
+
+≥ 0 ∀j ∈ J, t ∈ T (A.26) 
+
+αt 
+
+> 8k
+
+≥ 0 ∀k ∈ K, t ∈ T (A.27) 
+
+αm 
+
+> 9ij
+
+≥ 0 ∀i ∈ I, j ∈ J, m ∈ M (A.28) 
+
+αm 
+
+> 10 jk
+
+≥ 0 ∀j ∈ J, k ∈ K, m ∈ M (A.29) 
+
+αm 
+
+> 11 kl
+
+≥ 0 ∀k ∈ K, l ∈ L, m ∈ M (A.30) 
+
+Appendix B. Additional Experimental Results 
+
+Table B.6 presents results from an additional experiment conducted on in-stance (2,2,4,10)_1, where the dichotomic search scheme produced different weights. The fixed weights used are those originally derived from AB algo-rithm. Table B.7 is provided to offer further insights into the experimental results. For both tables, columns (Weight, #Precut, #Fcuts, and #Ocuts) report the scalarisation weight, number of pre-generated cuts, and the to-tal number of feasibility and optimality cuts generated during the search. Columns (subT and mpT) indicate the CPU time spent on solving the sub-problem and master problem, respectively. Values in bold indicate the better result between CB and AB for each metric. 13 Set Description 
+
+A Arcs connecting successive layers 
+
+I Suppliers 
+
+J Candidate plants 
+
+K Candidate DCs 
+
+L Customers 
+
+M Transportation modes 
+
+T Technologies 
+
+> Table A.3: Sets
+
+Parameter Description 
+
+ctj Fixed cost of opening a facility j ∈ J ∪ K using technology t ∈ Tai Unit processing cost at supplier i ∈ Ietj Unit processing cost at facility j ∈ J ∪ K with technology t ∈ Tcap i Capacity of facility i ∈ I ∪ J ∪ Kgmij Fixed cost of using transportation mode m ∈ M along arc ( i, j ) ∈ Avmij Variable transportation cost per unit on arc ( i, j ) ∈ A using transportation mode m ∈ MV mij Minimum threshold volume for using transportation mode m ∈ M
+
+along arc ( i, j ) ∈ A
+
+¯V mij Capacity of transportation mode m ∈ M along arc ( i, j ) ∈ Abi Unitary CO 2 emissions at supplier i ∈ Iqtj CO 2 emissions per unit manufactured or warehoused at facility j ∈ J ∪ K with technology t ∈ Trmij CO 2 emissions per unit transported along arc ( i, j ) ∈ A
+
+using transportation mode m ∈ Mdl Demand from customer l ∈ LJmax Maximum number of plants that may be established 
+
+Kmax Maximum number of DCs that may be established 
+
+> Table A.4: Parameters
+
+Variable Stage Type Description 
+
+ytj 1st B = 1 if facility j ∈ J ∪ K with technology level t is open; 0 otherwise 
+
+umij 1st B = 1 if transportation mode m ∈ M is selected for arc ( i, j ) ∈ A;0 otherwise 
+
+xmij 2nd R+ Flow on arc ( i, j ) ∈ A using transportation mode m ∈ Mhtj 2nd R+ Amount processed with technology level t ∈ T at facility j ∈ J ∪ K
+
+> Table A.5: Decision variables
+
+14 Weight #Precut #Fcuts #Ocuts subT (sec) mpT (sec) CB AB CB AB CB AB CB AB 0.8579 0 56 56 196 196 0.1 0.1 1.0 1.1 0.9395 4 56 46 261 144 0.1 0.1 1.1 0.8 
+
+0.8050 35 52 44 22327 3359 6.6 1.0 43.8 9.5 
+
+0.7551 0 56 56 247 247 0.1 0.1 0.9 1.2 0.8343 1 59 52 1427 61 0.5 ∼0 3.4 0.5 
+
+> Table B.6: Comparison between classical Benders (CB) and accelerated Benders (AB) on (2,2,4,10)_1.
+
+Weight #Precut #Fcuts #Ocuts subT (sec) mpT (sec) CB AB CB AB CB AB CB AB 0.9195 0 162 162 977 977 0.3 0.3 6.0 7.2 0.9579 0 90 90 531 531 0.2 0.2 3.2 3.9 0.9222 25 155 145 1661 912 0.5 0.3 7.8 6.1 
+
+0.9747 0 165 165 1497 1497 0.5 0.5 18.7 18.9 0.9671 7 120 115 2966 1399 0.7 0.4 9.7 8.5 
+
+0.8818 22 162 93 16265 17709 3.7 4.0 57.5 78.9 0.8534 0 183 183 2861 2861 0.8 0.9 16.8 20.9 0.8913 0 134 134 27990 27990 6.0 6.6 111.8 150.4 0.8717 33 139 117 895 593 0.3 0.4 5.4 10.0 0.9071 1 145 73 15408 597 3.3 0.2 57.0 5.5 
+
+> Table B.7: Comparison between classical Benders (CB) and accelerated Benders (AB) on instance (3,3,6,16)_6.
+
+15

@@ -1,16 +1,16 @@
 {
   "mode": "skims",
-  "generated_at": "2026-10-30T09:42:25.196964+00:00",
+  "generated_at": "2026-10-30T12:36:40.152541+00:00",
   "stats": {
     "mode": "skims",
     "forced_all_quick": true,
     "min_score": 8.0,
-    "deep_divecandidates": 10,
+    "deep_divecandidates": 6,
     "deep_cap": null,
     "deep_selected": 0,
-    "quick_candidates": 10,
+    "quick_candidates": 6,
     "quick_skim_target": null,
-    "quick_selected": 10
+    "quick_selected": 6
   },
   "deep_dive": [],
   "quick_skim": [
@@ -36,127 +36,88 @@
         "query:llm-supply"
       ],
       "llm_score": 9.0,
-      "llm_evidence_en": "multi-agent LLM framework for supply chain risk assessment",
-      "llm_evidence_cn": "多智能体LLM框架用于供应链风险评估",
-      "llm_evidence": "多智能体LLM框架用于供应链风险评估",
-      "canonical_evidence": "多智能体LLM框架用于供应链风险评估",
-      "llm_tldr_en": "Supply chain risk assessment needs scalable multi-location comparison. AutoMARS is a multi-agent, multi-tool LLM framework that plans tasks, coordinates specialized agents, and synthesizes heterogeneous risk factors.",
-      "llm_tldr_cn": "供应链风险需要跨多地、跨领域可扩展地比较评估，人工分析流程难以规模化。作者提出AutoMARS，一个多智能体、多工具的大语言模型框架，能自动规划任务、协调专用智能体、调用外部分析工具并综合结果。该框架整合社会经济、灾害、环境与交通等异构风险因素，支持多地并行风险比较。这为LLM智能体在供应链风险评估与韧性管理中的应用提供了可扩展方案。",
-      "llm_tldr": "供应链风险需要跨多地、跨领域可扩展地比较评估，人工分析流程难以规模化。作者提出AutoMARS，一个多智能体、多工具的大语言模型框架，能自动规划任务、协调专用智能体、调用外部分析工具并综合结果。该框架整合社会经济、灾害、环境与交通等异构风险因素，支持多地并行风险比较。这为LLM智能体在供应链风险评估与韧性管理中的应用提供了可扩展方案。",
+      "llm_evidence_en": "multi-agent LLM framework for supply chain risk assessment and resilience",
+      "llm_evidence_cn": "面向供应链风险评估与韧性的多智能体LLM框架",
+      "llm_evidence": "面向供应链风险评估与韧性的多智能体LLM框架",
+      "canonical_evidence": "面向供应链风险评估与韧性的多智能体LLM框架",
+      "llm_tldr_en": "Proposes AutoMARS, a multi-agent LLM framework that plans and coordinates analytical workflows, invokes external tools, and synthesizes multi-domain risk factors for scalable supply chain risk assessment.",
+      "llm_tldr_cn": "该文针对供应链网络风险因素多源异构、传统评估难以自动化和规模化比较的问题，提出AutoMARS多智能体大语言模型框架。框架可自动规划任务、协调专用智能体、调用外部分析工具，并融合社会经济、灾害、环境和交通等风险因素生成综合评估。它支持跨多个地点并行开展独立分析，实现可扩展的风险比较。其贡献在于将LLM智能体与多工具分析流程结合，为供应链风险测量和韧性管理提供端到端方案。",
+      "llm_tldr": "该文针对供应链网络风险因素多源异构、传统评估难以自动化和规模化比较的问题，提出AutoMARS多智能体大语言模型框架。框架可自动规划任务、协调专用智能体、调用外部分析工具，并融合社会经济、灾害、环境和交通等风险因素生成综合评估。它支持跨多个地点并行开展独立分析，实现可扩展的风险比较。其贡献在于将LLM智能体与多工具分析流程结合，为供应链风险测量和韧性管理提供端到端方案。",
       "llm_tags": [
         "query:llm-supply"
       ],
       "matched_query_tag": "query:llm-supply",
-      "matched_query_text": "Large language model agents and multi agent coordination for supply chain optimization and inventory planning.",
-      "matched_requirement_id": "req-9",
+      "matched_query_text": "approaches for measuring and enhancing supply chain resilience under disruption",
+      "matched_requirement_id": "req-4",
       "selection_source": "fresh_fetch"
     },
     {
-      "id": "2610.10184v1",
+      "id": "2610.36977v1",
       "source": "arxiv",
-      "title": "Agentic AI-Assisted Modeling for Production Scheduling: Assessment in Constraint Programming",
-      "abstract": "Developing optimization models for production scheduling requires substantial expert effort. Research on large language models (LLMs) has followed two directions: specialized approaches for automated modeling, mostly for mixed-integer linear programming, which often rely on dedicated training or problem-specific architectures that limit industrial deployment; and agentic artificial intelligence for operational decision support, which generally assumes that the optimization model already exists. This study bridges both directions by assessing whether general-purpose LLMs, orchestrated as agents without task-specific training, can formulate and implement constraint programming models from natural-language problem descriptions. Singleagent and multi-agent architectures are integrated with a Model Context Protocol server that provides context-aware retrieval of solver documentation to mitigate hallucinations during implementation. Both are compared with a direct LLM baseline on six industry-oriented problems covering flow-shop, job-shop, flexible job-shop and resource-constrained warehouse scheduling, using three LLMs and assessing modeling accuracy, execution success, latency and token consumption. Formulation proves largely within reach of current LLMs, whereas implementation is the main barrier. The multi-agent workflow raises the share of scripts that run correctly as generated from 14.8% with a direct LLM call to 59.3%, reaching 80.6% on the four less complex problems, while tightly coupled intralogistics models remain an open challenge.",
+      "title": "Robust global supply chain reconfiguration under tariff and geopolitical uncertainty",
+      "abstract": "Global supply chains are increasingly exposed to trade policy shocks and physical disruptions arising from common geopolitical events. We develop a robust optimization framework with two decision stages for strategic supply chain reconfiguration. Supplier qualification and transportation arc activation decisions are made before uncertainty is realized, while operational flows adapt afterward. Geopolitical uncertainty is represented through country level shocks that can jointly trigger tariff escalation, policy induced restrictions on cross border capacity, facility disruptions, and physical transportation failures. The resulting min max min problem is reformulated by dualizing the operational recourse problem, yielding a nonconvex mixed integer bilinear adversarial problem solved within a column and constraint generation procedure. Comparison with complete enumeration verifies the implementation on small instances, while experiments on 60 synthetic supply chain networks of varying sizes assess computational performance. The results show that omitting geopolitical transmission channels during strategic design can lead to substantial deterioration in cost and service under full geopolitical stress. Broader protection is achieved primarily through changes in transportation network configuration rather than increased supplier qualification. Robust performance also depends on the severity and composition of geopolitical consequences, with restrictions on cross border capacity exerting a stronger effect than comparable proportional changes in tariff severity over the tested ranges. A geographically grounded case analysis further shows that the value of individual uncertainty channels depends on network structure and geographic exposure.",
       "authors": [
-        "Ángel Sánchez-Fernández",
-        "Javier Pernas-Álvarez",
-        "Diego Crespo-Pereira"
+        "Ashish Chandra"
       ],
-      "primary_category": "cs.AI",
+      "primary_category": "math.OC",
       "categories": [
-        "cs.AI",
-        "cs.SE"
+        "math.OC"
       ],
-      "published": "2026-10-07T14:51:37+00:00",
-      "link": "https://arxiv.org/pdf/2610.10184v1",
+      "published": "2026-10-27T10:31:17+00:00",
+      "link": "https://arxiv.org/pdf/2610.36977v1",
       "tags": [
         "keyword:llm-supply",
         "query:llm-supply"
       ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "General-purpose LLM agents formulate and implement constraint programming models from natural language",
-      "llm_evidence_cn": "通用LLM智能体从自然语言构建并实现约束规划模型",
-      "llm_evidence": "通用LLM智能体从自然语言构建并实现约束规划模型",
-      "canonical_evidence": "通用LLM智能体从自然语言构建并实现约束规划模型",
-      "llm_tldr_en": "Assesses whether general-purpose LLM agents without task-specific training can formulate and implement constraint programming models for production scheduling from natural-language descriptions.",
-      "llm_tldr_cn": "针对生产调度优化建模高度依赖专家且现有LLM方法或需专门训练或假设模型已存在的问题，本文评估通用LLM以智能体方式在无任务训练下从自然语言描述构建并实现约束规划模型的能力。研究在约束规划场景中进行测试。结果表明通用智能体可自动化建模，为将语言模型与优化求解结合用于调度决策提供可行路径。",
-      "llm_tldr": "针对生产调度优化建模高度依赖专家且现有LLM方法或需专门训练或假设模型已存在的问题，本文评估通用LLM以智能体方式在无任务训练下从自然语言描述构建并实现约束规划模型的能力。研究在约束规划场景中进行测试。结果表明通用智能体可自动化建模，为将语言模型与优化求解结合用于调度决策提供可行路径。",
+      "llm_score": 9.0,
+      "llm_evidence_en": "two-stage robust optimization for supply chain reconfiguration under geopolitical disruption",
+      "llm_evidence_cn": "地缘政治扰动下供应链重构的两阶段鲁棒优化",
+      "llm_evidence": "地缘政治扰动下供应链重构的两阶段鲁棒优化",
+      "canonical_evidence": "地缘政治扰动下供应链重构的两阶段鲁棒优化",
+      "llm_tldr_en": "Develops a two-stage robust optimization framework for global supply chain reconfiguration under tariff and geopolitical uncertainty, dualizing recourse to handle joint country-level shocks.",
+      "llm_tldr_cn": "针对全球供应链面临关税冲击和地缘政治扰动的问题，该文构建两阶段鲁棒优化框架用于战略供应链重构。第一阶段决定供应商认证与运输弧启用，第二阶段在不确定性实现后调整运营流。模型用国家级冲击联合刻画关税升级、跨境能力限制、设施中断和运输失败，并通过对偶化运营补救问题求解。研究为扰动下供应链韧性与布局决策提供优化方法。",
+      "llm_tldr": "针对全球供应链面临关税冲击和地缘政治扰动的问题，该文构建两阶段鲁棒优化框架用于战略供应链重构。第一阶段决定供应商认证与运输弧启用，第二阶段在不确定性实现后调整运营流。模型用国家级冲击联合刻画关税升级、跨境能力限制、设施中断和运输失败，并通过对偶化运营补救问题求解。研究为扰动下供应链韧性与布局决策提供优化方法。",
       "llm_tags": [
         "query:llm-supply"
       ],
       "matched_query_tag": "query:llm-supply",
-      "matched_query_text": "Integrating language models with optimization and simulation for resilient supply chain management.",
-      "matched_requirement_id": "req-10",
+      "matched_query_text": "approaches for measuring and enhancing supply chain resilience under disruption",
+      "matched_requirement_id": "req-4",
       "selection_source": "fresh_fetch"
     },
     {
-      "id": "2610.25246v1",
+      "id": "2610.04070v1",
       "source": "arxiv",
-      "title": "Estimating Causal Bounds from Observational Data With Neural Generative Models",
-      "abstract": "Identifying causal bounds from discrete observational data is a fundamental problem in causal inference. While exact analytical bounds exist for certain graphs, this is not generally the case. In this paper, we introduce a framework for estimating such bounds using neural generative models together with a new extrapolation procedure to estimate these bounds more accurately. Across multiple causal inference settings, it produces bounds that are consistently closer to the true bounds than those obtained with existing general neural approaches. We validate the framework on a range of benchmark problems for which exact bounds are available.",
+      "title": "Accelerated Benders decomposition for bi-objective mixed integer programming",
+      "abstract": "We investigate bi-objective mixed integer programming to which Benders decomposition can be applied, a widely used technique for exploiting problem structures in real-world applications. Our study focuses on a sustainable supply chain network design problem that aims to minimise both economic and environmental objectives. To address the bi-objective nature, we employ the weighted sum method, which requires solving similar problems repeatedly with different weight values. To tackle this, we propose a straightforward acceleration technique that reuses Benders cuts generated in previous iterations of the weighted sum method. This approach enables the Benders decomposition master problem to be initialised with pre-generated cuts. Our computational experiments demonstrate that reusing these cuts significantly reduces computing time.",
       "authors": [
-        "Max Zhu",
-        "Srivathsan Amruth",
-        "Sina Akbari",
-        "Qingyuan Zhao"
+        "Duleabom An",
+        "Chungmok Lee",
+        "Sophie N. Parragh"
       ],
-      "primary_category": "stat.ME",
+      "primary_category": "math.OC",
       "categories": [
-        "stat.ME",
-        "cs.LG"
+        "math.OC"
       ],
-      "published": "2026-10-18T13:05:36+00:00",
-      "link": "https://arxiv.org/pdf/2610.25246v1",
+      "published": "2026-10-02T21:31:18+00:00",
+      "link": "https://arxiv.org/pdf/2610.04070v1",
       "tags": [
         "keyword:llm-supply"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Estimating causal bounds from observational data",
-      "llm_evidence_cn": "从观测数据估计因果界",
-      "llm_evidence": "从观测数据估计因果界",
-      "canonical_evidence": "从观测数据估计因果界",
-      "llm_tldr_en": "Introduces a neural generative framework with an extrapolation procedure to estimate causal bounds from discrete observational data, outperforming existing general neural approaches.",
-      "llm_tldr_cn": "从离散观测数据识别因果界是因果推断的基础问题，但除少数图结构外缺乏精确解析解。作者提出基于神经生成模型的估计框架，并设计新的外推程序以更准确地逼近真实因果界。在多个因果推断设定与可计算精确界的基准上，该方法得到的界一致更接近真值，优于现有通用神经方法，为无解析解情形下的因果界估计提供了实用工具。",
-      "llm_tldr": "从离散观测数据识别因果界是因果推断的基础问题，但除少数图结构外缺乏精确解析解。作者提出基于神经生成模型的估计框架，并设计新的外推程序以更准确地逼近真实因果界。在多个因果推断设定与可计算精确界的基准上，该方法得到的界一致更接近真值，优于现有通用神经方法，为无解析解情形下的因果界估计提供了实用工具。",
+      "llm_evidence_en": "Benders decomposition for sustainable supply chain network design",
+      "llm_evidence_cn": "面向可持续供应链网络设计的Benders分解优化",
+      "llm_evidence": "面向可持续供应链网络设计的Benders分解优化",
+      "canonical_evidence": "面向可持续供应链网络设计的Benders分解优化",
+      "llm_tldr_en": "Proposes an accelerated Benders decomposition for bi-objective mixed integer supply chain network design, reusing cuts across weighted-sum solves to speed up repeated optimization.",
+      "llm_tldr_cn": "针对可持续供应链网络设计中经济与环境双目标混合整数优化反复求解的问题，提出在加权和法中复用前序Benders割的加速分解方法。该方法以预生成割初始化主问题，减少重复计算。计算实验表明加速策略能提升多权重场景下的求解效率。其贡献在于为供应链网络规划提供可复用的多目标优化加速框架。",
+      "llm_tldr": "针对可持续供应链网络设计中经济与环境双目标混合整数优化反复求解的问题，提出在加权和法中复用前序Benders割的加速分解方法。该方法以预生成割初始化主问题，减少重复计算。计算实验表明加速策略能提升多权重场景下的求解效率。其贡献在于为供应链网络规划提供可复用的多目标优化加速框架。",
       "llm_tags": [
         "query:llm-supply"
       ],
       "matched_query_tag": "query:llm-supply",
-      "matched_query_text": "Causal Inference",
-      "matched_requirement_id": "req-1",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2610.28103v1",
-      "source": "arxiv",
-      "title": "A Semi-Analytical Inference Framework for Structural Causal Models",
-      "abstract": "Structural Causal Models (SCMs) provide a principled framework for observational, interventional, and counterfactual reasoning, all of which rely on probabilistic inference. Existing frameworks either transform SCMs into alternative tractable representations or rely on approximate inference with expressive generative models. We instead perform inference using a message passing scheme directly on the SCM by representing structural mechanisms and probability densities in a common finite-dimensional function space. Forward propagation combines a numerical realization of the Law of the Unconscious Statistician, while propagated densities are recovered by spline projection from LOTUS moments. The same representation naturally yields backward message passing for conditioning, providing a unified framework for causal inference. Using tensor-product B-spline bases, the resulting algorithm expresses inference through numerical quadrature and linear algebra without explicitly constructing conditional distributions. Experiments on randomly generated continuous SCMs demonstrate accurate approximation of Monte Carlo reference solutions and systematic improvement with increasing basis resolution.",
-      "authors": [
-        "Tatiana Boura",
-        "Robert Peharz"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI"
-      ],
-      "published": "2026-10-20T12:17:37+00:00",
-      "link": "https://arxiv.org/pdf/2610.28103v1",
-      "tags": [
-        "keyword:llm-supply"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Inference framework for structural causal models",
-      "llm_evidence_cn": "结构因果模型的推理框架",
-      "llm_evidence": "结构因果模型的推理框架",
-      "canonical_evidence": "结构因果模型的推理框架",
-      "llm_tldr_en": "Proposes a semi-analytical message-passing inference scheme directly on structural causal models, enabling observational, interventional, and counterfactual reasoning.",
-      "llm_tldr_cn": "结构因果模型是观测、干预与反事实推理的基础，但现有方法需转为其他可解表示或依赖近似生成模型。作者提出半解析推理框架，将结构机制与概率密度表示在统一有限维函数空间中，直接在图结构上做消息传递。前向传播结合LOTUS矩的数值实现并用样条投影恢复密度，同一表示还支持反向传播，为反事实推理提供了新的可计算方法。",
-      "llm_tldr": "结构因果模型是观测、干预与反事实推理的基础，但现有方法需转为其他可解表示或依赖近似生成模型。作者提出半解析推理框架，将结构机制与概率密度表示在统一有限维函数空间中，直接在图结构上做消息传递。前向传播结合LOTUS矩的数值实现并用样条投影恢复密度，同一表示还支持反向传播，为反事实推理提供了新的可计算方法。",
-      "llm_tags": [
-        "query:llm-supply"
-      ],
-      "matched_query_tag": "query:llm-supply",
-      "matched_query_text": "Causal Inference",
-      "matched_requirement_id": "req-1",
+      "matched_query_text": "optimization methods for supply chain planning and resource allocation",
+      "matched_requirement_id": "req-3",
       "selection_source": "fresh_fetch"
     },
     {
@@ -183,61 +144,19 @@
         "query:llm-supply"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "LLM as exogenous world model component for scheduling decision and scenario rollouts",
-      "llm_evidence_cn": "LLM作为外生世界模型组件支撑调度决策与情景推演",
-      "llm_evidence": "LLM作为外生世界模型组件支撑调度决策与情景推演",
-      "canonical_evidence": "LLM作为外生世界模型组件支撑调度决策与情景推演",
-      "llm_tldr_en": "Uses a pretrained LLM as the exogenous part of a structured world model to forecast uncertain job arrivals, combining afterstate decomposition with scenario-based rollout planning.",
-      "llm_tldr_cn": "动态调度需在线派工并预判未来工件到达，非线性延迟目标下错误决策会累积下游成本。本文利用预训练LLM作为结构化世界模型的外生组件，通过afterstate分解仅预测不确定的工件到达，并以紧凑信念表示刻画不确定性。基于此提出AWMP方法，融合信念条件派工策略、短程情景滚动与惊奇触发刷新机制。该工作表明LLM可有效承担世界模型中的不确定性预测，从而支撑调度决策与情景分析。",
-      "llm_tldr": "动态调度需在线派工并预判未来工件到达，非线性延迟目标下错误决策会累积下游成本。本文利用预训练LLM作为结构化世界模型的外生组件，通过afterstate分解仅预测不确定的工件到达，并以紧凑信念表示刻画不确定性。基于此提出AWMP方法，融合信念条件派工策略、短程情景滚动与惊奇触发刷新机制。该工作表明LLM可有效承担世界模型中的不确定性预测，从而支撑调度决策与情景分析。",
+      "llm_evidence_en": "LLM serves as exogenous component of a structured world model for scenario-based planning",
+      "llm_evidence_cn": "LLM作为结构化世界模型的外生组件进行情景规划",
+      "llm_evidence": "LLM作为结构化世界模型的外生组件进行情景规划",
+      "canonical_evidence": "LLM作为结构化世界模型的外生组件进行情景规划",
+      "llm_tldr_en": "Dynamic scheduling must anticipate uncertain job arrivals. The paper uses a pretrained LLM as the exogenous part of a structured world model, separating deterministic transitions from uncertain arrivals, and builds Afterstate World-Model Planning with belief-conditioned dispatching and short scenario rollouts.",
+      "llm_tldr_cn": "动态调度需要在在线到达情况下预判未来作业，否则在非线性拖期目标下会累积下游成本。作者提出把预训练大语言模型作为结构化世界模型的外生组件，通过后状态分解将确定性车间转移与不确定到达分离，使LLM只需预测外生部分。基于此构建后状态世界模型规划，结合信念条件调度策略与短情景推演。结果表明该方法能更有效地预判到达并降低调度成本。",
+      "llm_tldr": "动态调度需要在在线到达情况下预判未来作业，否则在非线性拖期目标下会累积下游成本。作者提出把预训练大语言模型作为结构化世界模型的外生组件，通过后状态分解将确定性车间转移与不确定到达分离，使LLM只需预测外生部分。基于此构建后状态世界模型规划，结合信念条件调度策略与短情景推演。结果表明该方法能更有效地预判到达并降低调度成本。",
       "llm_tags": [
         "query:llm-supply"
       ],
       "matched_query_tag": "query:llm-supply",
       "matched_query_text": "How can large language models be combined with world models to support supply chain decision making and scenario analysis?",
       "matched_requirement_id": "req-7",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2610.30917v1",
-      "source": "arxiv",
-      "title": "Harnessing Language Models as Optimization Modeling Agents",
-      "abstract": "Large language models (LLMs) can translate natural-language optimization problems into solver programs, but reliably producing correct formulations and implementations remains challenging. Existing approaches improve optimization modeling through agentic workflows or task-specific post-training. This raises a practical question: can a lightweight harness using a single model role achieve competitive performance without additional training? We introduce OPTICYCLE and OPTISTATE, two lightweight inference harnesses for optimization modeling, and evaluate them on nine benchmarks comprising 2,634 problems using 11 Qwen variants spanning 0.6B-27B parameters. Our results show that execution-guided revision consistently improves macro accuracy over direct generation for all evaluated models, with gains of up to 49.46 percentage points. Despite their simplicity, both harnesses outperform six adapted agentic workflows in same-model comparisons and four evaluated post-trained optimization models at comparable model sizes, without additional training. Explicit formulation state provides further but model-dependent improvements, suggesting that additional structure is not universally beneficial.",
-      "authors": [
-        "Yunxiang Luo",
-        "Xin Xu",
-        "Tianhao Chen",
-        "Zhixi Xiong",
-        "Peiqi Jiang",
-        "Fan Zhang",
-        "Wei Shao",
-        "Xuejian Gao",
-        "Yuwei Fan",
-        "Can Yang"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI"
-      ],
-      "published": "2026-10-22T08:36:27+00:00",
-      "link": "https://arxiv.org/pdf/2610.30917v1",
-      "tags": [
-        "query:llm-supply"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "language models as optimization modeling agents with execution-guided revision",
-      "llm_evidence_cn": "以执行引导修订让语言模型充当优化建模智能体",
-      "llm_evidence": "以执行引导修订让语言模型充当优化建模智能体",
-      "canonical_evidence": "以执行引导修订让语言模型充当优化建模智能体",
-      "llm_tldr_en": "OPTICYCLE and OPTISTATE are lightweight inference harnesses that improve LLM optimization modeling through execution-guided revision, evaluated on nine benchmarks and 2634 problems with eleven Qwen variants from 0.6B to 27B.",
-      "llm_tldr_cn": "针对大模型将自然语言优化问题转化为求解器程序时难以保证建模与实现正确的问题，作者提出OPTICYCLE与OPTISTATE两个轻量推理框架，无需额外训练即可通过执行引导的迭代修订改进建模。在九个基准、2634个问题上评测11个Qwen变体（0.6B至27B）。结果显示执行引导修订持续优于直接生成，说明轻量框架即可显著提升优化建模可靠性，为LLM与优化求解集成提供实用路径。",
-      "llm_tldr": "针对大模型将自然语言优化问题转化为求解器程序时难以保证建模与实现正确的问题，作者提出OPTICYCLE与OPTISTATE两个轻量推理框架，无需额外训练即可通过执行引导的迭代修订改进建模。在九个基准、2634个问题上评测11个Qwen变体（0.6B至27B）。结果显示执行引导修订持续优于直接生成，说明轻量框架即可显著提升优化建模可靠性，为LLM与优化求解集成提供实用路径。",
-      "llm_tags": [
-        "query:llm-supply"
-      ],
-      "matched_query_tag": "query:llm-supply",
-      "matched_query_text": "Integrating language models with optimization and simulation for resilient supply chain management.",
-      "matched_requirement_id": "req-10",
       "selection_source": "fresh_fetch"
     },
     {
@@ -259,53 +178,19 @@
         "query:llm-supply"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "GNN plus LLM fusion for cascading failure propagation prediction on network topology",
-      "llm_evidence_cn": "GNN与LLM融合用于拓扑上的级联故障传播预测",
-      "llm_evidence": "GNN与LLM融合用于拓扑上的级联故障传播预测",
-      "canonical_evidence": "GNN与LLM融合用于拓扑上的级联故障传播预测",
-      "llm_tldr_en": "LoRA-tuned LLaMA-3-8B predictors and a topology-aware graph attention transformer are fused via confidence gating to predict cascading failure severity, showing LLM and GNN capabilities are complementary across grid topologies.",
-      "llm_tldr_cn": "针对现有数据驱动方法依赖特定网络表征、难以跨电力拓扑泛化的级联故障严重度预测问题，作者先用LoRA微调的LLaMA-3-8B构建不同拓扑信息程度的LLM预测器，再提出融合拓扑感知图注意力Transformer与LLM的置信门控混合框架。实验表明LLM与GNN能力互补，混合模型在早期级联严重度预测上更优。该工作为图结构与基础模型融合的拓扑风险传播建模提供可推广范式。",
-      "llm_tldr": "针对现有数据驱动方法依赖特定网络表征、难以跨电力拓扑泛化的级联故障严重度预测问题，作者先用LoRA微调的LLaMA-3-8B构建不同拓扑信息程度的LLM预测器，再提出融合拓扑感知图注意力Transformer与LLM的置信门控混合框架。实验表明LLM与GNN能力互补，混合模型在早期级联严重度预测上更优。该工作为图结构与基础模型融合的拓扑风险传播建模提供可推广范式。",
+      "llm_evidence_en": "hybrid GNN plus LLM fusion for topology-aware cascading failure prediction",
+      "llm_evidence_cn": "图神经网络与大模型融合的拓扑感知级联故障预测",
+      "llm_evidence": "图神经网络与大模型融合的拓扑感知级联故障预测",
+      "canonical_evidence": "图神经网络与大模型融合的拓扑感知级联故障预测",
+      "llm_tldr_en": "Fuses a topology-aware graph attention transformer with a LoRA-tuned LLM via confidence-gated fusion to predict cascading failure severity across power grid topologies.",
+      "llm_tldr_cn": "针对现有数据驱动方法依赖特定网络表示、难以跨电网拓扑泛化，导致级联故障早期预测困难的问题，作者用LoRA微调LLaMA-3构建LLM预测器，并提出融合拓扑感知图注意力Transformer与LLM的图-语言模型框架。实验显示LLM与GNN能力互补，混合融合提升了故障严重度预测精度，为结合大模型与图网络进行拓扑风险传播预测提供范式。",
+      "llm_tldr": "针对现有数据驱动方法依赖特定网络表示、难以跨电网拓扑泛化，导致级联故障早期预测困难的问题，作者用LoRA微调LLaMA-3构建LLM预测器，并提出融合拓扑感知图注意力Transformer与LLM的图-语言模型框架。实验显示LLM与GNN能力互补，混合融合提升了故障严重度预测精度，为结合大模型与图网络进行拓扑风险传播预测提供范式。",
       "llm_tags": [
         "query:llm-supply"
       ],
       "matched_query_tag": "query:llm-supply",
       "matched_query_text": "Graph neural network approaches for supply chain risk propagation, resilience assessment, and disruption management.",
       "matched_requirement_id": "req-8",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2610.33750v1",
-      "source": "arxiv",
-      "title": "When Protection Hurts: A Cytokine Storm Theory of Supply Chain Overreaction",
-      "abstract": "Supply chain resilience research has traditionally viewed defensive actions such as safety stock, backup suppliers, expedited transportation, and emergency sourcing as beneficial. However, disruptions such as the COVID-19 pandemic, the 2021 semiconductor shortage, and the Suez Canal blockage highlight how synchronized hoarding, duplicate ordering, and capacity reservation can amplify congestion and operational costs, sometimes worsening the original disruption. Motivated by this observation, we develop a decision-theoretic framework in which Protective Response Intensity (PRI) is an endogenous decision variable. We introduce Response-Induced Loss (RIL) to capture costs generated by defensive actions and characterize a unique optimal response that balances disruption mitigation against self-induced losses. We derive a closed-form critical response threshold beyond which RIL exceeds the original disruption intensity, a phenomenon termed a *Supply Chain Cytokine Storm*. We further propose the Cytokine Storm Index (CSI), measuring response-induced loss relative to the original disruption, and discuss its potential calibration using operational data. Extending the framework to interconnected supply networks, we derive a spectral stability condition distinguishing bounded decentralized responses from network-wide propagation. Numerical experiments show that optimal responses remain below the storm threshold, whereas proportional response heuristics can exceed it. Network responses converge or diverge according to the derived stability condition. Overall, our findings highlight that supply chain resilience depends not only on mitigating disruptions but also on keeping defensive responses proportionate to the shocks they are intended to address.",
-      "authors": [
-        "Gurkirat Wadhwa"
-      ],
-      "primary_category": "math.OC",
-      "categories": [
-        "math.OC"
-      ],
-      "published": "2026-10-24T15:49:08+00:00",
-      "link": "https://arxiv.org/pdf/2610.33750v1",
-      "tags": [
-        "keyword:llm-supply",
-        "query:llm-supply"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "decision-theoretic model of supply chain overreaction and response-induced loss under disruption",
-      "llm_evidence_cn": "供应链中断下过度反应与响应诱发损失的决策论建模",
-      "llm_evidence": "供应链中断下过度反应与响应诱发损失的决策论建模",
-      "canonical_evidence": "供应链中断下过度反应与响应诱发损失的决策论建模",
-      "llm_tldr_en": "Builds a decision-theoretic framework where protective response intensity is endogenous and defensive actions such as safety stock and duplicate ordering can amplify congestion, worsening the original disruption.",
-      "llm_tldr_cn": "论文针对供应链韧性研究中普遍把安全库存、备份供应商、紧急采购等防御动作视为有益这一假设提出质疑，指出同步囤货与重复下单会加剧拥堵和成本。作者构建决策论框架，将保护性响应强度设为内生决策变量，并提出响应诱发损失来刻画防御行为自身的代价，进而刻画唯一的最优响应强度。该分析解释了为何过度反应可能放大中断影响，为中断情境下度量与提升供应链韧性提供了新的理论视角。",
-      "llm_tldr": "论文针对供应链韧性研究中普遍把安全库存、备份供应商、紧急采购等防御动作视为有益这一假设提出质疑，指出同步囤货与重复下单会加剧拥堵和成本。作者构建决策论框架，将保护性响应强度设为内生决策变量，并提出响应诱发损失来刻画防御行为自身的代价，进而刻画唯一的最优响应强度。该分析解释了为何过度反应可能放大中断影响，为中断情境下度量与提升供应链韧性提供了新的理论视角。",
-      "llm_tags": [
-        "query:llm-supply"
-      ],
-      "matched_query_tag": "query:llm-supply",
-      "matched_query_text": "approaches for measuring and enhancing supply chain resilience under disruption",
-      "matched_requirement_id": "req-4",
       "selection_source": "fresh_fetch"
     },
     {
@@ -330,53 +215,19 @@
         "query:llm-supply"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "agentic AI orchestration framework deployed in supply chain",
-      "llm_evidence_cn": "部署于供应链的智能体AI编排框架",
-      "llm_evidence": "部署于供应链的智能体AI编排框架",
-      "canonical_evidence": "部署于供应链的智能体AI编排框架",
-      "llm_tldr_en": "Industrial spatial decisions span systems lacking shared frames. ANASSA integrates structured reasoning, multi-agent orchestration, spatial grounding, and human approvals, instantiated in a supply chain deployment.",
-      "llm_tldr_cn": "工业空间决策分散于缺乏统一参照与归属的系统，分析师疲于协调而非推理空间。作者提出ANASSA参考架构，整合结构化推理、多智能体工作流编排、权威空间 grounding 与反馈驱动执行，并在智能体边界设置类型化数据契约。该框架在运营中的供应链部署验证了多灾种风险评估等场景，并包含两类阻断式人机协同审批。这为供应链空间决策提供了可落地的智能体编排方案。",
-      "llm_tldr": "工业空间决策分散于缺乏统一参照与归属的系统，分析师疲于协调而非推理空间。作者提出ANASSA参考架构，整合结构化推理、多智能体工作流编排、权威空间 grounding 与反馈驱动执行，并在智能体边界设置类型化数据契约。该框架在运营中的供应链部署验证了多灾种风险评估等场景，并包含两类阻断式人机协同审批。这为供应链空间决策提供了可落地的智能体编排方案。",
+      "llm_evidence_en": "multi-agent LLM orchestration deployed for supply chain risk assessment",
+      "llm_evidence_cn": "多智能体大模型编排用于供应链风险评估部署",
+      "llm_evidence": "多智能体大模型编排用于供应链风险评估部署",
+      "canonical_evidence": "多智能体大模型编排用于供应链风险评估部署",
+      "llm_tldr_en": "Industrial spatial decisions span disconnected systems. ANASSA is a reference architecture with structured reasoning, multi-agent orchestration, authoritative spatial grounding and human-in-the-loop, instantiated in an operating supply-chain deployment for multi-hazard risk assessment.",
+      "llm_tldr_cn": "工业空间决策往往分散在缺乏统一参照与责任主体的多个系统之间，分析人员疲于对账而非真正推理空间。本文提出ANASSA参考架构，融合结构化推理、多智能体工作流编排、权威空间数据校验与反馈驱动执行，并在运行中的供应链部署中落地多灾种风险评估。该架构以类型化数据契约约束智能体边界，并在六步认知循环中强制两处人工审批，显著提升决策可信度与可追溯性。",
+      "llm_tldr": "工业空间决策往往分散在缺乏统一参照与责任主体的多个系统之间，分析人员疲于对账而非真正推理空间。本文提出ANASSA参考架构，融合结构化推理、多智能体工作流编排、权威空间数据校验与反馈驱动执行，并在运行中的供应链部署中落地多灾种风险评估。该架构以类型化数据契约约束智能体边界，并在六步认知循环中强制两处人工审批，显著提升决策可信度与可追溯性。",
       "llm_tags": [
         "query:llm-supply"
       ],
       "matched_query_tag": "query:llm-supply",
       "matched_query_text": "Large language model agents and multi agent coordination for supply chain optimization and inventory planning.",
       "matched_requirement_id": "req-9",
-      "selection_source": "fresh_fetch"
-    },
-    {
-      "id": "2610.36977v1",
-      "source": "arxiv",
-      "title": "Robust global supply chain reconfiguration under tariff and geopolitical uncertainty",
-      "abstract": "Global supply chains are increasingly exposed to trade policy shocks and physical disruptions arising from common geopolitical events. We develop a robust optimization framework with two decision stages for strategic supply chain reconfiguration. Supplier qualification and transportation arc activation decisions are made before uncertainty is realized, while operational flows adapt afterward. Geopolitical uncertainty is represented through country level shocks that can jointly trigger tariff escalation, policy induced restrictions on cross border capacity, facility disruptions, and physical transportation failures. The resulting min max min problem is reformulated by dualizing the operational recourse problem, yielding a nonconvex mixed integer bilinear adversarial problem solved within a column and constraint generation procedure. Comparison with complete enumeration verifies the implementation on small instances, while experiments on 60 synthetic supply chain networks of varying sizes assess computational performance. The results show that omitting geopolitical transmission channels during strategic design can lead to substantial deterioration in cost and service under full geopolitical stress. Broader protection is achieved primarily through changes in transportation network configuration rather than increased supplier qualification. Robust performance also depends on the severity and composition of geopolitical consequences, with restrictions on cross border capacity exerting a stronger effect than comparable proportional changes in tariff severity over the tested ranges. A geographically grounded case analysis further shows that the value of individual uncertainty channels depends on network structure and geographic exposure.",
-      "authors": [
-        "Ashish Chandra"
-      ],
-      "primary_category": "math.OC",
-      "categories": [
-        "math.OC"
-      ],
-      "published": "2026-10-27T10:31:17+00:00",
-      "link": "https://arxiv.org/pdf/2610.36977v1",
-      "tags": [
-        "keyword:llm-supply",
-        "query:llm-supply"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "robust optimization for supply chain reconfiguration under disruption",
-      "llm_evidence_cn": "中断下供应链重构的稳健优化",
-      "llm_evidence": "中断下供应链重构的稳健优化",
-      "canonical_evidence": "中断下供应链重构的稳健优化",
-      "llm_tldr_en": "Global supply chains face tariff and geopolitical shocks. The paper develops a two-stage robust optimization framework for strategic reconfiguration, dualizing operational recourse to solve a min-max-min problem.",
-      "llm_tldr_cn": "全球供应链日益暴露于贸易政策冲击与地缘政治引发的物理中断，战略重构亟需应对不确定性。作者构建两阶段稳健优化框架，先做供应商资质与运输弧启用决策，事后调整运营流量，并以国家级冲击联合刻画关税升级、跨境能力限制、设施与运输故障。通过将运营补救问题对偶化，将min-max-min问题转化为可求解形式。该工作为不确定环境下供应链重构与韧性提供了稳健优化方法。",
-      "llm_tldr": "全球供应链日益暴露于贸易政策冲击与地缘政治引发的物理中断，战略重构亟需应对不确定性。作者构建两阶段稳健优化框架，先做供应商资质与运输弧启用决策，事后调整运营流量，并以国家级冲击联合刻画关税升级、跨境能力限制、设施与运输故障。通过将运营补救问题对偶化，将min-max-min问题转化为可求解形式。该工作为不确定环境下供应链重构与韧性提供了稳健优化方法。",
-      "llm_tags": [
-        "query:llm-supply"
-      ],
-      "matched_query_tag": "query:llm-supply",
-      "matched_query_text": "optimization methods for supply chain planning and resource allocation",
-      "matched_requirement_id": "req-3",
       "selection_source": "fresh_fetch"
     }
   ]

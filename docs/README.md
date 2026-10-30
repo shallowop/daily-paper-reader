@@ -51,14 +51,14 @@
       <span class="dpr-home-dashboard-kicker">2026-10-01 ~ 2026-10-30</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 10 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 11 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>10</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-30 09:43:45 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-30 12:36:55 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>10月1日至30日共速读10篇AI论文，无精读，重点聚焦多智能体供应链风控与Agent辅助生产调度。</p>
-<p>最值得看的是9.0分的AutoMARS多智能体可扩展供应链风险评估框架，以及8.0分的Agentic AI约束规划调度和神经生成模型因果边界估计。</p>
-<p>普通读者可先读AutoMARS的摘要与应用案例，再按兴趣补生产调度或因果推断基础。</p>
+<p>本期速读11篇论文，重点聚焦供应链风险与优化决策。最值得看的是两篇9.0分方向：AutoMARS用多智能体大模型做可扩展供应链风险评估，另一篇讨论关税与地缘政治不确定性下的全球供应链重构。建议普通读者先读这两篇的摘要与结论，再按需了解8.0分的Benders分解加速方法。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -93,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">10 篇</strong>
+    <strong class="dpr-home-dashboard-count">11 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="AutoMARS: Automatic and Scalable Multi-Agent Large Language Model Framework for Supply Chain Risk Assessment">AutoMARS: Automatic and Scalable Multi-Agent Large Language Model Framework for Supply Chain Risk Assessment</span></li><li><span class="dpr-home-dashboard-paper-title" title="Agentic AI-Assisted Modeling for Production Scheduling: Assessment in Constraint Programming">Agentic AI-Assisted Modeling for Production Scheduling: Assessment in Constraint Programming</span></li><li><span class="dpr-home-dashboard-paper-title" title="Estimating Causal Bounds from Observational Data With Neural Generative Models">Estimating Causal Bounds from Observational Data With Neural Generative Models</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="AutoMARS: Automatic and Scalable Multi-Agent Large Language Model Framework for Supply Chain Risk Assessment">AutoMARS: Automatic and Scalable Multi-Agent Large Language Model Framework for Supply Chain Risk Assessment</span></li><li><span class="dpr-home-dashboard-paper-title" title="Robust global supply chain reconfiguration under tariff and geopolitical uncertainty">Robust global supply chain reconfiguration under tariff and geopolitical uncertainty</span></li><li><span class="dpr-home-dashboard-paper-title" title="Accelerated Benders decomposition for bi-objective mixed integer programming">Accelerated Benders decomposition for bi-objective mixed integer programming</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>10</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>11</strong></span></div>
 </section>
 </div>
 

@@ -1,9 +1,9 @@
 {
   "date": "20261001-20261030",
   "date_label": "2026-10-01 ~ 2026-10-30",
-  "generated_at": "2026-10-30 09:43:45 UTC",
+  "generated_at": "2026-10-30 12:36:55 UTC",
   "recommend_exists": true,
-  "run_count": 1,
+  "run_count": 2,
   "papers": [
     {
       "paper_id": "2610.17206v1",
@@ -19,7 +19,87 @@
       "score": 9.0,
       "evidence": "多智能体LLM框架用于供应链风险评估",
       "first_seen_at": "2026-10-30 09:43:45 UTC",
-      "updated_at": "2026-10-30 09:43:45 UTC"
+      "updated_at": "2026-10-30 12:36:55 UTC"
+    },
+    {
+      "paper_id": "2610.36977v1",
+      "route": "20261001-20261030/2610.36977v1-robust-global-supply-chain-reconfiguration-under-tariff-and-geopolitical-uncertainty",
+      "title": "Robust global supply chain reconfiguration under tariff and geopolitical uncertainty",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "中断下供应链重构的稳健优化",
+      "first_seen_at": "2026-10-30 09:43:45 UTC",
+      "updated_at": "2026-10-30 12:36:55 UTC"
+    },
+    {
+      "paper_id": "2610.04070v1",
+      "route": "20261001-20261030/2610.04070v1-accelerated-benders-decomposition-for-bi-objective-mixed-integer-programming",
+      "title": "Accelerated Benders decomposition for bi-objective mixed integer programming",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向可持续供应链网络设计的Benders分解优化",
+      "first_seen_at": "2026-10-30 12:36:55 UTC",
+      "updated_at": "2026-10-30 12:36:55 UTC"
+    },
+    {
+      "paper_id": "2610.29308v1",
+      "route": "20261001-20261030/2610.29308v1-llm-based-exogenous-world-modeling-for-dynamic-scheduling",
+      "title": "LLM-Based Exogenous World Modeling for Dynamic Scheduling",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "LLM作为外生世界模型组件支撑调度决策与情景推演",
+      "first_seen_at": "2026-10-30 09:43:45 UTC",
+      "updated_at": "2026-10-30 12:36:55 UTC"
+    },
+    {
+      "paper_id": "2610.32696v1",
+      "route": "20261001-20261030/2610.32696v1-foundation-models-meet-power-grid-topology-for-cascade-prediction",
+      "title": "Foundation Models Meet Power Grid Topology for Cascade Prediction",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "GNN与LLM融合用于拓扑上的级联故障传播预测",
+      "first_seen_at": "2026-10-30 09:43:45 UTC",
+      "updated_at": "2026-10-30 12:36:55 UTC"
+    },
+    {
+      "paper_id": "2610.34569v1",
+      "route": "20261001-20261030/2610.34569v1-agentic-ai-orchestration-framework-for-spatial-intelligence-supply-chain-deployment",
+      "title": "Agentic AI Orchestration Framework for Spatial Intelligence: Supply Chain Deployment",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "部署于供应链的智能体AI编排框架",
+      "first_seen_at": "2026-10-30 09:43:45 UTC",
+      "updated_at": "2026-10-30 12:36:55 UTC"
     },
     {
       "paper_id": "2610.10184v1",
@@ -70,22 +150,6 @@
       "updated_at": "2026-10-30 09:43:45 UTC"
     },
     {
-      "paper_id": "2610.29308v1",
-      "route": "20261001-20261030/2610.29308v1-llm-based-exogenous-world-modeling-for-dynamic-scheduling",
-      "title": "LLM-Based Exogenous World Modeling for Dynamic Scheduling",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "llm-supply"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "LLM作为外生世界模型组件支撑调度决策与情景推演",
-      "first_seen_at": "2026-10-30 09:43:45 UTC",
-      "updated_at": "2026-10-30 09:43:45 UTC"
-    },
-    {
       "paper_id": "2610.30917v1",
       "route": "20261001-20261030/2610.30917v1-harnessing-language-models-as-optimization-modeling-agents",
       "title": "Harnessing Language Models as Optimization Modeling Agents",
@@ -102,22 +166,6 @@
       "updated_at": "2026-10-30 09:43:45 UTC"
     },
     {
-      "paper_id": "2610.32696v1",
-      "route": "20261001-20261030/2610.32696v1-foundation-models-meet-power-grid-topology-for-cascade-prediction",
-      "title": "Foundation Models Meet Power Grid Topology for Cascade Prediction",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "llm-supply"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "GNN与LLM融合用于拓扑上的级联故障传播预测",
-      "first_seen_at": "2026-10-30 09:43:45 UTC",
-      "updated_at": "2026-10-30 09:43:45 UTC"
-    },
-    {
       "paper_id": "2610.33750v1",
       "route": "20261001-20261030/2610.33750v1-when-protection-hurts-a-cytokine-storm-theory-of-supply-chain-overreaction",
       "title": "When Protection Hurts: A Cytokine Storm Theory of Supply Chain Overreaction",
@@ -130,38 +178,6 @@
       ],
       "score": 8.0,
       "evidence": "供应链中断下过度反应与响应诱发损失的决策论建模",
-      "first_seen_at": "2026-10-30 09:43:45 UTC",
-      "updated_at": "2026-10-30 09:43:45 UTC"
-    },
-    {
-      "paper_id": "2610.34569v1",
-      "route": "20261001-20261030/2610.34569v1-agentic-ai-orchestration-framework-for-spatial-intelligence-supply-chain-deployment",
-      "title": "Agentic AI Orchestration Framework for Spatial Intelligence: Supply Chain Deployment",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "llm-supply"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "部署于供应链的智能体AI编排框架",
-      "first_seen_at": "2026-10-30 09:43:45 UTC",
-      "updated_at": "2026-10-30 09:43:45 UTC"
-    },
-    {
-      "paper_id": "2610.36977v1",
-      "route": "20261001-20261030/2610.36977v1-robust-global-supply-chain-reconfiguration-under-tariff-and-geopolitical-uncertainty",
-      "title": "Robust global supply chain reconfiguration under tariff and geopolitical uncertainty",
-      "section": "quick",
-      "tags": [
-        {
-          "kind": "query",
-          "label": "llm-supply"
-        }
-      ],
-      "score": 8.0,
-      "evidence": "中断下供应链重构的稳健优化",
       "first_seen_at": "2026-10-30 09:43:45 UTC",
       "updated_at": "2026-10-30 09:43:45 UTC"
     }
