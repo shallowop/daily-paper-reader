@@ -1,0 +1,848 @@
+Title: TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting
+
+URL Source: https://arxiv.org/pdf/2610.34797v1
+
+Published Time: Tue, 27 Oct 2026 02:15:22 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting 
+
+# Hang Ni 
+
+The Hong Kong University of Science and Technology (Guangzhou) Guangzhou, China hni017@connect.hkust-gz.edu.cn 
+
+# Weijia Zhang ✉
+
+The Hong Kong University of Science and Technology (Guangzhou) Guangzhou, China wzhang411@connect.hkust-gz.edu.cn 
+
+# Hao Liu ✉
+
+The Hong Kong University of Science and Technology (Guangzhou) Guangzhou, China liuh@ust.hk 
+
+## Abstract 
+
+Time series forecasting supports decision-making in web applica-tions such as online retail and network management, where planned actions can reshape future dynamics. World models provide a natu-ral paradigm for predicting such action-dependent changes beyond extrapolating historical patterns. However, existing time series world models (TSWMs) typically rely on fixed, domain-specific covariate schemas that limit flexible intervention specification, while multimodal forecasters treat text primarily as passive predic-tive context. To investigate these gaps, we first introduce TSWM-Bench , a cross-domain benchmark for multimodal TSWMs span-ning seven real-world datasets, with textual interventions grounded in recorded action–outcome data. Our evaluation reveals that con-ventional multimodal forecasters underperform history-only time series foundation models (TSFMs) despite dataset-specific train-ing, whereas simple text-prefix adaptations improve forecasting across all evaluated TSFM backbones. These findings suggest that pretrained TSFMs encode implicit world knowledge of temporal dynamics, offering a strong foundation for action-conditioned mod-eling beyond conventional multimodal fusion. Building on this insight, we further propose TimeWorld , a plug-in framework that adapts pretrained TSFMs through explicit action-response model-ing. Specifically, the Prototype-Guided Latent Modulation (PLM) module grounds textual actions in temporal dynamics by compos-ing representative response prototypes to modulate future repre-sentations based on the action and historical patterns. The Action Contrastive Learning (ACL) component strengthens action-specific response modeling by contrasting these updates under alterna-tive interventions sharing the same history, distinguishing action types while preserving relative intensity relationships. Experiments across diverse domains and TSFM backbones demonstrate consis-tent improvements over strong baselines. 
+
+> Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+> Conference acronym ’XX, Woodstock, NY
+> © 2018 Copyright held by the owner/author(s). Publication rights licensed to ACM. ACM ISBN 978-1-4503-XXXX-X/2018/06 https://doi.org/XXXXXXX.XXXXXXX
+
+## CCS Concepts 
+
+• Mathematics of computing → Time series analysis ; • Com-puting methodologies → Machine learning ; • Applied com-puting → Forecasting .
+
+## Keywords 
+
+Time Series World Models, Textual Interventions, Time Series Foun-dation Models, Multimodal Learning 
+
+ACM Reference Format: 
+
+Hang Ni, Weijia Zhang, and Hao Liu. 2018. TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting. In 
+
+Proceedings of Make sure to enter the correct conference title from your rights confirmation email (Conference acronym ’XX). ACM, New York, NY, USA, 13 pages. https://doi.org/XXXXXXX.XXXXXXX 
+
+## 1 Introduction 
+
+Time series forecasting (TSF) underpins web-related applications such as retail planning [33], network management [18], and finan-cial analytics [49]. Recent time series foundation models (TSFMs) have further improved forecasting by learning transferable priors over temporal dynamics through large-scale pretraining [8]. How-ever, forecasting in these applications often requires anticipating how planned actions alter future trajectories, beyond extrapolat-ing historical patterns [27]. For example, an online retailer often needs to estimate demand under alternative discount campaigns before allocating its promotional budget. Motivated by the world-model paradigm of predicting system evolution under different actions [5, 12], we study action-conditioned time series world models 
+
+(TSWMs) that forecast future trajectories from historical observa-tions and a specified action [46]. Existing TSWMs commonly encode interventions as numerical or categorical covariates [27, 32, 46]. Such predefined, domain-specific schemas struggle to capture complex intervention seman-tics ( e.g. , buy-one-get-one offers), limiting cross-domain general-ization [35]. Moreover, their reliance on stepwise future controls makes it difficult to express high-level temporal intervention pat-terns ( e.g. , phasing out discounts) without prescribing exact control sequences. Instead, natural language provides a flexible interface to specify action semantics, intensity, and temporal scope without fixed schemas or stepwise controls [15]. However, recent studies of multimodal time series forecasting typically use text to describe temporal patterns [9, 20], provide domain metadata [16, 22], or sup-ply contextual signals such as news and events [21, 38–40]. In these methods, text provides predictive context rather than specifying arXiv:2610.34797v1 [cs.LG] 26 Oct 2026 Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Hang Ni, Weijia Zhang, & Hao Liu 
+
+interventions whose effects must be modeled. We therefore investi-gate multimodal TSWMs that condition future temporal dynamics on textual actions. Early efforts in multimodal TSWMs rely on synthetic data for counterfactual ground truth [11] or limit evaluation to a single do-main [44]. To address these gaps, we first introduce TSWM-Bench ,a benchmark for multimodal TSWMs spanning seven real-world datasets across economic, physical, and healthcare domains, with interventions ranging from price adjustments to medical treatments. Each instance pairs a univariate history and its observed future with textual action and context descriptions derived from source records. Table 1 compares its coverage with existing benchmarks. We evaluate history-only TSFMs, representative multimodal fore-casters, and covariate-aware TSWMs to examine their capabilities for action-conditioned prediction. Our results reveal that exist-ing multimodal forecasting methods consistently underperform history-only TSFMs despite dataset-specific training. By contrast, simple text-prefix adaptations of TSFMs improve forecasting accu-racy across all evaluated backbones and even outperform covariate-aware TSWMs. These findings motivate a new route to world mod-eling: reusing pretrained world-dynamics priors while learning how textual actions reshape future states .However, effectively adapting pretrained TSFMs to multimodal TSWMs presents two critical challenges: (1) Action Grounding. Incor-porating textual actions requires explicitly translating intervention semantics into state-dependent changes to the predictive dynam-ics encoded by pretrained TSFMs. Existing multimodal forecasters typically fuse textual and temporal representations directly, compli-cating cross-modal interpretation [30] while leaving fine-grained action effects on local temporal patterns implicit. Consequently, cap-turing meaningful intervention responses and their state-dependent evolution remains challenging. (2) Action Discrimination. Even with action grounding, forecasts may remain dominated by pretrained dynamics, obscuring action-specific responses. Forecasting loss alone provides limited supervision for action–response alignment, as it evaluates factual outcomes without comparing responses to alternative actions under the same history. This requires additional supervision for action discrimination to ensure that predictions faithfully reflect the specified intervention. To address these challenges, we further propose TimeWorld ,a plug-in framework for building action-conditioned time series world models from pretrained TSFMs. For action grounding, Prototype-Guided Latent Modulation (PLM) constructs a bank of representative temporal response prototypes and adaptively composes them ac-cording to the specified action, forecast interval, and temporal state. The resulting responses modulate future hidden states within a compact latent subspace, preserving the pretrained temporal com-ponents. For action discrimination, Action Contrastive Learning (ACL) uses large language models (LLMs) to construct alternative interventions under the same history and applies contrastive su-pervision to their latent updates. This strengthens action–response alignment while preserving relative intensity relationships. Context-enhanced Temporal Modeling (CTM) further incorporates textual system context through lightweight prefix conditioning. Exten-sive experiments demonstrate the effectiveness and generality of TimeWorld across diverse domains and TSFM backbones. 
+
+Table 1: Comparison of benchmarks.                                  
+
+> Study Action-Conditioned Action Format Real-world Action Multi-domain
+> Multimodal TSF
+> Time-MMD [21] %––"
+> CiK [39] %––"
+> Structured TSWM
+> MobiWM [32] "Covariates %%
+> CEDAR [27] "Covariates "%
+> Zhang et al. [46] "Covariates ""
+> Multimodal TSWM
+> TADiff [11] "Text %"
+> ReasonCast [44] "Text "%
+> TSWM-Bench "Text ""
+
+Our main contributions are threefold: (1) We introduce TSWM-Bench, the first cross-domain benchmark for multimodal TSWMs with textual interventions grounded in real-world action–outcome records. (2) We propose TimeWorld, a general framework that augments pretrained TSFM dynamics through PLM-based action grounding and ACL-based discrimination. (3) Extensive experi-ments demonstrate consistent improvements over strong baselines across diverse domains and TSFM backbones. 
+
+## 2 Related Work 
+
+In this section, we review time series foundation models, multi-modal forecasting, and time series world models. 
+
+Time Series Foundation Models. Large-scale pretraining en-ables TSFMs to acquire transferable world knowledge of temporal evolution across datasets [8, 29]. Existing approaches primarily follow two forecasting paradigms. Autoregressive models generate future patches sequentially, allowing flexible prediction horizons but potentially accumulating errors over long rollouts [19, 23, 34]. 
+
+Masked-future models instead predict future patches jointly from historical observations and masked placeholders, enabling parallel inference without recursive error propagation [1, 14, 17]. Despite this implicit knowledge of system dynamics, these models lack mechanisms to ground textual actions in state-dependent changes to future trajectories. 
+
+Multimodal Time Series Forecasting. Multimodal forecasting enriches numerical observations with textual context, exploiting complementary semantic information to improve predictive accu-racy. Text serves varied roles: early efforts use task descriptions 
+
+to formulate forecasting as language generation [42], summarize 
+
+temporal patterns to expose numerical structure [9, 20], or provide 
+
+domain metadata to contextualize heterogeneous series [16, 22, 50]. Beyond describing the task or series, predictive context supplies supplementary information correlated with future observations but unavailable in numerical histories, including retrospective reports and news [21, 38], event announcements [48], and prospective conditions or constraints [11, 39]. Multimodal foundation mod-els further learn transferable numerical–textual representations through shared pretraining, extending context-aware forecasting across datasets [6, 7, 36, 40]. However, predominantly using text TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+as passive predictive context leaves the causal effects of actively planned interventions insufficiently modeled, motivating the shift toward action-conditioned simulation. 
+
+Time Series World Models. World models for control [12] and interactive video generation [5] motivate modeling temporal evolu-tion for prediction and planning. Inspired by video joint-embedding prediction [2], latent predictive modeling forecasts future represen-tations before decoding observations, but does not condition state transitions on actions [24, 43]. Although multimodal extensions incorporate contextual information [7, 52], they still do not ex-plicitly model how controllable actions alter temporal state tran-sitions. In contrast, early action-conditioned approaches use struc-tured treatments for counterfactual prediction or clinical policy learning [26, 37, 41]. Recent TSWMs encode actions as numeri-cal or categorical covariates: base-station power and antenna set-tings [32], advertising budgets [27], or engineering controls and treatment doses [46]. These formulations restrict actions to domain-specific schemas and may omit intervention details. Language offers a flexible interface without prescribing a unique control sequence, motivating text-conditioned multimodal TSWMs . For example, TAD-iff [11] forecasts under alternative textual conditions through text-attributive diffusion, but its real-data evaluation concerns descrip-tive conditions and semantic consistency rather than recorded ac-tion effects, with ground-truth counterfactual trajectories confined to synthetic data. ReasonCast [44] translates textual actions into semantic interventions through agentic reasoning, but focuses on e-commerce demand. A comprehensive multimodal TSWM bench-mark grounded in real action–outcome records across domains remains missing. We fill this gap with TSWM-Bench and introduce TimeWorld, which extends pretrained predictive dynamics to tex-tual interventions through prototype-guided latent updates and contrastive discrimination. 
+
+## 3 TSWM-Bench 
+
+This section introduces TSWM-Bench, a benchmark for evaluating action-conditioned multimodal time series forecasting. 
+
+## 3.1 Task Formulation 
+
+Given 𝐿 historical observations of a univariate time series x =
+
+(𝑥 𝑡 −𝐿 +1, . . . , 𝑥 𝑡 ) ∈ R𝐿 , textual context 𝑐 describing the system, and a textual action 𝑎 specifying an intervention and its temporal scope, the task is to learn a world model F that predicts the next 𝐻 values 
+
+y = (𝑥 𝑡 +1, . . . , 𝑥 𝑡 +𝐻 ) ∈ R𝐻 under the specified action, formulated as by = F ( x, 𝑐, 𝑎 ).
+
+## 3.2 Datasets 
+
+TSWM-Bench comprises seven real-world datasets spanning three significant domains: economics, physical systems, and healthcare. In economics , M5 [25] pairs daily item-level retail sales with recorded changes in weekly average selling prices. MOF [28] links Japan’s foreign-exchange interventions, specifying traded currencies, trans-action direction, and amount, to subsequent yen-per-dollar ex-change rates. FOMC [4] pairs U.S. monetary policy statements with subsequent two-year Treasury yields. In physical systems , Causal Chambers [10] records downstream air pressure in a wind tunnel under changes in inlet fan load. DaISy [3] pairs changes in liquid 
+
+Table 2: Averaged forecasting performance across seven datasets. Rank is the mean rank over the three metrics. The best and second-best results in each column are shown in red and blue, respectively.                                                                             
+
+> Model nMAE ↓nRMSE ↓MASE ↓Rank ↓
+> TimesFM 3.0 1.0540 1.2087 3.5023 8.33
+> Chronos-2 1.0237 1.1695 3.4948 5.00
+> Toto 2.0 1.0257 1.1730 3.4923 5.33
+> Moirai 2.0 1.0329 1.1759 3.4996 7.00
+> Time-LLM 1.4213 1.5774 4.6371 12.67
+> MM-TSFlib 1.1301 1.2530 3.8602 11.00
+> TimeCMA 1.4410 1.6115 5.3578 14.33
+> TADiff 1.4515 1.6465 5.0358 14.67
+> ChatTime 1.3114 1.4571 4.6900 12.33
+> Aurora 1.1108 1.2301 3.7131 10.00
+> CovTSWM 1.0583 1.1930 3.6517 8.67
+> TSFM++ /TimesFM 3.0 0.9983 1.1116 3.3634 1.00 TSFM++ /Chronos-2 1.0140 1.1135 3.4107 2.33 TSFM++ /Toto 2.0 1.0310 1.1603 3.4827 4.67
+> TSFM++ /Moirai 2.0 1.0121 1.1298 3.4428 2.67
+
+flow through a heat exchanger with its outlet temperature mea-surements. In healthcare , Shanghai Diabetes [51] links continuous glucose measurements to clinical records of meals, non-insulin med-ication, and insulin administration. For HUPA-UCM [13], we use raw FreeStyle glucose records at approximately 15-minute inter-vals, paired with recorded carbohydrate intake and insulin doses in people with type 1 diabetes. We construct each instance by aligning recorded interventions with preceding time series histories and subsequent observations, consolidating simultaneous operations into a single action where applicable. We then generate textual action descriptions from source records: FOMC retains its original policy statements, while the other datasets use standardized templates that preserve intervention de-tails and timing. System-level context is constructed separately using only information available at the forecast origin. These com-ponents are organized into a unified sample format across datasets, providing a consistent interface for textual action conditioning. Fi-nally, dataset-specific preprocessing and validation ensure temporal consistency, filter incomplete action records and invalid observa-tions, and produce well-aligned action–outcome samples. 
+
+## 3.3 Evaluation Protocol 
+
+Baselines. We evaluate four classes of baselines, covering zero-shot forecasting and dataset-specific training: (1) Time Series Foundation Models (TSFMs) : TimesFM 3.0 [14], Chronos-2 [1], Toto 2.0 [17], and Moirai 2.0 [19] provide zero-shot forecasts from numerical histories, establishing the performance of pretrained temporal mod-els without action information. (2) Multimodal Time Series Models :Time-LLM [16], MM-TSFlib from Time-MMD [21], TimeCMA [20], and TADiff [11] are trained on each dataset to evaluate task-specific numerical–textual integration for action-conditioned forecasting. (3) Multimodal TSFMs : ChatTime [36] and Aurora [40] are evaluated zero-shot to assess whether pretrained multimodal representations Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Hang Ni, Weijia Zhang, & Hao Liu 
+
+transfer to textual action conditioning. (4) Covariate-aware TSWM :CovTSWM (our name for the method in [46] ) is trained on each dataset with an adapted covariate schema that encodes recorded actions as structured controls. We use the best-performing mod-ule combinations for the modular frameworks: MM-TSFlib and CovTSWM, with implementation details in Appendix A. All text-capable baselines receive equivalent context and action information through their respective input interfaces. 
+
+Metrics. We report normalized mean absolute error (nMAE) and normalized root mean squared error (nRMSE), scaled by the stan-dard deviation of each input history, and mean absolute scaled error (MASE), scaled by its mean absolute lag-one difference, with lower values indicating better forecasts. All scales use observed historical values only, and zero-scale instances are excluded rather than assigned zero error (Appendix B). Additional implementation details appear in Section 5.1. 
+
+## 3.4 Benchmark Findings 
+
+Table 2 shows that both dataset-trained multimodal models and zero-shot multimodal foundation models have higher aggregate errors than history-only TSFMs, suggesting that access to textual actions alone does not ensure effective forecasting. CovTSWM achieves lower errors than these multimodal baselines across all three metrics, supporting the effectiveness of explicit action model-ing. Yet it remains less accurate than the strongest TSFMs, under-scoring the predictive value of pretrained world-dynamics knowl-edge. These findings raise a central question for world modeling: 
+
+can pretrained TSFMs build on their implicit world dynamics to ex-plicitly model how textual actions shape future trajectories ?We thereby introduce TSFM++, a dataset-specific adaptation applicable to each evaluated TSFM that prepends projected context and action embeddings to its time series tokens (illustrated in Sec-tion 4.1). We denote backbone-specific variants by TSFM++ / backbone .As shown in Table 2, action-prefix adaptation generally reduces aggregate errors, although the gains vary across backbones and Toto 2.0 does not improve in nMAE. These results suggest that textual actions can refine pretrained predictive dynamics, moti-vating TimeWorld’s explicit action-dependent latent updates, as detailed in Section 4. Additional results in Appendix F highlight the advantage of textual action conditioning, with TSFM++ out-performing TimesFM 3.0 using native structured covariates under both zero-shot and fine-tuning settings. 
+
+## 4 TimeWorld 
+
+Figure 1 illustrates the overall architecture of TimeWorld. First, 
+
+Context-enhanced Temporal Modeling (CTM) incorporates textual context into a pretrained TSFM to obtain context-aware temporal representations. Next, Prototype-Guided Latent Modulation (PLM) 
+
+learns a bank of temporal response prototypes and adaptively uses them to update the TSFM hidden states according to the speci-fied action. The original TSFM prediction head then decodes these action-adjusted states into future values. To complement the fore-casting loss, Action Contrastive Learning (ACL) further guides the latent updates to distinguish action types and preserve the ordering of action intensities. 
+
+## 4.1 Context-enhanced Temporal Modeling 
+
+To leverage implicit world knowledge of temporal dynamics, we build TimeWorld upon a pretrained TSFM consisting of three main components: a patch encoder Enc, a temporal backbone Backbone, and a prediction head Dec. Given a historical time series x of length 𝐿 , the patch encoder divides it into patches of length 𝐿 in and maps them into embeddings 
+
+E = Enc (x) ∈ R𝑁 ×𝐷 , where 𝑁 = ⌈𝐿 /𝐿 in ⌉ is the number of input patches and 𝐷 is the hidden dimension. To capture domain-specific dynamics that may not be identifiable from numerical observations alone, we additionally introduce textual context 𝑐 . Specifically, a pretrained text embedding model TextEnc 𝑐 encodes 𝑐 into a vector, which is projected into the TSFM hidden space by a lightweight adapter Adapt 𝑐 comprising two linear layers and a GELU activa-tion: c = Adapt 𝑐 (TextEnc 𝑐 (𝑐 )) ∈ R𝐷 . We prepend this context embedding as an additional token to the numerical patch sequence, obtaining E𝑐 = [c; E] ∈ R(𝑁 +1) × 𝐷 , which is processed by the tem-poral backbone using its native forecasting mechanism. For a forecasting horizon of 𝐻 time steps, the TSFM predicts 𝑁 f =
+
+⌈𝐻 /𝐿 out ⌉ future patches of length 𝐿 out , each associated with a hid-den state g𝑘 ∈ R𝐷 , where 𝑘 = 1, . . . , 𝑁 f indexes future patches. Dif-ferent TSFM architectures obtain these states through distinct fore-casting paradigms. Autoregressive models generate future patches sequentially, using previously predicted patches to compute the next hidden state: g𝑘 = Backbone ([ E𝑐 ; Enc (by<𝑘 )]) last , where by<𝑘 
+
+denotes the preceding predicted patches and the subscript last selects the final hidden state. In contrast, masked-future models obtain all future hidden states jointly by appending 𝑁 f masked tokens Emask ∈ R𝑁 f ×𝐷 , which is formulated as [g1; . . . ; g𝑁 f ] =
+
+Backbone ([ E𝑐 ; Emask ]) future , where future selects the hidden states at the masked future positions. In either paradigm, the TSFM yields context-aware but action-unaware future states g𝑘 , which our sub-sequent PLM module updates into action-conditioned states eg𝑘 .They are finally decoded by the prediction head as by𝑘 = Dec (eg𝑘 ).For comparison, TSFM++, the action-prefix baseline in Section 3.4, directly prepends adapted embeddings of both context and action to the numerical patch sequence, without PLM or ACL modules. 
+
+## 4.2 Prototype-Guided Latent Modulation 
+
+To ground textual interventions in pretrained world dynamics, PLM 
+
+composes temporal response prototypes as building blocks to modu-late the TSFM hidden states. It consists of two components: (1) Tem-poral Prototype Construction , which builds a bank of representative temporal patterns, and (2) Patch-wise Modulation , which adaptively combines these prototypes to produce action-dependent latent up-dates for future forecasts. 
+
+4.2.1 Temporal Prototype Construction. To capture diverse inter-vention effects, we construct 𝑁 p reference curves representing typi-cal temporal responses ( e.g. , steps, ramps, pulses) with variations in onset, duration, and rate. Each curve is normalized and resampled to the input patch length 𝐿 in , yielding xref  
+
+> 𝑚
+
+∈ R𝐿 in . We encode each curve as a single patch using TSFM’s frozen patch encoder and temporal backbone, followed by a trainable two-layer projection: 
+
+p𝑚 = Proj 
+
+
+
+Backbone (Enc (xref  
+
+> 𝑚
+
+)) 
+
+
+
+∈ R𝑅 , 𝑚 = 1, . . . , 𝑁 p, (1) TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Inputs Context-enhanced Temporal Modeling (CTM) 
+
+> Historical Time Series
+
+𝐱 𝐭"𝐋$𝟏:𝐭  
+
+> Textual Context
+
+𝑐  
+
+> Textual Action
+
+𝑎 
+
+> Patch Encoder
+
+⋯
+
+> Patch Embeds
+> Context Embed
+
+⋮
+
+> Temporal Backbone Action Adapter
+> Daily food-item sales at store TX_2, Texas. Previous weekly price: $3.00/item. Weekly average price drops from $3.00 to $2.25 ( −25%) for days 1–7.
+> Text Encoder Context Adapter Text Encoder
+> N+1 Tokens Concat
+> Future Hidden Embeds
+
+⋮
+
+Prototype-Guided Latent Modulation (PLM) 
+
+> Reference Temporal Response Curves
+
+⋯     
+
+> Step Ramp Pulse Decay noise
+> Action Embeds 𝐀
+
+⋯     
+
+> Future Embed 𝐠 𝐤
+> Interval Embed 𝐛 𝐤
+> Attn
+> Patch Encoder Temporal Backbone
+> Prototype Bank
+> QKV
+> Action Summary 𝐮 𝐤
+> Interval Embed 𝐛 𝐤
+> Orthogonal Proj (Down)
+> Subspace Embed 𝐳 𝐤
+> Attn
+
+⋯        
+
+> Orthogonal Proj (Up) Fusion
+> Scale 𝛾 𝐤
+> QKV
+> Prototype Mixture (𝐩 "
+> Proj Joint Embed 𝐨 𝐤 Shift 𝛽 𝐤
+> Modulate
+> Latent Update Future Embed 𝐠 𝐤
+> 2.1. Patch-aware Action Retrieval 2.2. Prototype Composition 2.3. Residual State Update
+> 𝐠 𝟏
+> 𝐠 𝐍 𝐟
+
+Action Type Variations Action Intensity Variations           
+
+> 𝑎 %: Price drops from $3.00 to $2.25 only for days 4–7.
+> 𝑎 &: Price drops from $3.00 to $2.25 for days 1–2, then returns to $3.00.
+> 𝑎 %: Weekly average price drops from $3.00 to ≈$2.52 (−15.94%) for days 1–7.
+> 𝑎 &: Weekly average price drops from $3.00 to ≈$1.82 (−39.21%) for days 1–7.
+
+⋯
+
+> LLM
+
+𝑎 !
+
+⋯
+
+1. Counterfactual Action Construction  
+
+> Action Type Discrimination Intensity Rank Preservation ℒrank
+
+< <
+
+𝑎 !
+
+𝑎 "
+
+𝑎 # 
+
+> Action Adapter Text Encoder
+> Proj PLM PLM PLM
+
+⋯ Future Hidden Embeds 𝐠 𝟏 , … , 𝐠 𝐍 𝐟         
+
+> Action Adapter Text Encoder Action Adapter Text Encoder
+> AttnPool AttnPool Attn Pool
+> Avg Pool Avg Pool Avg Pool
+> Pooled Latent Update
+> 𝛿 𝐤
+> Modulated Embed .𝐠 "̅𝛿 '̅𝛿 (̅𝛿 )
+> 𝐯 𝟎 𝐚
+> 𝐯 𝟏 𝐚
+> 𝐯 𝟐 𝐚
+> Proj Proj Proj Proj Proj
+> 𝐯 𝟎 𝐫
+> 𝐯 𝟏 𝐫
+> 𝐯 𝟐 𝐫 𝐯 𝟎 𝐫
+> ℒtype
+> 𝐯 𝟏 𝐫 𝐯 𝟐 𝐫
+
+2. Contrastive Supervision 
+
+Action Contrastive Learning (ACL) 
+
+> Prediction Head
+
+"𝐲 = " 𝐱 ($):*$+ 
+
+𝐲 = 𝐱 𝐭$𝟏:,  
+
+> Prediction Ground-truths ℒpred
+
+Training Objective:     
+
+> ℒ=ℒpred + 𝜆 3ℒtype + 𝜆 4ℒrank
+
+1. Temporal Prototype Construction 
+
+Figure 1: Overview of TimeWorld. 
+
+where Backbone returns the single-patch hidden state, and 𝑅 < 𝐷 
+
+is the dimension of the latent update subspace introduced below. The resulting prototype bank P = [p1; . . . ; p𝑁 p ] ∈ R𝑁 p ×𝑅 provides reusable temporal prototype representations for action-conditioned future modulation. 
+
+4.2.2 Patch-wise Modulation. To preserve pretrained knowledge of temporal evolution while accommodating action-induced devia-tions, we constrain latent updates to an 𝑅 -dimensional learnable subspace. This subspace is spanned by an orthonormal basis matrix 
+
+Q ∈ R𝐷 ×𝑅 satisfying Q⊤Q = Id 𝑅 , where Id 𝑅 is the 𝑅 -dimensional identity matrix. The basis is obtained through differentiable re-duced QR decomposition of a trainable matrix 𝚯 ∈ R𝐷 ×𝑅 . For each future patch, modulation involves three steps: retrieving relevant action information, composing prototypes based on the action and temporal state, and applying a residual update. 
+
+Patch-aware Action Retrieval. An action description may specify operations, magnitudes, and timing that affect different forecast intervals. To selectively retrieve such information, we retain the token-level representations TextEnc 𝑎 (𝑎 ) from the pretrained text encoder, rather than the pooled context representation used in 
+
+CTM . A two-layer adapter Adapt 𝑎 produces TSFM-aligned action embeddings A = Adapt 𝑎 (TextEnc 𝑎 (𝑎 )) ∈ R𝑁 a ×𝐷 , where 𝑁 a is the number of action tokens. For future patch 𝑘 , we encode its start and end steps (start 𝑘 , end 𝑘 )
+
+relative to the forecast origin using sinusoidal features and a lin-ear projection, obtaining an interval embedding b𝑘 ∈ R𝐷 . Com-bining this embedding with the normalized temporal state ¯ g𝑘 =
+
+LayerNorm (g𝑘 ), we retrieve relevant action information through cross-attention: 
+
+u𝑘 = Attn (Linear (¯g𝑘 ) + b𝑘 , A) ∈ R𝐷 , (2) where Linear is a trainable 𝐷 -dimensional projection, and Attn denotes cross-attention with trainable query, key, and value projec-tions. The resulting u𝑘 summarizes action information relevant to the prediction interval of patch 𝑘 .
+
+Prototype Composition. Since the response to an action also depends on the current temporal dynamics, we combine the re-trieved action information with the hidden state to select relevant prototypes. We first project g𝑘 onto the learned subspace, obtaining its coordinates z𝑘 = Q⊤g𝑘 ∈ R𝑅 in the orthonormal basis Q. A two-layer MLP then integrates the subspace coordinates, action in-formation, and interval embedding: o𝑘 = MLP ([ z𝑘 ; u𝑘 ; b𝑘 ]) ∈ R𝐷 .Using this joint representation as the query, we retrieve a weighted mixture of temporal prototypes: ¯p𝑘 = Attn (o𝑘 , P) ∈ R𝑅 , (3) where a separate cross-attention layer adaptively combines the prototypes according to the action and temporal state. 
+
+Residual State Update. To flexibly adjust the selected response patterns, two linear heads map o𝑘 to a signed scale 𝜸 𝑘 ∈ R𝑅 and an additive shift 𝜷 𝑘 ∈ R𝑅 . The resulting update is mapped back to the TSFM hidden space and added to the original state: 
+
+𝜹 𝑘 = Q(𝜸 𝑘 ⊙ ¯p𝑘 + 𝜷 𝑘 ), eg𝑘 = g𝑘 + 𝜹 𝑘 , (4) where ⊙ denotes element-wise multiplication. The signed scale controls the strength and direction of prototype contributions, while the shift provides additional state-dependent adjustments. Since 
+
+𝜹 𝑘 lies in the subspace spanned by Q, the update preserves the Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Hang Ni, Weijia Zhang, & Hao Liu 
+
+orthogonal component of the original hidden state. The adjusted states {eg𝑘 }𝑁 f 
+
+> 𝑘 =1
+
+are decoded by the original prediction head Dec, giving final predictions {by𝑘 }𝑁 f
+
+> 𝑘 =1
+
+.
+
+## 4.3 Action Contrastive Learning 
+
+While PLM achieves fine-grained action grounding, learning from factual actions alone may still be dominated by history patterns and overlook the specific characteristics of the given action. To strengthen action sensitivity, ACL explicitly contrasts the latent up-dates induced by alternative actions under the same history and con-text. It consists of two components: (1) Counterfactual Action Con-struction , which generates variations in action type and intensity, and (2) Contrastive Supervision , which distinguishes action-specific responses and preserves their relative intensity relationships. 
+
+4.3.1 Counterfactual Action Construction. We construct two groups of alternative actions that vary in type or intensity, both including the factual action. To distinguish these candidates, we index the actions and write the original factual action 𝑎 as 𝑎 (0) . For type variations, an LLM first summarizes the action categories in each dataset’s training split according to their operations or temporal policies. Given a factual action, it then selects 𝑁 t distinct categories other than the factual category and jointly generates one alterna-tive per category, forming {𝑎 (𝑖 ) }𝑁 t
+
+> 𝑖 =0
+
+. For intensity variations, we randomly assign the factual action a rank 𝜌 (0) ∈ { 0, . . . , 𝑁 s } among 
+
+𝑁 s + 1 levels ordered from weakest to strongest, and sample a per-centage change between adjacent levels. Given this rank and per-centage, the LLM jointly generates 𝑁 s alternatives by progressively decreasing intervention magnitudes below the factual rank and increasing them above it, while retaining the action type. Together with the unchanged factual action, these alternatives form {𝑎 (𝑖 ) }𝑁 s
+
+> 𝑖 =0
+
+.In both cases, generation preserves the factual description’s for-mat and all content unrelated to the intended variation. Further construction and validation details are provided in Appendix C. 
+
+4.3.2 Contrastive Supervision. Since alternative actions share the same historical observations and context, their hidden states may be dominated by common temporal information rather than action-specific effects. We therefore apply contrastive supervision directly to the latent updates from PLM , defined as 𝜹 (𝑖 ) 
+
+> 𝑘
+
+= eg(𝑖 ) 
+
+> 𝑘
+
+− g(𝑖 ) 
+
+> 𝑘
+
+for the 
+
+𝑖 -th action and 𝑘 -th future patch. 
+
+Latent Response Aggregation. To capture each action’s overall effect across the forecast horizon, we aggregate its patch-level latent updates through attention-weighted pooling: ¯𝜹 (𝑖 ) =
+
+> 𝑁 f
+
+∑︁ 
+
+> 𝑘 =1
+
+𝜔 (𝑖 ) 
+
+> 𝑘
+
+𝜹 (𝑖 ) 
+
+> 𝑘
+
+, 𝜔 (𝑖 ) 
+
+> 𝑘
+
+= softmax 𝑘 (w⊤𝜹 (𝑖 ) 
+
+> 𝑘
+
++ log 𝜅 𝑘 ), (5) where w ∈ R𝐷 is trainable, 𝜅 𝑘 denotes the valid fraction of patch 𝑘 
+
+excluding padding, and softmax 𝑘 normalizes weights across future patches. We also obtain an action representation ¯ a(𝑖 ) by averaging the valid token embeddings in A(𝑖 ) . The pooled action and latent response representations are projected into a shared embedding space and ℓ2-normalized: 
+
+va 
+
+> 𝑖
+
+= Norm (Proj a (¯a(𝑖 ) )) , vr 
+
+> 𝑖
+
+= Norm (Proj r ( ¯𝜹 (𝑖 ) )) , (6) where Proj a and Proj r are trainable linear projections to the same dimension, and Norm denotes ℓ2 normalization. 
+
+Action Type Discrimination. To distinguish the effects of dif-ferent action types, we align each action embedding with its cor-responding latent response while separating it from responses to alternative actions. For the 𝑁 t + 1 actions contrasted by type, we define the action-response similarity as 𝜉 t 
+
+> 𝑖,𝑖 ′
+
+= (va 
+
+> 𝑖
+
+)⊤vr 
+
+> 𝑖 ′
+
+/𝜏 t, where 
+
+𝑖 indexes the action, 𝑖 ′ indexes the response, and 𝜏 t > 0 is the temperature. We adopt a bidirectional contrastive objective: 
+
+Ltype = − 12(𝑁 t + 1)
+
+> 𝑁 t
+
+∑︁ 
+
+> 𝑖 =0
+
+log exp (2𝜉 t 
+
+> 𝑖,𝑖
+
+)(Í𝑁 t 
+
+> 𝑖 ′=0
+
+exp (𝜉 t 
+
+> 𝑖,𝑖 ′
+
+))( Í𝑁 t 
+
+> 𝑖 ′=0
+
+exp (𝜉 t 
+
+> 𝑖 ′,𝑖
+
+)) .
+
+(7) The two terms enforce action-to-response and response-to-action matching, respectively, using other action types under the same observations as negatives. 
+
+Intensity Rank Preservation. Unlike distinct action types, inten-sity variations have an inherent ordering that should be reflected in their latent responses. Inspired by Rank-N-Contrast [45], we encourage responses with closer intensity ranks to exhibit greater similarity. For the 𝑁 s + 1 actions ordered by intensity, let 𝜌 (𝑖 )
+
+denote the intensity rank of 𝑎 (𝑖 ) , and define the rank distance dist 𝑖,𝑖 ′ = |𝜌 (𝑖 ) − 𝜌 (𝑖 ′ ) | and response similarity 𝜉 s 
+
+> 𝑖,𝑖 ′
+
+= −∥ vr 
+
+> 𝑖
+
+− vr 
+
+> 𝑖 ′
+
+∥2/𝜏 s,where 𝜏 s > 0 is the temperature. For each anchor 𝑖 and candidate 𝑖 ′,the comparison set S𝑖,𝑖 ′ = {𝑖 ′′ ∈ { 0, . . . , 𝑁 s } \ { 𝑖 } : dist 𝑖,𝑖 ′′ ≥ dist 𝑖,𝑖 ′ }
+
+contains candidates with equal or greater rank distances. The rank-ing objective is 
+
+Lrank = − 1
+
+(𝑁 s + 1)𝑁 s
+
+> 𝑁 s
+
+∑︁ 
+
+> 𝑖 =0
+> 𝑁 s
+
+∑︁ 
+
+> 𝑖 ′=0
+> 𝑖 ′≠𝑖
+
+log exp (𝜉 s 
+
+> 𝑖,𝑖 ′
+
+)
+
+Í𝑖 ′′ ∈ S 𝑖,𝑖 ′ exp (𝜉 s 
+
+> 𝑖,𝑖 ′′
+
+) . (8) This preserves relative intensity relationships in the latent updates without assuming a fixed direction of state change. 
+
+## 4.4 Model Optimization 
+
+For a single instance, we jointly optimize factual forecasting accu-racy and the two counterfactual contrastive objectives: 
+
+L = Lpred + 𝜆 t Ltype + 𝜆 s Lrank , (9) where 𝜆 t, 𝜆 s ≥ 0 balance the contrastive objectives; the full training objective averages L over all training instances. The forecasting loss is Lpred = 1
+
+> 𝐻𝜎 2
+> x
+
+Í𝐻 𝑗 =1 (b𝑦 𝑗 − 𝑦 𝑗 )2, where 𝑗 indexes forecast steps and 𝜎 x is the historical standard deviation. The pretrained TSFM and text encoders TextEnc 𝑐 , TextEnc 𝑎 remain frozen, while the adapters, 
+
+PLM , and contrastive projections are jointly optimized. Appendix G further examines whether fine-tuning the TSFM yields additional gains. Counterfactual branches and contrastive projections are used only during training, adding no inference overhead. The computa-tional complexity is detailed in Appendix D. 
+
+## 5 Experiments 5.1 Experimental Setup 
+
+Datasets. We use fixed chronological train/validation/test splits targeting a 60%/ 20%/20% ratio. History lengths 𝐿 and forecast hori-zons 𝐻 reflect each dataset’s sampling frequency and intervention timescale. Except for Causal Chambers, each dataset has two (𝐿, 𝐻 )
+
+settings, whose performance is averaged. Detailed descriptions of datasets are provided in Appendix E. TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+Table 3: Comparison results of four TSFM backbones. Vanilla performs zero-shot forecasting by TSFMs, and Overall averages the 13 settings across seven datasets. The best and second-best results of each metric are shown in red and blue, respectively. Underlining marks the best result for each TSFM backbone. Dataset Metric TimesFM 3.0 Chronos-2 Toto 2.0 Moirai 2.0 Vanilla TSFM++ TimeWorld Vanilla TSFM++ TimeWorld Vanilla TSFM++ TimeWorld Vanilla TSFM++ TimeWorld M5 nMAE 1.1612 0.9658 0.9803 0.8784 1.0204 0.9829 0.8705 0.9255 0.9917 0.8602 0.9788 1.0219 
+
+nRMSE 1.7597 1.3084 1.2997 1.4231 1.2914 1.2991 1.4190 1.3742 1.3102 1.4071 1.3476 1.3002 
+
+MASE 2.4538 2.0766 2.1151 1.9042 2.2255 2.1294 1.8886 1.9649 2.0875 1.8606 2.1473 2.1837 
+
+MOF nMAE 0.7793 0.7787 0.8153 0.8019 0.7569 0.7347 0.7673 0.7908 0.7638 0.7235 0.7414 0.7527 
+
+nRMSE 0.8066 0.8012 0.8402 0.8286 0.7845 0.7604 0.7958 0.8178 0.7923 0.7488 0.7677 0.7772 
+
+MASE 3.2255 3.2568 3.4272 3.3110 3.0944 3.0290 3.1208 3.1972 3.1621 3.0477 3.1069 3.1953 
+
+FOMC nMAE 0.9576 0.9530 0.9458 0.9239 0.9177 0.9143 0.8857 0.9008 0.8986 0.9293 0.9223 0.9059 
+
+nRMSE 0.9810 0.9750 0.9718 0.9480 0.9400 0.9382 0.9132 0.9266 0.9247 0.9533 0.9455 0.9316 
+
+MASE 2.5115 2.5069 2.4799 2.3817 2.3699 2.3408 2.2863 2.3335 2.3314 2.3935 2.3728 2.3112 Causal Chambers nMAE 4.4275 4.4563 3.2116 4.5003 4.6659 4.4761 4.7793 4.7962 4.0175 4.8220 4.5824 4.1415 
+
+nRMSE 4.7647 4.8067 3.6509 4.8322 4.9809 4.7993 5.1062 5.1089 4.3950 5.1251 4.9205 4.4478 
+
+MASE 13.2580 13.3632 9.3159 13.8178 14.2030 13.6584 14.6407 14.6188 12.1117 14.6040 14.1977 12.4113 
+
+DaISy nMAE 0.4025 0.2971 0.2289 0.4191 0.2843 0.2437 0.3957 0.3536 0.2430 0.4212 0.3348 0.2506 
+
+nRMSE 0.4025 0.2971 0.2289 0.4191 0.2843 0.2437 0.3957 0.3536 0.2430 0.4212 0.3348 0.2506 
+
+MASE 0.9123 0.6732 0.5183 0.9495 0.6439 0.5522 0.8966 0.8018 0.5507 0.9544 0.7595 0.5661 
+
+Shanghai Diabetes nMAE 0.7221 0.6725 0.6662 0.7368 0.6703 0.6418 0.7383 0.7054 0.6866 0.7212 0.6907 0.6563 nRMSE 0.7978 0.7435 0.7360 0.8129 0.7405 0.7091 0.8166 0.7774 0.7565 0.7971 0.7624 0.7240 MASE 3.9093 3.6565 3.6637 3.9866 3.6276 3.4871 3.9903 3.8338 3.7984 3.8950 3.7245 3.5913 HUPA-UCM nMAE 0.6148 0.5939 0.6057 0.6441 0.6083 0.6023 0.6197 0.6276 0.5923 0.6474 0.6193 0.6048 
+
+nRMSE 0.7264 0.6969 0.7181 0.7540 0.7069 0.7022 0.7308 0.7380 0.6972 0.7536 0.7256 0.7063 
+
+MASE 3.1235 3.0106 3.0610 3.2746 3.1067 3.0698 3.1974 3.1969 3.0060 3.2944 3.1684 3.1117 
+
+Overall nMAE 1.0540 0.9983 0.8997 1.0237 1.0140 0.9781 1.0257 1.0310 0.9515 1.0329 1.0121 0.9635 
+
+nRMSE 1.2087 1.1116 1.0185 1.1695 1.1135 1.0850 1.1730 1.1603 1.0648 1.1759 1.1298 1.0636 MASE 3.5023 3.3634 3.0651 3.4948 3.4107 3.2981 3.4923 3.4827 3.2295 3.4996 3.4428 3.2562 
+
+Hyperparameters. We retain each TSFM’s native input and output patch lengths 𝐿 in , 𝐿 out and hidden dimension 𝐷 . We set the mod-ulation subspace dimension to 𝑅 = 32 and use 𝑁 p = 24 temporal prototypes, with 𝑁 t = 𝑁 s = 5 alternatives for action type and inten-sity, respectively. The type and intensity contrastive objectives use temperatures 𝜏 t = 0.1 and 𝜏 s = 0.2 and loss weights 𝜆 t = 𝜆 s = 0.01. The text adapters have a hidden width of 256, while the contrastive projections map to a shared 128-dimensional space. 
+
+Training Configurations. We encode text with Qwen3-Embedding-4B [47] and generate counterfactual actions with GPT-6 Luna [31]. TSFM++ and TimeWorld are trained per dataset setting with frozen TSFMs and text encoders, using AdamW with a default learning rate of 10 −4, weight decay of 0.01, and an effective batch size of 16. We train for up to ten epochs, with early stopping after three epochs without validation improvement, and retain the checkpoint with the lowest validation forecasting loss. All runs use NVIDIA H200 GPUs and a fixed seed of 42 to control training randomness and facilitate reproducibility. 
+
+## 5.2 Comparison Results 
+
+Table 3 compares TimeWorld with vanilla TSFMs and TSFM++, revealing three main observations: (1) TimeWorld consistently im-proves aggregate forecasting performance across backbones. It reduces all three overall errors relative to both alternatives, with nMAE improvements of 3.5%–9.9% over TSFM++. These gains support structured action-dependent updates to pretrained world dynam-ics beyond direct text-prefix conditioning. (2) Stronger history-only 0.88 0.96 1.04 
+
+> nMAE
+> TimesFM 3.0
+> 0.975 0.990 1.005
+> Chronos-2
+> 0.95 1.00 1.05
+> nMAE
+> Toto 2.0
+> 0.950 0.975 1.000 1.025
+> Moirai 2.0 w/o Proto. w/o PLM w/ Learn. Proto. w/o Type w/o Ortho. w/o Rank w/o Affine w/o ACL w/o Seq. TimeWorld
+
+Figure 2: Ablation results of TimeWorld. 
+
+forecasting does not imply greater benefits from action conditioning. 
+
+TimesFM 3.0 has the highest overall errors among vanilla backbones but achieves the lowest errors with both TSFM++ and TimeWorld. Its larger gains, compared with the more modest improvements of Chronos-2, indicate that the ability to exploit textual actions varies across pretrained backbones. (3) The benefits of action modeling vary across domains. TimeWorld improves all three metrics over both alternatives on Causal Chambers and DaISy for every backbone. Healthcare forecasting also generally improves, though TSFM++ remains stronger with TimesFM on HUPA-UCM. Economic results are less consistent: improvements on FOMC are small, MOF results depend on the backbone, and M5 often favors vanilla forecasting Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Hang Ni, Weijia Zhang, & Hao Liu 0.001 0.003 0.01 0.03 0.1                      
+
+> λt
+> 0.95 1.00 1.05
+> nMAE
+> TimesFM 3.0 Chronos-2 Toto 2.0 Moirai 2.0
+> (a) Type weight 𝜆 t.0.001 0.003 0.01 0.03 0.1
+> λs
+> 0.90 0.95
+> nMAE
+> TimesFM 3.0 Chronos-2 Toto 2.0 Moirai 2.0 (b) Intensity weight 𝜆 s.816 32 64
+> R
+> 0.95 1.00 1.05
+> nMAE
+> TimesFM 3.0 Chronos-2 Toto 2.0 Moirai 2.0 (c) Subspace dimension 𝑅 .
+
+Figure 3: Parameter sensitivity of TimeWorld across four TSFM backbones, measured by nMAE. 
+
+in nMAE and MASE despite reductions in nRMSE. Confidence in-tervals for the gains over vanilla TSFM forecasting are reported in Appendix H. 
+
+## 5.3 Ablation Study 
+
+In this section, we evaluate nine variants to isolate the contribu-tions of PLM and ACL . Within PLM, “w/o Proto.” directly modulates the subspace coordinates without prototypes, “w/ Learn. Proto.” replaces encoded prototypes with randomly initialized learnable vectors, “w/o Ortho.” replaces the orthogonal subspace projections with MLP mappings, “w/o Affine” removes the final scale and shift, and “w/o Seq.” replaces token-level action attention with a sin-gle action embedding. “w/o PLM” uses action-prefix conditioning instead of latent modulation, while “w/o Type”, “w/o Rank”, and “w/o ACL” remove type discrimination, intensity ranking, and both contrastive objectives, respectively. Figure 2 yields three observa-tions: (1) Structured latent modulation improves action grounding. 
+
+Removing prototypes, affine adjustment, or token-level retrieval increases nMAE for every backbone, as does replacing PLM with action-prefix conditioning. Learnable prototypes also worsen all four backbones, supporting the value of temporal response priors encoded by pretrained TSFMs. These results support composing temporal response patterns and adapting them to the action and current state. (2) The subspace parameterization matters, but its ef-fect depends on the backbone. Switching it degrades TimesFM 3.0, Chronos-2, and Toto 2.0, while Moirai 2.0 changes only marginally in the opposite direction. (3) Both contrastive objectives contribute to forecasting accuracy. Removing either objective or ACL as a whole worsens all four backbones, supporting complementary supervision of action type and intensity. 
+
+## 5.4 Parameter Analysis 
+
+In this section, we examine the contrastive weights 𝜆 t and 𝜆 s, which balance action discrimination against forecasting accuracy, and the subspace dimension 𝑅 , which controls the capacity of latent modulation. Each contrastive weight is varied independently over 
+
+{0.001 , 0.003 , 0.01 , 0.03 , 0.1}, and 𝑅 over {8, 16 , 32 , 64 }, keeping the remaining settings fixed. Figure 3 shows that: (1) Moderate type weights provide stable performance, but excessive weighting can be harmful. TimesFM is relatively stable up to 𝜆 t = 0.03, whereas increasing it to 0.1 raises nMAE by 16.7% relative to 0.01. This may reflect overly strong pressure to separate action types at the ex-pense of factual prediction. (2) Performance is particularly robust to the intensity weight. Across the full range of 𝜆 s, each backbone’s nMAE remains within 1.5% of its best value, indicating limited sensitivity to the strength of rank supervision. (3) An intermedi-ate subspace dimension balances capacity and constraint. All four backbones achieve their lowest nMAE at 𝑅 = 32, supporting our chosen dimension. Smaller subspaces may restrict useful action-dependent updates, while larger ones permit unnecessary changes to pretrained representations. 
+
+## 5.5 Action Consistency Analysis 
+
+Forecast errors measure agreement with observed outcomes but do not reveal whether a world model distinguishes alternative ac-tions. We therefore examine representation similarity as a proxy for counterfactual action sensitivity, comparing TimeWorld with w/o ACL under the same history and context. In Table 4, Same and 
+
+Different measure cosine similarity between action embeddings and responses to the corresponding or alternative action types. Ad-jacent and Distant compare response embeddings at neighboring and maximally separated intensity ranks. Both models use a shared readout, and scores are averaged across backbones and datasets. We observe that ACL increases the separation between matching and mismatched action types while making responses to nearby inten-sity ranks more similar than those to distant ranks. This supports more distinguishable counterfactual responses beyond improve-ments in factual forecasting. 
+
+Table 4: Action-conditioned representation similarity.              
+
+> Model Action Type Action Intensity Same Different Adjacent Distant TimeWorld 0.1077 0.0533 0.9815 0.9380
+> w/o ACL 0.0293 0.0271 0.9311 0.9284
+
+We further examine the effectiveness of prototype composition in Appendix I and provide a qualitative case study in Appendix J. 
+
+## 6 Conclusion 
+
+In this work, we study time series world models that specify inter-ventions through textual actions beyond fixed covariate schemas, and introduce TSWM-Bench for evaluation across seven real-world datasets. Our benchmark findings suggest that pretrained TSFMs encode implicit world knowledge of temporal evolution, provid-ing a foundation for action-conditioned world modeling. Building on this insight, we propose TimeWorld, a plug-in framework that adapts pretrained TSFMs through explicit action grounding and dis-crimination. Prototype-guided latent modulation translates textual TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+actions into state- and interval-dependent updates, while action contrastive learning distinguishes responses to different action types and preserves relative intensity relationships under shared histories. Experiments across four TSFM backbones demonstrate consistent improvements in aggregate forecasting accuracy over history-only and action-prefix baselines. Ablation and parameter analyses substantiate the effectiveness of latent modulation and contrastive supervision, while action consistency analysis further reveals stronger action-type discrimination and more coherent intensity-dependent responses. 
+
+## References 
+
+[1] Abdul Fatir Ansari, Oleksandr Shchur, Jaris Küken, Andreas Auer, Boran Han, Pedro Mercado, Syama Sundar Rangapuram, Huibin Shen, Lorenzo Stella, Xiyuan Zhang, Mononito Goswami, Shubham Kapoor, Danielle C. Maddix, Pablo Guerron, Tony Hu, Junming Yin, Nick Erickson, Prateek Mutalik Desai, Hao Wang, Huzefa Rangwala, George Karypis, Yuyang Wang, and Michael Bohlke-Schneider. 2025. Chronos-2: From Univariate to Universal Forecasting. arXiv:2510.15821 [cs.LG] https://arxiv.org/abs/2510.15821 [2] Adrien Bardes, Quentin Garrido, Jean Ponce, Xinlei Chen, Michael Rabbat, Yann LeCun, Mahmoud Assran, and Nicolas Ballas. 2024. Revisiting Feature Prediction for Learning Visual Representations from Video. arXiv:2404.08471 [cs.CV] https: //arxiv.org/abs/2404.08471 [3] S. Bittanti and L. Piroddi. 1997. Nonlinear identification and control of a heat exchanger: A neural network approach. Journal of the Franklin Institute 334, 1 (1997), 135–153. doi:10.1016/S0016-0032(96)00059-2 [4] Board of Governors of the Federal Reserve System. [n. d.]. Meeting Calendars, Statements, and Minutes. Federal Open Market Committee. https://www. federalreserve.gov/monetarypolicy/fomccalendars.htm [5] Jake Bruce, Michael D Dennis, Ashley Edwards, Jack Parker-Holder, Yuge Shi, Edward Hughes, Matthew Lai, Aditi Mavalankar, Richie Steigerwald, Chris Apps, Yusuf Aytar, Sarah Maria Elisabeth Bechtle, Feryal Behbahani, Stephanie C.Y. Chan, Nicolas Heess, Lucy Gonzalez, Simon Osindero, Sherjil Ozair, Scott Reed, Jingwei Zhang, Konrad Zolna, Jeff Clune, Nando De Freitas, Satinder Singh, and Tim Rocktäschel. 2024. Genie: Generative Interactive Environments. In 
+
+Proceedings of the 41st International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 235) . PMLR, 4603–4623. https://proceedings. mlr.press/v235/bruce24a.html [6] Hanyin Cheng, Linfeng Wang, Zhengbo Qu, Yang Shu, Zhongwen Rao, Meng Wang, Yijie Li, Xin Jiang, Bin Yang, and Chenjuan Guo. 2026. QiYao-M: Multi-modal Time Series Foundation Model with Role-Aware Modeling of Endogenous and Exogenous Modalities. arXiv:2609.34842 [cs.LG] https://arxiv.org/abs/2609. 34842 [7] Xilin Dai, Hongzhou Chen, Yifan Hu, Yiding Liu, Zewei Dong, and Jiang-Ming Yang. 2026. Pythia: Toward Foundation World Models for Multimodal Time Series. arXiv:2610.05240 [cs.LG] https://arxiv.org/abs/2610.05240 [8] Abhimanyu Das, Weihao Kong, Rajat Sen, and Yichen Zhou. 2024. A decoder-only foundation model for time-series forecasting. In Proceedings of the 41st International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 235) . PMLR, 10148–10167. https://proceedings.mlr.press/v235/ das24c.html [9] Kuiye Ding, Fanda Fan, Yao Wang, Ruijie Jian, Xiaorui Wang, Luqi Gong, Yishan Jiang, Chunjie Luo, and Jianfeng Zhan. 2025. DualSG: A Dual-Stream Explicit Semantic-Guided Multivariate Time Series Forecasting Framework. In Proceedings of the 33rd ACM International Conference on Multimedia (MM ’25) . ACM, 508–517. doi:10.1145/3746027.3755458 [10] Juan L. Gamella, Jonas Peters, and Peter Bühlmann. 2025. Causal chambers as a real-world physical testbed for AI methodology. Nature Machine Intelligence 7, 1 (2025), 107–118. doi:10.1038/s42256-024-00964-x [11] Shuqi Gu, Yongxiang Zhao, Baoyu Jing, and Kan Ren. 2026. What if Tomorrow is the World Cup Final? Counterfactual Time Series Forecasting with Textual Conditions. In Proceedings of the 43rd International Conference on Machine Learn-ing (Proceedings of Machine Learning Research, Vol. 306) , Tong Zhang, Miroslav Dudik, Martin Jaggi, Alekh Agarwal, Sharon Li, Dale Schuurmans, Jerry Zhu, Felix Berkenkamp, Hanze Dong, and Alberto Bietti (Eds.). PMLR, 37376–37394. https://proceedings.mlr.press/v306/gu26r.html [12] Danijar Hafner, Jurgis Pasukonis, Jimmy Ba, and Timothy Lillicrap. 2025. Mas-tering diverse control tasks through world models. Nature 640 (2025), 647–653. doi:10.1038/s41586-025-08744-2 [13] J. Ignacio Hidalgo, Jorge Alvarado, Marta Botella, Aranzazu Aramendi, J. Manuel Velasco, and Oscar Garnica. 2024. HUPA-UCM Diabetes Dataset. doi:10.17632/ 3hbcscwz44.1 [14] Ayush Jain and Rajat Sen. 2026. TimesFM-3: A zero-shot foundation model for multivariate forecasting. Google Research Blog. Published August 31, 2026; accessed October 9, 2026. https://research.google/blog/timesfm-3-a-zero-shot-foundation-model-for-multivariate-forecasting/ [15] Joel Jang, Seonghyeon Ye, Zongyu Lin, Jiannan Xiang, Johan Bjorck, Yu Fang, Fengyuan Hu, Spencer Huang, Kaushil Kundalia, Yen-Chen Lin, Loïc Magne, Ajay Mandlekar, Avnish Narayan, You Liang Tan, Guanzhi Wang, Jing Wang, Qi Wang, Yinzhen Xu, Xiaohui Zeng, Kaiyuan Zheng, Ruijie Zheng, Ming-Yu Liu, Luke Zettlemoyer, Dieter Fox, Jan Kautz, Scott Reed, Yuke Zhu, and Linxi Fan. 2025. DreamGen: Unlocking Generalization in Robot Learning through Video World Models. In Proceedings of The 9th Conference on Robot Learning (Proceedings of Machine Learning Research, Vol. 305) , Joseph Lim, Shuran Song, and Hae-Won Park (Eds.). PMLR, 5170–5194. https://proceedings.mlr.press/v305/jang25a.html [16] Ming Jin, Shiyu Wang, Lintao Ma, Zhixuan Chu, James Zhang, Xiaoming Shi, Pin-Yu Chen, Yuxuan Liang, Yuan-Fang Li, Shirui Pan, and Qingsong Wen. 2024. Time-LLM: Time Series Forecasting by Reprogramming Large Language Models. In International Conference on Learning Representations ,B. Kim, Y. Yue, S. Chaudhuri, K. Fragkiadaki, M. Khan, and Y. Sun (Eds.), Vol. 2024. 23857–23880. https://proceedings.iclr.cc/paper_files/paper/2024/file/ 680b2a8135b9c71278a09cafb605869e-Paper-Conference.pdf [17] Emaad Khwaja, Chris Lettieri, Gerald Woo, Eden Belouadah, Marc Cenac, Guil-laume Jarry, Enguerrand Paquin, Xunyi Zhao, Viktoriya Zhukov, Othmane Abou-Amal, Chenghao Liu, Ameet Talwalkar, and David Asker. 2026. Toto 2.0: Time Series Forecasting Enters the Scaling Era. arXiv:2605.20119 [cs.LG] https://arxiv.org/abs/2605.20119 [18] Aggelos Lazaris and Viktor K. Prasanna. 2019. An LSTM Framework For Modeling Network Traffic. In 2019 IFIP/IEEE Symposium on Integrated Network and Service Management (IM) . IEEE. https://ieeexplore.ieee.org/document/8717920/ [19] Chenghao Liu, Taha Aksu, Juncheng Liu, Xu Liu, Hanshu Yan, Quang Pham, Silvio Savarese, Doyen Sahoo, Caiming Xiong, and Junnan Li. 2025. Moirai 2.0: When Less Is More for Time Series Forecasting. arXiv:2511.11698 [cs.LG] https://arxiv.org/abs/2511.11698 [20] Chenxi Liu, Qianxiong Xu, Hao Miao, Sun Yang, Lingzheng Zhang, Cheng Long, Ziyue Li, and Rui Zhao. 2025. TimeCMA: Towards LLM-Empowered Multivariate Time Series Forecasting via Cross-Modality Alignment. Proceedings of the AAAI Conference on Artificial Intelligence 39, 18 (April 2025), 18780–18788. doi:10.1609/ aaai.v39i18.34067 [21] Haoxin Liu, Shangqing Xu, Zhiyuan Zhao, Lingkai Kong, Harshavardhan Ka-marthi, Aditya B. Sasanur, Megha Sharma, Jiaming Cui, Qingsong Wen, Chao Zhang, and B. Aditya Prakash. 2024. Time-MMD: Multi-Domain Multimodal Dataset for Time Series Analysis. In Advances in Neural Information Processing Systems , A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang (Eds.), Vol. 37. Curran Associates, Inc., 77888–77933. doi:10.52202/ 079017-2476 [22] Xu Liu, Junfeng Hu, Yuan Li, Shizhe Diao, Yuxuan Liang, Bryan Hooi, and Roger Zimmermann. 2024. UniTime: A Language-Empowered Unified Model for Cross-Domain Time Series Forecasting. In Proceedings of the ACM Web Conference 2024 (WWW ’24) . ACM, 4095–4106. doi:10.1145/3589334.3645434 [23] Yong Liu, Haoran Zhang, Chenyu Li, Xiangdong Huang, Jianmin Wang, and Mingsheng Long. 2024. Timer: Generative Pre-trained Transformers Are Large Time Series Models. In Proceedings of the 41st International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 235) , Rus-lan Salakhutdinov, Zico Kolter, Katherine Heller, Adrian Weller, Nuria Oliver, Jonathan Scarlett, and Felix Berkenkamp (Eds.). PMLR, 32369–32399. https: //proceedings.mlr.press/v235/liu24cb.html [24] Yihang Lu, Yangyang Xu, Qitao Qin, and Xianwei Meng. 2025. TimeCapsule: Solving the Jigsaw Puzzle of Long-Term Time Series Forecasting with Compressed Predictive Representations. In Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.2 (KDD ’25) . ACM, 1987–1998. doi:10. 1145/3711896.3737157 [25] Spyros Makridakis, Evangelos Spiliotis, and Vassilios Assimakopoulos. 2022. The M5 competition: Background, organization, and implementation. International Journal of Forecasting 38, 4 (2022), 1325–1336. doi:10.1016/j.ijforecast.2021.07.007 [26] Valentyn Melnychuk, Dennis Frauen, and Stefan Feuerriegel. 2022. Causal Transformer for Estimating Counterfactual Outcomes. In Proceedings of the 39th International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 162) , Kamalika Chaudhuri, Stefanie Jegelka, Le Song, Csaba Szepesvari, Gang Niu, and Sivan Sabato (Eds.). PMLR, 15293–15329. https://proceedings.mlr.press/v162/melnychuk22a.html [27] Junjie Meng, Ranxu Zhang, Zi-an Zhang, Shujun Liu, Xiaoning Qi, Xiaozhou Xu, Yanyong Zhang, Hui Xiong, and Chao Wang. 2026. CEDAR: Controlled and Event-Driven Demand Forecasting via Residual Decomposition. In Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.2 . ACM, 7797–7808. doi:10.1145/3770855.3818338 [28] Ministry of Finance, Japan. [n. d.]. Foreign Exchange Intervention Op-erations. Historical intervention data. https://www.mof.go.jp/english/ policy/international_policy/reference/feio/foreign_exchange_intervention_ operations.csv Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Hang Ni, Weijia Zhang, & Hao Liu 
+
+[29] Hang Ni, Weijia Zhang, and Hao Liu. 2026. UniExtreme: A Universal Foundation Model for Extreme Weather Forecasting. In Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.1 . ACM, 1101–1112. doi:10. 1145/3770854.3780172 [30] Hang Ni, Weijia Zhang, Fei Wang, Zezhi Shao, and Hao Liu. 2026. From Con-sistency to Complementarity: Aligned and Disentangled Multi-modal Learn-ing for Time Series Understanding and Reasoning. arXiv:2601.21436 [cs.LG] https://arxiv.org/abs/2601.21436 [31] OpenAI. 2026. GPT-6 Luna. OpenAI API model documentation. Accessed October 14, 2026. https://developers.openai.com/api/docs/models/gpt-6-luna [32] Xiaoqian Qi, Haoye Chai, Yue Wang, and Yong Li. 2026. Beyond Static Forecast-ing: Unleashing the Power of World Models for Mobile Traffic Extrapolation. arXiv:2604.08199 [cs.NI] https://arxiv.org/abs/2604.08199 [33] David Salinas, Valentin Flunkert, Jan Gasthaus, and Tim Januschowski. 2020. DeepAR: Probabilistic forecasting with autoregressive recurrent networks. Inter-national Journal of Forecasting 36, 3 (2020), 1181–1191. doi:10.1016/j.ijforecast. 2019.07.001 [34] Xiaoming Shi, Shiyu Wang, Yuqi Nie, Dianqi Li, Zhou Ye, Qingsong Wen, and Ming Jin. 2025. Time-MoE: Billion-Scale Time Series Foundation Models with Mixture of Experts. In International Conference on Learn-ing Representations , Y. Yue, A. Garg, N. Peng, F. Sha, and R. Yu (Eds.), Vol. 2025. 34635–34667. https://proceedings.iclr.cc/paper_files/paper/2025/file/ 558d48c1f08675daa636e09bfe94a89e-Paper-Conference.pdf [35] Qwen Team. 2026. Qwen-RobotWorld Technical Report: Unifying Embodied World Modeling through Language-Conditioned Video Generation. (2026). [36] Chengsen Wang, Qi Qi, Jingyu Wang, Haifeng Sun, Zirui Zhuang, Jinming Wu, Lei Zhang, and Jianxin Liao. 2025. ChatTime: A Unified Multimodal Time Series Foundation Model Bridging Numerical and Textual Data. Proceedings of the AAAI Conference on Artificial Intelligence 39, 12 (April 2025), 12694–12702. doi:10.1609/ aaai.v39i12.33384 [37] Haotian Wang, Haoxuan Li, Hao Zou, Haoang Chi, Long Lan, Wanrong Huang, and Wenjing Yang. 2025. Effective and Efficient Time-Varying Coun-terfactual Prediction with State-Space Models. In International Conference on Learning Representations , Y. Yue, A. Garg, N. Peng, F. Sha, and R. Yu (Eds.), Vol. 2025. 15000–15025. https://proceedings.iclr.cc/paper_files/paper/2025/file/ 26f16a11f4dbba3eef876b571d9f3200-Paper-Conference.pdf [38] Xinlei Wang, Maike Feng, Jing Qiu, Jinjin Gu, and Junhua Zhao. 2024. From News to Forecast: Integrating Event Analysis in LLM-Based Time Series Forecasting with Reflection. In Advances in Neural Information Processing Systems , A. Glober-son, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang (Eds.), Vol. 37. Curran Associates, Inc., 58118–58153. doi:10.52202/079017-1853 [39] Andrew Robert Williams, Arjun Ashok, Étienne Marcotte, Valentina Zantedeschi, Jithendaraa Subramanian, Roland Riachi, James Requeima, Alexandre Lacoste, Irina Rish, Nicolas Chapados, and Alexandre Drouin. 2025. Context is Key: A Benchmark for Forecasting with Essential Textual Information. In Proceedings of the 42nd International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 267) , Aarti Singh, Maryam Fazel, Daniel Hsu, Simon Lacoste-Julien, Felix Berkenkamp, Tegan Maharaj, Kiri Wagstaff, and Jerry Zhu (Eds.). PMLR, 66887–66944. https://proceedings.mlr.press/v267/williams25a.html [40] Xingjian Wu, Jianxin Jin, Wanghui Qiu, Peng Chen, Yang Shu, Bin Yang, and Chenjuan Guo. 2026. Aurora: Towards Universal Generative Multimodal Time Series Forecasting. In International Conference on Learning Representations ,C. Vondrick, B. Hariharan, C. Raffel, L. Pinto, D. Yang, and A. Faust (Eds.), Vol. 2026. 103239–103277. https://proceedings.iclr.cc/paper_files/paper/2026/ file/a8e18adf6489fd3a27417d128660eaa9-Paper-Conference.pdf [41] Qianyi Xu, Gousia Habib, Feng Wu, Dilruk Perera, and Mengling Feng. 2026. medDreamer: Model-Based Reinforcement Learning with Latent Imagination on Complex EHRs for Clinical Decision Support. In Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.1 . ACM, 1693– 1704. doi:10.1145/3770854.3780292 [42] Hao Xue and Flora D. Salim. 2024. PromptCast: A New Prompt-Based Learning Paradigm for Time Series Forecasting. IEEE Transactions on Knowledge and Data Engineering 36, 11 (Nov. 2024), 6851–6864. doi:10.1109/tkde.2023.3342137 [43] Jie Yang, Yifan Hu, Yuante Li, Kexin Zhang, Kaize Ding, and Philip S. Yu. 2026. From Observations to States: Latent Time Series Forecasting. In Proceedings of the 43rd International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 306) , Tong Zhang, Miroslav Dudik, Martin Jaggi, Alekh Agarwal, Sharon Li, Dale Schuurmans, Jerry Zhu, Felix Berkenkamp, Hanze Dong, and Alberto Bietti (Eds.). PMLR, 144796–144819. https://proceedings.mlr. press/v306/yang26y.html [44] Ziyue Yang, Chaolin Xu, Yijing Wang, Tiankai Gu, Hui Yang, Yanhong Lin, Kaiyuan Liu, and Fei Xiao. 2026. ReasonCast: Agentic Demand Forecasting with Selective Semantic Reasoning. arXiv:2608.15291 [cs.AI] https://arxiv.org/abs/ 2608.15291 [45] Kaiwen Zha, Peng Cao, Jeany Son, Yuzhe Yang, and Dina Katabi. 2023. Rank-N-Contrast: Learning Continuous Representations for Regression. In 
+
+Advances in Neural Information Processing Systems , Vol. 36. https://papers.nips. cc/paper_files/paper/2023/hash/39e9c5913c970e3e49c2df629daff636-Abstract-Conference.html [46] Haochen Zhang, Jiaheng Guo, Zhen Xu, Zachary Plotkin, Nicholas Konz, Zhen Tan, and Tianlong Chen. 2026. On the Divergence of Accuracy and Mechanism Consistency in Time Series World Models. arXiv:2610.01842 [cs.AI] https://arxiv. org/abs/2610.01842 [47] Yanzhao Zhang, Mingxin Li, Dingkun Long, Xin Zhang, Huan Lin, Baosong Yang, Pengjun Xie, An Yang, Dayiheng Liu, Junyang Lin, Fei Huang, and Jingren Zhou. 2025. Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models. arXiv preprint arXiv:2506.05176 (2025). https: //arxiv.org/abs/2506.05176 [48] Yang Zhang, Wenbo Yang, Jun Wang, Qiang Ma, and Jie Xiong. 2025. CAMEF: Causal-Augmented Multi-Modality Event-Driven Financial Forecasting by Inte-grating Time Series Patterns and Salient Macroeconomic Announcements. In 
+
+Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.2 (KDD ’25) . ACM, 3867–3878. doi:10.1145/3711896.3736872 [49] Zihao Zhang, Stefan Zohren, and Stephen Roberts. 2019. DeepLOB: Deep Con-volutional Neural Networks for Limit Order Books. IEEE Transactions on Signal Processing 67, 11 (2019), 3001–3012. doi:10.1109/TSP.2019.2907260 [50] Siru Zhong, Weilin Ruan, Ming Jin, Huan Li, Qingsong Wen, and Yuxuan Liang. 2025. Time-VLM: Exploring Multimodal Vision-Language Models for Augmented Time Series Forecasting. In Proceedings of the 42nd International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 267) , Aarti Singh, Maryam Fazel, Daniel Hsu, Simon Lacoste-Julien, Felix Berkenkamp, Tegan Maharaj, Kiri Wagstaff, and Jerry Zhu (Eds.). PMLR, 78478–78497. https: //proceedings.mlr.press/v267/zhong25a.html [51] Jinhao Zhu. 2022. Diabetes Datasets, ShanghaiT1DM and ShanghaiT2DM. doi:10. 6084/m9.figshare.20425518.v5 [52] Yuhan Zhu, Xiangfei Qiu, Hanyin Cheng, Wangmeng Shen, Chenjuan Guo, Bin Yang, Jilin Hu, and Christian S. Jensen. 2026. WorldTS: World Modeling for Multimodal Covariate-aware Time Series Forecasting. arXiv:2609.31162 [cs.LG] https://arxiv.org/abs/2609.31162 
+
+## A Baseline Implementation Details 
+
+MM-TSFlib [21] uses iTransformer for temporal modeling and GPT-2 for text encoding. CovTSWM [46] combines TiDE with a frozen autoencoder and output gating to condition forecasts on structured actions. We adapt its covariate schema to each dataset’s recorded controls and align their values, magnitudes, and event indicators with the forecast timeline. For FOMC, these covariates encode the explicitly announced target interest rate when available. 
+
+## B Evaluation Metric Details 
+
+For evaluation across test instances, we add an instance index 𝜈 
+
+to the notation in Section 3.1, yielding history x𝜈 , target y𝜈 , and prediction by𝜈 . For each instance, 𝐿 and 𝐻 denote its history length and forecast horizon. Here, 𝑡 locally indexes chronological history positions in 𝑥 𝜈,𝑡 (𝑡 = 1, . . . , 𝐿 ) and forecast steps in 𝑦 𝜈,𝑡 and b𝑦 𝜈,𝑡 
+
+(𝑡 = 1, . . . , 𝐻 ). The comma separates instance and temporal indices. The prediction errors are MAE 𝜈 = 1
+
+𝐻 
+
+𝐻 ∑︁ 
+
+𝑡 =1
+
+|b𝑦 𝜈,𝑡 − 𝑦 𝜈,𝑡 |, RMSE 𝜈 =
+
+vut 1
+
+𝐻 
+
+𝐻 ∑︁ 
+
+𝑡 =1
+
+(b𝑦 𝜈,𝑡 − 𝑦 𝜈,𝑡 )2.
+
+The history mean 𝜇 x𝜈 , population standard deviation 𝜎 x𝜈 , and mean absolute lag-one difference MAE naive 
+
+𝜈 are computed separately from each instance’s history: 
+
+𝜇 x𝜈 = 1
+
+𝐿 
+
+𝐿 ∑︁ 
+
+𝑡 =1
+
+𝑥 𝜈,𝑡 , 𝜎 x𝜈 =
+
+vut 1
+
+𝐿 
+
+𝐿 ∑︁ 
+
+𝑡 =1
+
+(𝑥 𝜈,𝑡 − 𝜇 x𝜈 )2,
+
+MAE naive 
+
+𝜈 = 1
+
+𝐿 − 1
+
+𝐿 ∑︁ 
+
+𝑡 =2
+
+|𝑥 𝜈,𝑡 − 𝑥 𝜈,𝑡 −1 |.
+
+These expressions assume fully observed windows. With miss-ing values, each sum includes only observed targets, observed TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+history values, or adjacent history pairs with both values origi-nally observed, as appropriate, and its denominator is replaced by the corresponding valid count. The normalized and scaled er-rors are nMAE 𝜈 = MAE 𝜈 /𝜎 x𝜈 , nRMSE 𝜈 = RMSE 𝜈 /𝜎 x𝜈 , MASE 𝜈 =
+
+MAE 𝜈 /MAE naive  
+
+> 𝜈
+
+, where MASE uses the nonseasonal naive scale computed from each instance’s history. Instances with no valid observations or a zero normalization scale are excluded from the corresponding metric average. We average each metric over valid test instances for each (𝐿, 𝐻 ) configuration, taking the RMSE square root before averaging. Dataset-level results average configurations within each dataset. Overall results weight all configurations across datasets equally. 
+
+## C Counterfactual Action Construction Details 
+
+Each generation request to the LLM includes the factual action and specifies which attribute may change, so type alternatives vary the operation while intensity alternatives retain the operation and follow the assigned magnitude ordering. All candidates preserve unrelated context, units, and temporal information to keep the con-trast focused on the intended action variation. The consistent and regular action descriptions in TSWM-Bench facilitate checks of format, required fields, and the requested variations. Programmatic validation of all generated actions, supplemented by manual inspec-tion of sampled examples, revealed no formatting errors. However, handling irregular, unconstrained action text remains a nontriv-ial challenge beyond the scope of this paper, motivating future benchmarks and solutions for such inputs. 
+
+## D Computational Complexity 
+
+TimeWorld augments a frozen TSFM with one context token and lightweight latent modulation. Beyond text encoding and native TSFM computation, adapters and PLM cost 𝑂  𝑁 a𝐷 2 + 𝑁 f (𝐷 2 + 𝑁 a𝐷 
+
++𝐷𝑅 +𝑁 p𝑅 ) per forecast, assuming projection widths of 𝑂 (𝐷 ). Re-duced QR uses PyTorch’s built-in differentiable torch.linalg.qr 
+
+and costs 𝑂 (𝐷𝑅 2), while prototype projection costs 𝑂 (𝑁 p𝐷𝑅 ) given reusable frozen reference encodings. Both can be cached at infer-ence. With 𝑅 = 32 and 𝑁 p = 24, PLM remains small and linear in 𝑁 f
+
+for fixed action length. Training additionally evaluates 1 + 𝑁 t + 𝑁 s
+
+action-conditioned branches for ACL. After pooling and projection, type matching costs 𝑂 (( 𝑁 t + 1)2𝐷 ), while intensity ranking costs 
+
+𝑂 (( 𝑁 s +1)2𝐷 + ( 𝑁 s +1)3) under direct evaluation of the comparison-set denominators. The cubic term is limited to six intensity levels because 𝑁 t = 𝑁 s = 5. These extra branches and contrastive losses are training-only and incur no inference cost. 
+
+## E Dataset Details 
+
+The history lengths and forecast horizons reflect each domain’s sampling frequency and action timescale, as summarized in Table 5. 
+
+M5. M5 [25] contains daily item–store sales and weekly average prices. Actions describe recorded price changes, including the previ-ous and updated prices and their effective interval. We use 𝐿 = 112 days and 𝐻 ∈ { 7, 28 } days to capture weekly and four-week demand responses, with a fixed 1% sample shared by all methods. 
+
+MOF. MOF [28] pairs Japan’s foreign-exchange interventions with yen-per-dollar observations from FRED. Actions specify the traded currencies, direction, and amount, combining operations on the same date. We use 𝐿 = 60 market observations and 𝐻 ∈ { 1, 5} to ex-amine immediate and short-term responses, aligning observations to separate pre-intervention history from subsequent outcomes. 
+
+FOMC. FOMC [4] pairs monetary policy statements with U.S. two-year Treasury yields. The full statement serves as the textual action, retaining policy information beyond the announced rate. We use 
+
+𝐿 = 60 and 𝐻 ∈ { 1, 5} market observations, with targets beginning after the announcement date. 
+
+Causal Chambers. Causal Chambers [10] provides controlled wind-tunnel experiments that vary inlet fan load while holding other actuators fixed. We forecast downstream absolute pressure with (𝐿, 𝐻 ) = (100 , 100 ). Lengths count native observations because sampling intervals are irregular. 
+
+DaISy. The DaISy heat-exchanger data [3] record liquid flow and outlet temperature every second. We use 𝐿 ∈ { 120 , 300 } and 𝐻 = 1, reflecting two or five minutes of history and the per-step changes in flow. The target is the temperature at the current input step, with history ending at the preceding step. 
+
+Shanghai Diabetes. Shanghai Diabetes [51] combines 15-minute glucose measurements with records of meals, medication, and in-sulin administration. We consolidate simultaneous actions while preserving food quantities and medication details. We use 𝐿 = 96 and 𝐻 ∈ { 4, 8}, corresponding to a 24-hour history and forecast horizons of one or two hours. History excludes the glucose mea-surement contemporaneous with the action. 
+
+HUPA-UCM. HUPA-UCM [13] records glucose, carbohydrate in-take, and insulin doses for people with type 1 diabetes. We use the raw FreeStyle historical glucose records at approximately 15-minute intervals, rather than the released 5-minute interpolated series. We set 𝐿 = 96 (approximately 24 hours) and 𝐻 ∈ { 4, 8}. We exclude instances with long sampling gaps and participants whose pump records cannot be parsed consistently. 
+
+Table 5: History–horizon configurations and split sizes.                                                                       
+
+> Dataset (𝑳, 𝑯 )Train Val. Test
+> M5 (112 ,7)438 147 147 M5 (112 ,28 )437 142 147 MOF (60 ,1)57 15 21 MOF (60 ,5)57 15 21 FOMC (60 ,1)117 39 40 FOMC (60 ,5)116 39 40 Causal Chambers (100 ,100 )54 18 18 DaISy (120 ,1)2208 656 776 DaISy (300 ,1)1920 440 740 Shanghai Diabetes (96 ,4)1687 487 678 Shanghai Diabetes (96 ,8)1687 487 678 HUPA-UCM (96 ,4)274 92 90 HUPA-UCM (96 ,8)273 92 85
+
+In terms of data ethics, all datasets were obtained from publicly available sources through their official distribution channels. Our study uses existing records and involves no new data collection from human participants. 
+
+## F Covariate Conditioning Study 
+
+We compare textual action modeling with TimesFM 3.0’s native sup-port for structured covariates. Using the CovTSWM action encoding Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Hang Ni, Weijia Zhang, & Hao Liu 
+
+Table 6: Comparison with covariate action conditioning.                      
+
+> Method nMAE ↓nRMSE ↓MASE ↓
+> Vanilla 1.0540 1.2087 3.5023
+> Covariates (zero-shot) 1.1097 1.2519 3.9601
+> Covariates (full tuning) 1.0207 1.1340 3.4507
+> Covariates (head + LoRA) 1.1035 1.2438 3.9267
+> TSFM++ 0.9983 1.1116 3.3634
+
+described in Appendix A, we evaluate native covariate conditioning zero-shot and with either full-parameter or parameter-efficient fine-tuning on the same data splits. Both fine-tuning variants start from pretrained TimesFM 3.0 weights: the former updates all parameters at a learning rate of 10 −5, while the latter tunes the output head and rank-8 attention-layer LoRA at 10 −6, keeping the remaining weights frozen. Both use AdamW for up to ten epochs and early stopping after three epochs without validation improvement. Table 6 shows that zero-shot covariate inputs increase aggregate errors relative to vanilla forecasting, while full fine-tuning improves all three metrics over vanilla. Head and LoRA tuning yields only modest gains over zero-shot covariate conditioning and remains less accurate than vanilla. Neither fine-tuning strategy closes the gap to TSFM++’s lightweight textual action adaptation. 
+
+Table 7: Performance against variants that fine-tune TSFMs.                
+
+> Method nMAE ↓nRMSE ↓MASE ↓
+> TimeWorld (frozen TSFM) 0.8997 1.0185 3.0651 + Full tuning 0.9082 1.0224 3.0916
+> + Head and LoRA 0.9003 1.0188 3.0682
+
+## G TSFM Fine-Tuning Study 
+
+We investigate whether fine-tuning the TSFM improves forecasting after action conditioning has been learned. The first stage trains TimeWorld with a frozen TimesFM 3.0 backbone. Starting from the selected checkpoint, the second stage freezes the learned action-conditioning modules and either fine-tunes all TSFM parameters or tunes only the output head and rank-8 attention-layer LoRA. Both variants minimize factual forecasting loss at a learning rate of 10 −6
+
+for up to ten epochs, stopping after three epochs without valida-tion improvement. As shown in Table 7, both strategies slightly increase all three aggregate errors, with a larger degradation un-der full fine-tuning. These results suggest that adapting pretrained TSFM parameters to action-dependent dynamics remains a non-trivial challenge, motivating fine-tuning strategies that better align temporal knowledge with action effects. 
+
+## H Forecasting Uncertainty Analysis 
+
+To assess whether forecasting gains persist under dataset resam-pling, we compute 95% confidence intervals (CIs) for ΔnRMSE, defined as each method’s overall nRMSE minus that of its corre-sponding vanilla backbone. We perform 10,000 paired bootstrap resamples of the seven datasets, jointly sampling each dataset’s history–horizon configurations and preserving their weights in the 
+
+Table 8: 95% confidence intervals (CIs) for ΔnRMSE (method minus vanilla). Negative values indicate improvement.       
+
+> Method TimesFM Chronos Toto Moirai TSFM++ [− 0.227 ,
+> −0.010 ][− 0.099 ,
+> −0.001 ][− 0.034 ,
+> 0.008 ][− 0.089 ,
+> −0.014 ]
+> TimeWorld [− 0.427 ,
+> −0.028 ][− 0.124 ,
+> −0.044 ][− 0.246 ,
+> −0.027 ][− 0.243 ,
+> −0.031 ]
+
+overall average. The 2.5th and 97.5th percentiles define the interval bounds. In Table 8, all four intervals for TimeWorld fall below zero, supporting lower nRMSE than vanilla forecasting, whereas the TSFM++ interval for Toto includes zero. These results support the consistency of TimeWorld improvements over vanilla forecasting under dataset resampling across all four TSFMs. 
+
+Table 9: Performance against prototype composition variant.             
+
+> Method nMAE ↓nRMSE ↓MASE ↓
+> TimeWorld 0.8997 1.0185 3.0651 Random reassignment 0.9215 1.0438 3.1586
+
+## I Prototype Composition Analysis 
+
+To assess the importance of input-dependent prototype composi-tion, we compare TimeWorld with a random-reassignment variant of TimesFM 3.0 across datasets. At each forward pass, this vari-ant replaces every future patch’s mixture weights with a vector sampled from a fixed bank of weights extracted by the original model on training instances. We retrain its learnable modules from scratch using the original training protocol, with random reassign-ment applied throughout training, validation, and testing. Table 9 shows that input-dependent composition achieves lower errors on all three metrics, supporting the value of matching prototype mixtures to the current input. −15 −10 −5 0 4 8    
+
+> Observation step
+> 50 100 150 200
+> Glucose (mg/dL)
+> History GT TimeWorld TSFM++ Vanilla
+
+Figure 4: Forecasting example on HUPA-UCM with Toto. 
+
+## J Case Study 
+
+To examine how action information helps predict a departure from recent observations, we study a Toto-based forecast on HUPA-UCM in Figure 4. The input comprises 96 glucose observations and a recorded event combining carbohydrate intake of 2.5 portions with 2 IU of rapid-acting insulin. The next eight observations briefly decline before rising from 85 to 211 mg/dL, reversing the recent TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+downward trajectory. This reversal makes continuation of the his-torical trend inadequate and provides a concrete test of forecasting under the recorded action context. Vanilla continues downward, while TSFM++ anticipates a recovery but substantially underesti-mates its magnitude. TimeWorld follows the initial rise more closely and reduces MAE by 59.41% relative to TSFM++, although it still underestimates the later increase. This case shows that TimeWorld better captures the observed trend reversal under the recorded action conditions.

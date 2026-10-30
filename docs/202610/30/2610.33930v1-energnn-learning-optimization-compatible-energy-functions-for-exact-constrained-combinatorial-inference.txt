@@ -1,0 +1,1561 @@
+Title: EnerGNN: Learning Optimization-Compatible Energy Functions for Exact Constrained Combinatorial Inference
+
+URL Source: https://arxiv.org/pdf/2610.33930v1
+
+Published Time: Tue, 27 Oct 2026 00:59:49 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+# EnerGNN: Learning Optimization-Compatible Energy Functions for Exact Constrained Combinatorial Inference 
+
+Niki Triantafyllou ∗ Maria M. Papathanasiou 
+
+Sargent Centre for Process Systems Engineering, Department of Chemical Engineering Imperial College London 
+
+{niki.triantafyllou20,maria.papathanasiou11}@imperial.ac.uk 
+
+# Abstract 
+
+Learning-based approaches to combinatorial optimization often predict solutions directly or use predictions to restrict search, while expressive energy-based models typically rely on approximate inference. We introduce EnerGNN, a framework that learns energy functions over complete binary configurations and minimizes them under explicit hard constraints through mixed integer programming (MIP). En-erGNN combines a graph neural network encoder with an optimization-compatible readout and a nonlinear energy head, enabling exact constrained inference over the learned energy. An optimality-aware contrastive loss trains the energy to reflect solution quality and constraint violations. Across Quadratic Knapsack, Combinatorial Auctions, and a personalized cell therapy supply chain problem, EnerGNN achieves near-optimal solutions with 100% feasibility. On the supply chain problem, it achieves a 0.05% mean primal gap and a 17.4 × speedup over the monolithic MIP. The learned energy also generalizes to larger instances and supports zero-shot constraint injection, adapting to changing constraints without retraining while preserving feasibility. 
+
+# 1 Introduction 
+
+A central challenge in energy-based structured prediction is to combine expressive learned repre-sentations with tractable inference over structured outputs. Energy-based models (EBMs) assign scalar energies to complete output configurations, allowing dependencies and interactions between output variables to be captured through learned energy functions (LeCun et al., 2006; Belanger and McCallum, 2016). However, minimizing expressive neural energies over discrete decision spaces is generally challenging, particularly when solutions must satisfy hard operational, physical, or logical constraints. Mixed integer programming (MIP) provides a framework for enforcing such constraints and obtaining globally optimal solutions, but learned energy functions must admit suitable mathematical representations to be optimized directly. This creates an interface problem between neural learning and exact optimization: How can a neural model learn expressive energy functions that an exact optimizer can minimize under hard constraints? 
+
+Existing approaches address different aspects of this challenge. In learning-based combinatorial optimization, neural models have been used to construct solutions, predict variable assignments, and guide exact solvers (Bengio et al., 2021; Khalil et al., 2017; Gasse et al., 2019). Methods such as Neural Diving (Nair et al., 2020) and ConPaS (Huang et al., 2024) use learned variable-level predictions to identify promising regions of the solution space, which are then explored through restricted optimization. In energy-based structured prediction, inference with expressive neural                  
+
+> ∗Corresponding author. Preprint. arXiv:2610.33930v1 [cs.LG] 24 Oct 2026 c1
+> c2
+> v1
+> v2
+> v3
+> Bipartite MPNN
+> {hv}
+> node embeddings
+> Σ×yz(G, y ) = ∑
+> vyvhv
+> Energy Head
+> ReLU MLP Eθ(G, y )
+> suboptimal near-optimal Candidate Solutions
+> Exact MIP Inference
+> y⋆∈argmin
+> y
+> Eθ(G, y )
+> s.t. Ayy≤by
+> MIP encoding y⋆
+> feasible optimum
+> 1. Encode Graph 2. Learn Energy Landscape 3. Solve Exactly
+> + Zero-Shot Constraint Injection
+
+Figure 1: EnerGNN encodes an optimization instance using a bipartite message-passing GNN, learns an optimization-compatible energy function over binary configurations, and performs exact constrained inference by globally minimizing the learned energy over the encoded feasible set. energies commonly relies on continuous relaxations, gradient-based optimization, or approximate decoding (Belanger and McCallum, 2016; Graber and Schwing, 2019). Meanwhile, ReLU neural networks can be represented exactly using mixed integer formulations (Fischetti and Jo, 2018; Anderson et al., 2020), providing a mechanism for optimizing learned nonlinear functions under explicit constraints. Together, these developments motivate learning energy functions that are designed to be directly optimized under explicit hard constraints, bringing expressive structured prediction and exact combinatorial inference into a unified framework. We introduce EnerGNN , an energy-based framework that learns optimization-compatible energy functions over complete binary configurations and minimizes them subject to explicit hard constraints. As illustrated in Figure 1, EnerGNN combines a bipartite message-passing graph neural network (GNN) encoder with a decision-dependent readout and a piecewise linear ReLU energy head. The GNN encoder produces representations of the problem instance that are computed once and remain fixed during optimization. The readout combines these fixed representations with the binary decision variables to construct a configuration-dependent representation. Together, the readout and nonlinear ReLU energy head allow EnerGNN to model interactions between decision variables while admitting an exact MIP representation. At inference, the learned energy is minimized over the full encoded feasible region using a MIP solver, yielding a feasible solution that is globally optimal with respect to the learned energy when solved to optimality. A key feature of EnerGNN is the separation of learned preferences from explicit feasibility con-straints. The energy-based model learns to distinguish high-quality configurations from suboptimal alternatives through optimality-aware contrastive training, while hard constraints are enforced directly during inference. This separation allows the same learned energy to be optimized under different feasible regions, without retraining the model. In particular, deployment-time constraints can be added, removed, or modified by changing the inference MIP, enabling zero-shot constraint injection. This approach is complementary to neural algorithmic reasoning (Veliˇ ckovi´ c and Blundell, 2021): rather than learning to execute an optimization algorithm, EnerGNN learns an energy function over structured decisions and delegates constrained inference to an exact optimizer. Our contributions are threefold. First, we formulate constrained combinatorial inference as learning an optimization-compatible energy over complete binary configurations, separating learned preferences from explicit hard constraints. Second, we develop a graph-based energy architecture that captures nonlinear interactions between decision variables while admitting exact MIP representation and globally optimal inference with respect to the learned energy. Third, we develop an optimality-aware contrastive learning objective using feasible and infeasible candidate configurations to learn solution-level energy landscapes. We evaluate EnerGNN on Quadratic Knapsack (QKP), Combinatorial Auctions (CA), and a personalized cell therapy supply chain problem (CART). Our experiments demonstrate the benefits of nonlinear energy modeling for interaction-heavy objectives, the ability to obtain near-optimal solutions while satisfying hard constraints, generalization to larger problem sizes, and zero-shot constraint injection without retraining. The code and data used in this work are available at https://github.com/nikitrian/EnerGNN .
+
+# 2 Related Work 
+
+Learning-based methods for combinatorial optimization. Learning-based approaches to com-binatorial optimization commonly use neural models to amortize expensive search across related problem instances. Neural combinatorial optimization methods learn policies that construct solutions sequentially using graph-based or attention-based architectures, often trained through reinforcement learning (Khalil et al., 2017; Bello et al., 2016; Kool et al., 2019; Kwon et al., 2020). Another 2line of work integrates learning into branch-and-bound algorithms, including branching-variable selection (Khalil et al., 2016; Gasse et al., 2019; Gupta et al., 2020) and search-tree node selection (He et al., 2014). Learning-based predict-and-search methods instead use neural predictions to identify promising variable assignments and solve reduced or restricted optimization problems. Neural Diving predicts distributions over variable assignments and fixes subsets of variables before solving reduced subproblems (Nair et al., 2020). Predict-and-Search (PaS) uses GNN predictions to define search neighborhoods around predicted solutions (Han et al., 2023), while Contrastive Predict-and-Search (ConPaS) extends this approach with contrastive learning to improve solution prediction (Huang et al., 2024). 
+
+Differentiable optimization and constraint enforcement. Decision-focused learning trains predic-tive models using downstream decision quality, while differentiable optimization methods integrate optimization problems into neural networks and propagate learning signals through their solutions (Amos and Kolter, 2017; Agrawal et al., 2019; Ferber et al., 2020; Paulus et al., 2021; Parmentier, 2025). These approaches enable learning of optimization problem parameters, including objective coefficients and, in some formulations, constraints. Related methods enforce feasibility of neural predictions through differentiable correction, projection, or constraint-enforcement layers (Donti et al., 2021; Min and Azizan, 2024; Wang et al., 2023; Tordesillas et al., 2023; Liang et al., 2024). Unlike differentiable optimization approaches, EnerGNN uses the MIP solver for inference without differentiating through it during training. 
+
+Energy-based structured prediction. Structured Prediction Energy Networks (SPENs) learn expressive energy functions over structured outputs and perform inference through continuous relaxation and gradient-based optimization (Belanger and McCallum, 2016). Input Convex Neural Networks (ICNNs) impose convexity with respect to the optimized inputs, enabling globally optimal inference in continuous convex settings (Amos et al., 2017). Graph Structured Prediction Energy Networks combine explicit local structure with learned higher-order interactions and perform iterative inference over a constrained relaxation (Graber and Schwing, 2019). Blondel et al. (2022) develop generalized Fenchel–Young losses for training energy networks without differentiating through the inference optimization problem. Energy-based models have also been integrated into decision-focused stochastic optimization, where learned energy functions are used to approximate optimization landscapes (Kong et al., 2022). More recently, Huang et al. (2026) propose an energy-based Langevin sampler for mixed integer optimization, combining neural sampling of integer variables with linear programming for continuous variables. EnerGNN builds on energy-based structured prediction but designs its learned energy function to admit an exact MIP representation, enabling global minimization over binary configurations under explicit hard constraints without requiring convexity. 
+
+Mixed integer representations of neural networks. Piecewise linear neural networks, particularly ReLU networks, can be represented exactly using mixed integer linear constraints (Tjeng et al., 2017; Fischetti and Jo, 2018; Anderson et al., 2020; Tsay et al., 2021). These formulations have been used for neural network verification and for embedding trained neural surrogate models inside optimization problems. Bound-tightening techniques can improve the strength and computational performance of these formulations (Grimstad and Andersson, 2019). EnerGNN uses these formulations to optimize a learned energy over binary configurations, with the GNN encoder evaluated before optimization and the readout and ReLU energy head represented exactly within the MIP formulation. 
+
+# 3 Methodology 
+
+We present the EnerGNN framework, which combines energy learning over binary configurations with exact constrained inference through mixed integer optimization. We first formulate the learning and inference problems, then describe the graph-based energy architecture, the training objective, and its exact MIP encoding. Finally, we establish the theoretical properties of the resulting framework. 
+
+3.1 Problem Setting 
+
+We consider mixed integer optimization problems of the form 
+
+min  
+
+> y,x
+
+f (y, x)
+
+s.t. Ay + Bx ≤ b,
+
+y ∈ { 0, 1}n.
+
+(1) 3where y denotes binary decision variables and x denotes any remaining operational variables. We consider two settings. In direct decision problems, such as Quadratic Knapsack (QKP) and Combinatorial Auctions (CA), y constitutes the full decision vector. In hierarchical decomposition problems, such as the cell therapy supply chain problem (CART), y represents high-level planning decisions whose assignments define a reduced downstream scheduling problem. In the latter setting, fixing y induces the value function 
+
+F (y) = min  
+
+> x
+
+{f (y, x) | Ay + Bx ≤ b} . (2) EnerGNN does not attempt to reproduce the original objective analytically. Instead, it learns an energy function Eθ (G, y) over assignments of the binary decision variables, referred to as configurations, where G is a graph representation of the problem instance. Training uses solver-generated candidate configurations and their associated solution quality to learn an ordering in which lower energies correspond to higher-quality configurations. For direct decision problems, this ordering reflects the original objective, while for hierarchical decision problems it approximates the ordering induced by 
+
+F (y).At inference, the learned energy is minimized subject to explicit hard constraints: 
+
+y⋆ ∈ arg min  
+
+> y∈{ 0,1}n
+
+Eθ (G, y)
+
+s.t. Ay y ≤ by .
+
+(3) The constraints define the feasible set, while the learned energy defines the objective optimized over that set. This formulation defines Neural-MIP inference. 
+
+3.2 Architecture Design Graph Neural Network Encoder. Each instance is represented as a bipartite graph G = ( C ∪ V , E),where V denotes the binary decision variables and C represents constraints or interactions, depending on the problem structure. Following the variable-constraint graph representation commonly used for learning in MIP solvers (Gasse et al., 2019), a bipartite message-passing GNN produces node embeddings {hv }v∈V and {hc}c∈C , together with a global graph embedding hG . The encoder is evaluated once per instance, and its outputs remain fixed during optimization. 
+
+Optimization-Compatible Readout. To enable exact optimization, the mapping y 7 → z0 must admit a mixed integer linear representation. We construct a benchmark-specific readout that combines the embeddings of selected binary variables with additional structural features: 
+
+z0(y) = 
+
+hX 
+
+> v∈V
+
+yv hv , zlin (y), hG
+
+i
+
+. (4) The additional features zlin (y) capture problem-specific information, such as unselected-item em-beddings and capacity utilization in QKP, or occupied-item embeddings in CA. The global graph embedding hG provides an instance-level representation that remains fixed across binary configura-tions. All decision-dependent readout components are either affine in y or admit exact linearization using auxiliary variables. Benchmark-specific graph representations and readout definitions are provided in Appendix B. 
+
+Energy Head. A multilayer perceptron (MLP) with ReLU activations maps z0(y) to a scalar energy Eθ (G, y). The nonlinear energy head enables the model to capture interactions between binary decisions, while its piecewise linear structure, combined with the optimization-compatible readout, admits an exact mixed integer linear representation. 
+
+3.3 Optimality-Aware Energy Learning 
+
+We train on candidate configurations Y = F ∪ I , containing feasible and infeasible configurations. Each feasible candidate yi is assigned a relative primal gap gi, measured against the best available reference solution for that instance, while each infeasible candidate yk is associated with a normalized constraint violation magnitude νk. The loss combines an optimality-aware contrastive term, feasible calibration, and infeasibility shaping: 
+
+L = Lcon + λcal Lcal + λinf Linf . (5) 4Optimality-aware contrastive loss. For each instance, we construct a target distribution that assigns greater probability to feasible configurations with smaller primal gaps and zero probability to infeasible configurations. The learned energy induces a second distribution over the entire candidate pool, and the Kullback–Leibler divergence encourages the two distributions to agree. 
+
+Lcon = KL( p⋆ ∥ pθ ),p∗ 
+
+> i
+
+=
+
+
+
+exp( −gi/τ rank )
+
+P 
+
+> j∈F
+
+exp( −gj /τ rank ) , i ∈ F ,
+
+0, i / ∈ F ,pθ,i = exp( −Eθ (G, yi)/T )
+
+P 
+
+> j∈Y
+
+exp( −Eθ (G, yj )/T ) , i ∈ Y .
+
+(6) where T is the model softmax temperature and τrank controls the target sharpness. 
+
+Calibration loss. The contrastive loss primarily supervises relative preferences within the candidate pool. We additionally calibrate the energies of feasible configurations against their relative primal gaps using Huber regression with an instance-adaptive transition scale. 
+
+Lcal = 1
+
+|F| 
+
+X
+
+> i∈F
+
+HδF (Eθ (G, yi) − gi) . (7) The transition scale δF is computed from the primal-gap span of feasible candidates. Details are given in Appendix E. 
+
+Infeasibility loss. For infeasible configurations, we use an auxiliary Huber loss to align their energies with a logarithmically scaled measure of constraint violation: 
+
+Linf = 1
+
+|I| 
+
+X
+
+> k∈I
+
+Hδinf (Eθ (G, yk) − log(1 + νk)) , (8) where νk ≥ 0 is the normalized constraint violation. This term provides a graded training signal within the infeasible region, while Lcon discourages infeasible candidates from receiving probability mass at the expense of high-quality feasible configurations. Feasibility at inference is enforced explicitly by the MIP constraints. 
+
+3.4 Inference via Neural-MIP Encoding 
+
+At inference, the trained GNN encoder is evaluated once, while the decision-dependent readout and ReLU energy head are represented exactly within the MIP using auxiliary variables and linear constraints. Valid pre-activation bounds are obtained through interval bound propagation using benchmark-specific input bounds (Gowal et al., 2018). Neurons with fixed activation states are elimi-nated to reduce the formulation size. The exact Neural-MIP formulation is detailed in Appendix C, with the bound-tightening procedure described in Appendix C.2. 
+
+3.5 Theoretical Properties 
+
+We summarize the formal properties induced by the architectural design. Detailed proofs are provided in Appendix A. 
+
+Proposition 3.1 (MIP-representable energy) . For a fixed instance graph G, assume that the encoder is evaluated once, the readout z0(y) admits an exact mixed integer linear representation over a bounded domain, and the energy head is a feed-forward ReLU network. Then y 7 → Eθ (G, y) is exactly MIP-representable on that domain. Proof sketch. For fixed G, encoder outputs are constants. The readout admits an exact mixed integer linear representation by construction. A ReLU network is a composition of affine maps and ReLU operators, each of which admits an exact mixed integer linear encoding over bounded input domains. Hence the full energy admits an exact MIP representation. 5Corollary 3.2 (Exact feasible inference) . If the encoded feasible set 
+
+C = {y ∈ { 0, 1}n | Ay y ≤ by }
+
+is nonempty, then solving 
+
+min  
+
+> y∈C
+
+Eθ (G, y)
+
+is equivalent to solving a mixed integer linear program and returns a feasible solution that is globally optimal with respect to the learned energy. 
+
+Corollary 3.3 (Constraint injection) . The same learned energy can be optimized over any bounded test-time feasible set obtained by adding, removing, or modifying linear constraints over the same decision variables, without retraining the EBM. If the test-time feasible set is not contained in the domain used to compute the original Big-M bounds, the bounds used in the MIP encoding must be recomputed for the new feasible set. 
+
+Proposition 3.4 (Expressivity beyond factorized scoring) . If the readout contains the binary variables 
+
+y, or an affine representation from which they can be recovered, a one-hidden-layer ReLU energy can represent arbitrary quadratic pairwise interactions over binary variables exactly, whereas a factorized linear score cannot represent a nonzero pairwise interaction. 
+
+# 4 Experiments 
+
+We evaluate EnerGNN on three combinatorial optimization problems: Quadratic Knapsack (QKP), Combinatorial Auctions (CA), and a Chimeric Antigen Receptor (CAR) T-cell therapy supply chain (CART). QKP and CA evaluate direct decision inference, while CART considers hierarchical decomposition, where EnerGNN selects high-level capacitated facility location decisions before solving a reduced downstream patient scheduling problem. Our experiments assess solution quality, feasibility, the contribution of nonlinear energy modeling, cross-scale generalization, and zero-shot constraint injection. Each benchmark examines a different aspect of the framework: QKP tests nonlinear interactions between variables, CA evaluates inference under packing constraints, and CART examines learning over complicating variables in hierarchical optimization. 
+
+4.1 Benchmarks Quadratic Knapsack. QKP is an interaction-heavy problem involving the selection of items under a capacity constraint, with both individual profits and pairwise interactions contributing to the objective. We consider instances with 150 binary item-selection variables and an interaction density of 0.30. 
+
+Cell Therapy Supply Chain. CART is a time-indexed, capacitated facility location and patient allocation MIP for personalized CAR T-cell therapy supply chains. The network comprises 16 candidate manufacturing facilities. The formulation incorporates 2 transportation modes and daily scheduling over a 130-day horizon, with patient demand varying from 10 to 650 across different demand distributions. EnerGNN optimizes the 16 first-stage facility location variables, with each configuration of these variables inducing a tactical patient scheduling MIP. 
+
+Combinatorial Auctions. CA is a packing problem with 175 binary bid-selection variables, extended to 250 in the cross-scale evaluation. Each bid consumes a subset of items, and each item can be allocated at most once. Because the original objective is linear and these instances are comparatively easy for modern MIP solvers, CA primarily evaluates constrained inference and generalization rather than computational speedup. Detailed benchmark problem formulations are given in Appendix B. Instance generation procedures and dataset statistics are described in Appendix D. Benchmark-specific Neural-MIP input bounds and hard feasibility constraints are detailed in Appendices C.3 and C.4, respectively. 
+
+4.2 Baselines and Metrics 
+
+We compare against three classes of baselines that differ in how learning is combined with optimiza-tion. Full MIP solves the original problem using branch-and-cut and provides a reference optimum. 
+
+Predict+Search , Neural Diving (Nair et al., 2020), and ConPaS (Huang et al., 2024) use learned predictions to restrict or guide the solver’s search. Predict+Search fixes variables based on prediction 6confidence and solves the resulting reduced problem. Neural Diving samples variable assignments, fixes subsets of variables, and solves multiple reduced subproblems. ConPaS instead imposes a neighborhood constraint around its learned prediction while retaining the original objective. 
+
+Linear+MIP and EnerGNN learn objectives that are optimized directly under explicit hard constraints. Linear+MIP uses additive per-variable scores, whereas EnerGNN learns a joint energy over complete configurations that can capture interactions between decisions. We evaluate Linear+MIP with binary cross-entropy (BCE) and contrastive supervision, and include EnerGNN (Linear) as an ablation that replaces the ReLU energy head with a linear head over the same readout. This isolates the contribution of the nonlinear energy head. All learning-based methods use the same bipartite GNN encoder and input features where applicable, but differ in their prediction heads, training objectives, and inference procedures. Full implementation details and inference settings are provided in Appendix K. We report mean primal gap, runtime, feasibility, and the fraction of instances with a primal gap of at most 1% relative to the certified global optimum. Primal gaps are computed over all test instances, assigning a 100% penalty to infeasible outputs. EnerGNN achieves 100% feasibility across the reported experiments, with hard constraints enforced directly during inference. Table 1: Main results across benchmarks (mean over test instances). We report primal gap, runtime, feasibility, and the fraction of instances achieving either exact recovery or a solution within 1% of the global optimum.                                                                                                   
+
+> QKP CART CA Method Gap (%) Time (s)
+> ≤1% (%) Feas. (%) Gap (%) Time (s)
+> ≤1% (%) Feas. (%) Gap (%) Time (s)
+> ≤1% (%) Feas. (%) Full MIP (Gurobi) 0.00 525.21 100 100 0.00 3728.82 100 100 0.00 0.14 100 100 Predict+Search 1.13 0.12 97 99 22.02 251.79 21 83 29.81 0.01 0100 Neural Diving 1.04 1.52 99 99 1.53 398.34 65 100 2.91 1.23 5100 ConPaS 0.95 1.03 100 100 0.02 3404.19 100 100 0.90 0.26 65 100 Linear+MIP (BCE) 4.92 0.03 20.1 100 15.81 273.60 17 100 83.99 0.02 0100 Linear+MIP (Contrastive) 58.55 0.03 0.00 100 24.18 410.04 4100 30.82 0.02 0100 EnerGNN (Linear) 26.87 0.28 0.00 100 21.80 391.36 5100 0.20 0.31 95 100 EnerGNN (MLP) 0.31 3.56 99 100 0.05 214.03 100 100 0.53 8.62 77 100
+
+4.3 Main Results 
+
+Table 1 summarizes the results across the three benchmarks. On QKP, EnerGNN (MLP) achieves the lowest mean primal gap among learning-based methods at 0.31%, with 99% of instances within 1% of the global optimum and 100% feasibility. ConPaS, Neural Diving, and Predict+Search achieve mean gaps of 0.95%, 1.04%, and 1.13%, respectively, while the linear scoring baselines perform substantially worse. The difference between EnerGNN (MLP) and its linear head ablation (0.31% versus 26.87%) is particularly informative. Both use the same graph encoder and decision-dependent readout, but the nonlinear head can capture additional interactions between readout features. Predict+Search, Neural Diving, and ConPaS remain faster, illustrating a trade-off between solution quality and inference time. On CART, the strategic facility location decisions determine a much larger downstream patient allocation MIP. Neural Diving and ConPaS use learned predictions to restrict the strategic search, achieving mean gaps of 1.53% and 0.02% in 398.34 s and 3404.19 s, respectively. While Neural Diving uses parallel dives, allowing flips in the ConPaS neighborhood requires retaining all candidate facilities in our CART formulation, preventing the elimination of facility-dependent patient allocation dimensions. EnerGNN instead learns the downstream value of complete strategic configurations offline and optimizes this learned energy during inference. Once the facility configuration is selected, the operational MIP is constructed using only the selected facilities, reducing the number of variables and constraints by approximately 77% (Appendix F). EnerGNN achieves a 0.05% mean gap in 214.03 s, with all test instances within 1% of the global optimum and 100% feasibility, making it approximately 1.9 × faster than Neural Diving, 15.9 × faster than ConPaS, and 17.4 × faster than the monolithic MIP. 70 50 0510 ½ = 0.997 
+
+## (a) QKP    
+
+> 050 100 01
+> ½= 0.993
+
+## (b) CART    
+
+> 020 024½= 0.941
+
+## (c) CA Primal Gap (%) Normalized Energy Figure 2: Energy vs. solution quality. Spearman ρ is reported per benchmark. On CA, the full MIP is solved by Gurobi in 0.14 s, so this benchmark is not intended to demonstrate solver acceleration. Instead, it tests whether a learned energy can be optimized under a large number of explicit packing constraints. The linear EnerGNN head achieves a 0.20% mean gap with 95% of instances within 1% of the optimum and 100% feasibility. It outperforms the nonlinear variant, which achieves a 0.53% mean gap at substantially higher inference cost. In contrast to QKP, CA has a linear original objective, and the linear energy head performs better on these instances. These results indicate that the benefit of nonlinear energy heads depends on the problem structure. Figure 2 further examines whether the learned energy reflects the quality of complete configurations. The strong rank correlations between energy and primal gap across QKP, CART, and CA ( ρ ≥ 0.94 )indicate that lower energy configurations generally correspond to better solutions. Table 2: Cross-scale generalization without retraining.                                           
+
+> Benchmark Train →test Primal Gap (%) Instances ≤1% (%) Feasibility (%)
+> CART m= 16 →12 0.98 63 100 CART m= 16 →16 0.05 100 100 CART m= 16 →20 1.23 49 100 CA 175 →175 0.20 95 100 CA 175 →250 0.98 69 100
+
+4.4 Cross-Scale Generalization 
+
+We evaluate whether EnerGNN transfers to different problem sizes without retraining. In the CART setting, the model is trained on instances with m = 16 candidate facilities, and is evaluated at m = 12 
+
+and m = 20 . In CA, the number of binary bid variables increases from 175 during training to 250 at test time. Table 2 shows that EnerGNN maintains 100% feasibility across all evaluated scales. In CART, the model achieves a mean gap of 0.98% when transferred to m = 12 facilities and 1.23% when extrapolated to m = 20 , compared with 0.05% at the training scale. For CA, we report the linear head variant of EnerGNN, which achieves the best performance on this benchmark. Results for the nonlinear energy head are provided in Appendix I. Increasing the number of bids from 175 to 250 increases the mean primal gap from 0.20% to 0.98%. These results show that the learned energy can be applied to variable spaces of different sizes without retraining, although solution quality degrades under larger extrapolation shifts. 
+
+4.5 Zero-Shot Constraint Injection 
+
+We evaluate whether a trained EnerGNN can be reused after the feasible region changes without retraining. The learned energy is held fixed, and only the constraints of the inference MIP are modified. In CART ( m = 16 ), we deactivate one, two, or three facilities selected in the original optimum. In CA, we remove 5, 10, or 15 bids selected in the original optimal allocation, corresponding to approximately 20%, 40%, and 60% of the selected bids, respectively, and additionally test a setting in which the highest-value bid rejected by the original optimal solution is forced into the allocation. The CART evaluation comprises 1,092 perturbations in total (319, 431, and 342 cases for removing one, two, and three selected facilities, respectively). For CA, each bid-removal setting is evaluated over 1,100 perturbations, while the forced-bid setting contains 100 perturbations. For CA constraint-8Table 3: Zero-shot constraint injection. We report the fraction of originally selected variables removed, the mean Hamming shift from the original optimum, mean primal gap, the fraction of instances within 1% of the modified global optimum, and feasibility.                                                           
+
+> EnerGNN Neural Diving ConPaS Benchmark Constraint shift
+> Selected removed (%) Hamming shift Gap (%)
+> ≤1%
+> (%) Feas. (%) Gap (%)
+> ≤1%
+> (%) Feas. (%) Gap (%)
+> ≤1%
+> (%) Feas. (%) CART (facilities) Remove 1 31.35 3.84 0.21 96.24 100 2.99 40.44 89.66 0.30 87.15 100 Remove 2 50.81 5.27 0.34 93.27 100 4.38 25.06 72.85 0.70 77.96 99.77 Remove 3 61.99 6.26 0.45 91.23 100 4.32 20.18 49.12 1.08 69.88 98.28 CA (bids) Remove 5 20.30 34.87 0.21 93.36 100 3.41 9.73 100 1.13 54.09 100 Remove 10 40.61 38.77 0.17 95.27 100 4.12 5.09 100 1.45 41.09 100 Remove 15 60.91 41.36 0.16 95.73 100 4.76 3.82 100 1.62 38.27 100 Force 1 –31.25 0.07 99.00 100 3.60 17.00 100 1.06 57.00 100
+
+injection experiments, we use the linear EnerGNN variant, which performs best on the in-distribution CA benchmark. Table 3 compares EnerGNN with Neural Diving and ConPaS under the same constraint shifts. En-erGNN remains feasible in every case and achieves the lowest mean gap across all tested perturbations. On CART, its mean gap increases from 0.21% to 0.45% as one to three originally selected facilities are deactivated, while maintaining at least 91.23% of instances within 1% of the modified global optimum. By contrast, Neural Diving degrades substantially under the same shifts, reaching only 49.12% feasibility when three facilities are deactivated, while ConPaS exhibits larger gaps than EnerGNN across all CART perturbations. On CA, EnerGNN achieves mean gaps between 0.07% and 0.21%, with at least 93.36% of instances within 1% of the modified optimum. Both baselines obtain substantially larger gaps across all CA constraint shifts. The perturbations induce substantial changes in the selected solutions, with a mean Hamming shift of 6.26 when three CART facilities are deactivated and 41.36 when 15 CA bids are removed. Additional constraint-injection experiments are reported in Appendix H. 
+
+4.6 Loss Ablations 
+
+Table 4: Loss ablation.                           
+
+> CART QKP CA Variant Gap (%) ≤1% (%) Gap (%) ≤1% (%) Gap (%) ≤1% (%) Full EnerGNN 0.05 100 0.31 99 0.53 77 No calibration loss 0.78 70 0.88 68 7.69 4No infeasibility loss 0.06 100 0.39 99 0.58 77
+
+We ablate the loss components used to shape the energy landscape. The full loss combines an optimality-aware contrastive loss, feasible calibration, and infeasibility shaping. We additionally evaluate an alternative loss enforcing strict feasible–infeasible ordering in Appendix J.3. Table 4 shows that the calibration loss is important for learning an energy scale that reflects solution quality. Removing calibration increases the mean gap on CART from 0.05% to 0.78% and reduces the fraction of instances within 1% of the global optimum from 100% to 70% . On QKP, the corresponding fraction decreases from 99% to 68% , while the largest degradation occurs on CA, where the mean gap increases from 0.53% to 7.69% and only 4% of instances remain within 1% of the optimum. In contrast, removing the infeasibility term has only a limited effect across all three benchmarks, suggesting that its contribution to solution quality is comparatively small. 
+
+4.7 Inference Size and Tractability 
+
+Table 5 reports the size of the Neural-MIP, where |y| denotes the original binary variables optimized by EnerGNN. The graph encoder is evaluated once before optimization and therefore does not 9contribute optimization variables. Additional binaries arise from the exact readout linearizations and the compact ReLU energy head. Appendix J.1 shows that increasing the width or depth of the energy head substantially increases inference time without improving solution quality. Table 5: Neural-MIP formulation dimensions and mean inference time across test instances. For CART, inference time excludes downstream patient scheduling.                           
+
+> Benchmark |y|Readout binaries ReLU binaries Total binaries Continuous variables Hard feasibility constraints Total constraints Inference time (s)
+> CART 16 432 52 290 1461 1.46 QKP 150 032 182 292 1389 3.56 CA 175 032 207 298 131.74 525.74 8.62
+
+4.8 Limitations 
+
+EnerGNN requires the decision-dependent energy head to remain MIP-representable, creating an expressiveness–tractability trade-off in the embedded component. In our experiments, compact shallow heads are sufficient, while increasing width or depth can substantially increase inference time without systematically improving solution quality. Additional representational capacity can instead be placed in the GNN encoder, which is evaluated before optimization and does not increase Neural-MIP size. Training also relies on solver-generated candidate configurations and labels, introducing a one-time offline cost that is most appropriate for repeated-deployment settings; a complete cost and amortization analysis is provided in Appendix D.1. Finally, exact inference is with respect to the learned energy rather than the original objective. Constraint injection guarantees feasibility with respect to the encoded constraints, but solution quality may degrade under sufficiently large distribution or feasible-set shifts. 
+
+# 5 Conclusion 
+
+We introduced EnerGNN, an energy-based framework that learns optimization-compatible en-ergy functions over binary configurations and minimizes them under explicit hard constraints through mixed integer optimization. The framework combines a graph-based encoder with a MIP-representable readout and nonlinear energy head, enabling exact optimization of the learned energy. Our experiments demonstrate the framework across direct decision and hierarchical decomposition settings. EnerGNN achieves near-optimal solutions with 100% feasibility across Quadratic Knapsack, Combinatorial Auctions, and a personalized cell therapy supply chain problem. On the latter, EnerGNN achieves substantial computational speedups over the monolithic MIP and learning-based baselines while maintaining near-optimal solution quality. EnerGNN also generalizes to larger problem instances without retraining and supports zero-shot constraint injection, allowing the same learned energy to be optimized under changing operational constraints while preserving feasibility. This adaptability is particularly valuable in deployment settings where operational requirements and resource availability may change over time. More broadly, EnerGNN suggests a design principle for reliable AI systems. When discrete decisions must satisfy hard constraints, learning can shape objectives that algorithmic modules optimize rather than producing final decisions directly. This shifts the learned object from the decision itself to an optimization-compatible objective over decisions, allowing learned preferences and explicit constraints to remain separate at inference. 
+
+# References     
+
+> Yann LeCun, Sumit Chopra, Raia Hadsell, Marc’Aurelio Ranzato, and Fu Jie Huang. A tutorial on energy-based learning. In Predicting Structured Data . MIT Press, 2006. David Belanger and Andrew McCallum. Structured prediction energy networks. In International Conference on Machine Learning , pages 983–992. PMLR, 2016. Yoshua Bengio, Andrea Lodi, and Antoine Prouvost. Machine learning for combinatorial optimization: a methodological tour d’horizon. European Journal of Operational Research , 290(2):405–421, 2021.
+
+10 Elias Khalil, Hanjun Dai, Yuyu Zhang, Bistra Dilkina, and Le Song. Learning combinatorial optimization algorithms over graphs. Advances in neural information processing systems , 30, 2017. Maxime Gasse, Didier Chételat, Nicola Ferroni, Laurent Charlin, and Andrea Lodi. Exact combinatorial optimization with graph convolutional neural networks. Advances in neural information processing systems ,32, 2019. Vinod Nair, Sergey Bartunov, Felix Gimeno, Ingrid Von Glehn, Pawel Lichocki, Ivan Lobov, Brendan O’Donoghue, Nicolas Sonnerat, Christian Tjandraatmadja, Pengming Wang, et al. Solving mixed inte-ger programs using neural networks. arXiv preprint arXiv:2012.13349 , 2020. Taoan Huang, Aaron Ferber, Arman Zharmagambetov, Yuandong Tian, and Bistra Dilkina. Contrastive predict-and-search for mixed integer linear programs. In Proceedings of the 41st International Conference on Machine Learning , pages 19757–19771, 2024. Colin Graber and Alexander G. Schwing. Graph structured prediction energy networks. In Advances in Neural Information Processing Systems , volume 32, 2019. Matteo Fischetti and Jason Jo. Deep neural networks and mixed integer linear optimization. Constraints , 23(3): 296–309, 2018. Ross Anderson, Joey Huchette, Will Ma, Christian Tjandraatmadja, and Juan Pablo Vielma. Strong mixed-integer programming formulations for trained neural networks. Mathematical Programming , 183(1):3–39, 2020. Petar Veliˇ ckovi´ c and Charles Blundell. Neural algorithmic reasoning. Patterns , 2(7), 2021. Irwan Bello, Hieu Pham, Quoc V Le, Mohammad Norouzi, and Samy Bengio. Neural combinatorial optimization with reinforcement learning. arXiv preprint arXiv:1611.09940 , 2016. Wouter Kool, Herke van Hoof, and Max Welling. Attention, learn to solve routing problems! In International Conference on Learning Representations , 2019. Yeong-Dae Kwon, Jinho Choo, Byoungjip Kim, Iljoo Yoon, Youngjune Gwon, and Seungjai Min. POMO: Policy optimization with multiple optima for reinforcement learning. Advances in neural information processing systems , 33:21188–21198, 2020. Elias Khalil, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina. Learning to branch in mixed integer programming. In Proceedings of the AAAI conference on artificial intelligence , volume 30, 2016. Prateek Gupta, Maxime Gasse, Elias Khalil, Pawan Mudigonda, Andrea Lodi, and Yoshua Bengio. Hybrid models for learning to branch. Advances in neural information processing systems , 33:18087–18097, 2020. He He, Hal Daumé, and Jason Eisner. Learning to search in branch and bound algorithms. Advances in neural information processing systems , 27, 2014. Qingyu Han, Linxin Yang, Qian Chen, Xiang Zhou, Dong Zhang, Akang Wang, Ruoyu Sun, and Xiaodong Luo. A GNN-guided predict-and-search framework for mixed-integer linear programming. In The Eleventh International Conference on Learning Representations , 2023. Brandon Amos and J Zico Kolter. OptNet: Differentiable optimization as a layer in neural networks. In 
+
+International Conference on Machine Learning , pages 136–145, 2017. Akshay Agrawal, Brandon Amos, Shane Barratt, Stephen Boyd, Steven Diamond, and J Zico Kolter. Differen-tiable convex optimization layers. Advances in neural information processing systems , 32, 2019. Aaron Ferber, Bryan Wilder, Bistra Dilkina, and Milind Tambe. MIPaaL: Mixed integer program as a layer. In 
+
+Proceedings of the AAAI conference on artificial intelligence , volume 34, pages 1504–1511, 2020. Anselm Paulus, Michal Rolínek, Vít Musil, Brandon Amos, and Georg Martius. CombOptNet: Fit the right np-hard problem by learning integer programming constraints. In International Conference on Machine Learning , pages 8443–8453. PMLR, 2021. Axel Parmentier. Learning structured approximations of combinatorial optimization problems. Open Journal of Mathematical Optimization , 6:1–27, 2025. Priya L. Donti, David Rolnick, and J Zico Kolter. DC3: A learning method for optimization with hard constraints. In International Conference on Learning Representations , 2021. Youngjae Min and Navid Azizan. HardNet: Hard-constrained neural networks with universal approximation guarantees. arXiv preprint arXiv:2410.10807 , 2024. 
+
+11 Runzhong Wang, Yunhao Zhang, Ziao Guo, Tianyi Chen, Xiaokang Yang, and Junchi Yan. LinSATNet: the positive linear satisfiability neural networks. In International Conference on Machine Learning , pages 36605–36625. PMLR, 2023. Jesus Tordesillas, Jonathan P How, and Marco Hutter. RAYEN: Imposition of hard convex constraints on neural networks. arXiv preprint arXiv:2307.08336 , 2023. Enming Liang, Minghua Chen, and Steven H Low. Homeomorphic projection to ensure neural-network solution feasibility for constrained optimization. Journal of Machine Learning Research , 25(329):1–55, 2024. Brandon Amos, Lei Xu, and J. Zico Kolter. Input convex neural networks. In Proceedings of the 34th International Conference on Machine Learning , volume 70 of Proceedings of Machine Learning Research ,pages 146–155. PMLR, 2017. Mathieu Blondel, Felipe Llinares-López, Robert Dadashi, Léonard Hussenot, and Matthieu Geist. Learning energy networks with generalized Fenchel–Young losses. Advances in Neural Information Processing Systems ,35:12516–12528, 2022. Lingkai Kong, Jiaming Cui, Yuchen Zhuang, Rui Feng, B Aditya Prakash, and Chao Zhang. End-to-end stochastic optimization with energy-based model. Advances in neural information processing systems , 35: 11341–11354, 2022. Yixin Huang, Shengyu Feng, and Yiming Yang. Unsupervised neural Langevin sampler for mixed integer linear programming. In Proceedings of the 43rd International Conference on Machine Learning , volume 306 of 
+
+Proceedings of Machine Learning Research , pages 46553–46567. PMLR, 2026. Vincent Tjeng, Kai Xiao, and Russ Tedrake. Evaluating robustness of neural networks with mixed integer programming. arXiv preprint arXiv:1711.07356 , 2017. Calvin Tsay, Jan Kronqvist, Alexander Thebelt, and Ruth Misener. Partition-based formulations for mixed-integer optimization of trained ReLU neural networks. Advances in neural information processing systems ,34:3068–3080, 2021. Bjarne Grimstad and Henrik Andersson. Relu networks as surrogate models in mixed-integer linear programs. 
+
+Computers & Chemical Engineering , 131:106580, 2019. Sven Gowal, Krishnamurthy Dvijotham, Robert Stanforth, Rudy Bunel, Chongli Qin, Jonathan Uesato, Relja Arandjelovic, Timothy Mann, and Pushmeet Kohli. On the effectiveness of interval bound propagation for training verifiably robust models. arXiv preprint arXiv:1810.12715 , 2018. Kevin Leyton-Brown, Mark Pearson, and Yoav Shoham. Towards a universal test suite for combinatorial auction algorithms. In Proceedings of the 2nd ACM conference on Electronic commerce , pages 66–76, 2000. David Pisinger. The quadratic knapsack problem—a survey. Discrete applied mathematics , 155(5):623–648, 2007. Gurobi Optimization, LLC. Gurobi Optimizer Reference Manual , 2023. URL https://www.gurobi.com .Niki Triantafyllou, Andrea Bernardi, Matthew Lakelin, Nilay Shah, and Maria M Papathanasiou. A digital platform for the design of patient-centric supply chains. Scientific Reports , 12(1):17365, 2022. 
+
+12 A Proofs of Theoretical Properties 
+
+We provide the proofs for the theoretical properties stated in Section 3.5. Throughout this appendix, the instance graph G is fixed. The graph encoder is evaluated once before inference, and its outputs are treated as constants. The optimization variables in Neural-MIP inference are therefore the original binary decision variables, the readout auxiliary variables, the ReLU activation variables, and the scalar energy variable. 
+
+A.1 Preliminaries Definition A.1 (MIP-representability) . Let D ⊂ Rd be a bounded domain. A function f : D → R is MIP-representable on D if its graph restricted to D can be described exactly by a finite collection of linear constraints involving auxiliary continuous and integer variables. Equivalently, there exists a mixed integer linear feasible set whose projection onto the input-output coordinates is exactly 
+
+{(x, t ) | t = f (x)} .
+
+We use the following standard exact representation of a ReLU unit. 
+
+Lemma A.1 (Exact ReLU encoding) . Let h = max {0, a }, where the pre-activation a has finite bounds 
+
+a ≤ a ≤ a. 
+
+Assume a ≤ 0 ≤ a. Then the graph of the ReLU can be represented exactly using one binary variable 
+
+z ∈ { 0, 1} and the linear constraints 
+
+h ≥ a, (9) 
+
+h ≥ 0, (10) 
+
+h ≤ a − a(1 − z), (11) 
+
+h ≤ az. (12) 
+
+If the bounds imply that the ReLU is always active or always inactive, the binary variable can be removed and the ReLU can be replaced by a linear equality. Proof. Consider first the case z = 0 . Constraint (12) gives h ≤ 0, and constraint (10) gives 
+
+h ≥ 0. Hence h = 0 . Constraint (9) then implies a ≤ 0. Therefore the inactive case represents 
+
+h = max {0, a } = 0 .Now consider the case z = 1 . Constraint (11) gives h ≤ a, and constraint (9) gives h ≥ a. Hence 
+
+h = a. Constraint (10) also implies a ≥ 0. Therefore the active case represents h = max {0, a } = a.The two cases together describe exactly the graph of the ReLU over the bounded interval [a, a ].
+
+A.2 Proof of Proposition 3.1 
+
+Proof. Fix an instance graph G. The graph encoder produces node embeddings and a global graph embedding. Since the encoder is evaluated before inference, these embeddings are constants inside the optimization problem. The readout maps the binary decision vector y to an input feature vector z0(y) for the energy head. By construction, each component of the readout is either affine in y or admits an exact mixed integer linear representation using auxiliary variables. The graph of the readout can therefore be described by linear constraints together with integrality restrictions. The energy head is a feed-forward ReLU network. Each layer applies an affine transformation followed by componentwise ReLU activations. The affine transformations are represented by linear equalities. Each ReLU activation is represented exactly by Lemma A.1, using valid lower and upper bounds on the corresponding pre-activation. Combining the readout representation, the affine layer equations, the ReLU encodings, and the final linear output equation gives a finite mixed integer linear representation of the graph of 
+
+y 7 → Eθ (G, y).
+
+Thus, for fixed G, the learned energy is MIP-representable. 13 A.3 Proof of Corollary 3.2 
+
+Proof. By Proposition 3.1, the learned energy Eθ (G, y) admits an exact mixed integer linear repre-sentation. The feasible set 
+
+C =
+
+n
+
+y ∈ { 0, 1}|V| | Ay y ≤ by
+
+o
+
+is described by linear constraints and binary restrictions. The inference problem can therefore be written as the mixed integer linear optimization problem 
+
+min  
+
+> y,ξ,e
+
+e
+
+s.t. e = Eθ (G, y),
+
+Ay y ≤ by ,
+
+y ∈ { 0, 1}|V| ,
+
+where ξ denotes all auxiliary readout and ReLU variables. If C is nonempty and this optimization problem is solved to global optimality, the returned solution is feasible by construction and globally optimal with respect to the learned energy over C. If the solver is stopped early, any returned incumbent remains feasible, although it need not be globally optimal with respect to the learned energy. 
+
+A.4 Proof of Corollary 3.3 
+
+Proof. The learned parameters θ define the energy function Eθ (G, y). This function does not depend on the particular deployment-time feasible region. The feasible region enters only through the constraints imposed during inference. Let 
+
+Ctest =
+
+n
+
+y ∈ { 0, 1}|V| | Atest y ≤ btest 
+
+o
+
+be a test-time feasible set obtained by adding, removing, or modifying linear constraints over the same decision variables. The same learned energy can be optimized over the modified feasible set by solving 
+
+y⋆ ∈ arg min 
+
+> y∈C test
+
+Eθ (G, y).
+
+Exactness of the mixed integer encoding requires valid finite bounds for all ReLU pre-activations over the feasible set used at inference. If Ctest is contained in the domain used to compute the original Big-M constants, the original bounds remain valid. If the feasible set is expanded or otherwise leaves that domain, the Big-M constants are recomputed by bound propagation over Ctest . This changes only the encoding constants and does not require retraining the neural model. 
+
+A.5 Bound Tightening 
+
+The exact ReLU encoding requires valid lower and upper bounds on each pre-activation. In practice, these bounds are obtained using interval bound propagation through the assembled readout and energy head. Tighter bounds make the mixed integer linear representation stronger by reducing Big-M constants and removing ReLU binaries whose activation status is fixed. The bound computation used in the experiments is described in Appendix C.2. 
+
+A.6 Expressivity Beyond Factorized Linear Scoring 
+
+We next formalize why the nonlinear energy head can represent interactions that are impossible for additive per-variable scoring functions. 
+
+Definition A.2 (Factorized linear score) . A score over binary configurations is factorized linear if it decomposes additively over individual variables as 
+
+L(y) = b + X
+
+> i
+
+wiyi.
+
+Such a score assigns a contribution to each selected variable independently of which other variables are selected. 14 Proposition A.2 (Expressivity beyond linear scoring) . Let 
+
+Q(y) = c +
+
+> n
+
+X
+
+> i=1
+
+aiyi + X
+
+> (i,j )∈E
+
+qij yiyj
+
+be a quadratic real-valued function over binary variables y ∈ { 0, 1}n. If the readout contains the binary variables y, or an affine representation from which they can be recovered, then a one-hidden-layer ReLU energy head with at most n + |E| hidden units can represent Q(y) exactly on the binary domain. If the architecture includes skip connections from the readout input to the output layer, then |E| hidden units are sufficient. Moreover, no factorized linear score can represent a quadratic function with a nonzero interaction coefficient. Proof. For binary variables, 
+
+yiyj = max(0 , y i + yj − 1) .
+
+Thus each quadratic interaction can be represented by one ReLU unit with pre-activation yi + yj − 1.The linear terms can be represented using additional ReLU units since yi = max(0 , y i) for yi ∈{0, 1}. The final linear layer combines these units with weights qij and ai, and adds the bias c. Hence a one-hidden-layer ReLU network with at most n + |E| hidden units represents Q exactly on the binary domain. To show that factorized linear scoring cannot represent nonzero interactions, fix all coordinates of y
+
+except yi and yj . For any factorized linear score 
+
+L(y) = b +
+
+> n
+
+X
+
+> ℓ=1
+
+wℓyℓ,
+
+the mixed finite difference with respect to coordinates i and j is 
+
+∆ij L = L(y11 ) − L(y10 ) − L(y01 ) + L(y00 ) = 0 ,
+
+where yab denotes the vector obtained by setting yi = a and yj = b while keeping all other coordi-nates fixed. For the quadratic interaction qij yiyj , the same finite difference equals qij . Therefore, if 
+
+qij ̸ = 0 , no factorized linear score can represent the function exactly. Proposition A.2 shows that the nonlinear energy head is not merely an implementation detail. It strictly enlarges the class of binary objectives representable by exact Neural-MIP inference beyond additive per-variable scoring. 
+
+# B Benchmark Problem Formulations 
+
+We provide the complete MIP formulations for all three benchmarks. Instance generation procedures and dataset statistics are described in Appendix D. 
+
+B.1 Combinatorial Auctions (CA) 
+
+The combinatorial auction problem (Leyton-Brown et al., 2000) allocates a set of items C to a set of bids B so as to maximize total revenue. Each bid b ∈ B specifies a bundle N (b) ⊆ C together with a value pb > 0. Let yb ∈ { 0, 1} indicate whether bid b is accepted. The resulting 0–1 packing formulation is 
+
+max 
+
+> y∈{ 0,1}|B|
+
+X
+
+> b∈B
+
+pb yb s.t. X  
+
+> b:c∈N (b)
+
+yb ≤ 1 ∀c ∈ C . (13) The packing constraints enforce that each item is allocated to at most one accepted bid. The problem is NP-hard in general (Leyton-Brown et al., 2000). We generate CA instances using the arbitrary-relations generator of Leyton-Brown et al. (2000). We consider a custom CA training distribution with (|C| , |B| ) = (100 , 175) and evaluate cross-scale generalization on a harder test distribution with (|C| , |B| ) = (100 , 250) . Exact reference solutions are generated with a time limit of 3600 s per instance. 15 Graph encoding. We represent each instance as a bipartite graph with item nodes C and bid nodes 
+
+B. An edge (c, b ) is present if and only if item c belongs to bid b, i.e., if Acb = 1 in the incidence matrix A ∈ { 0, 1}|C|×|B| . Our encoder is therefore a bipartite message-passing neural network over constraint-side item nodes and variable-side bid nodes. 
+
+Features. For CA, item-node features encode local participation statistics (e.g., item degree and dummy-item indicators), while bid-node features encode bid value, bundle size, value-per-item, and a structural conflict proxy derived from competing bids. Both node types additionally receive a small amount of repeated global context, such as instance density and average bid statistics. Edge features encode normalized incidence-level signals linking item popularity, bid value, and bundle size. 
+
+Readout. Let hb and hc denote the final embeddings of bid b and item c, respectively. For each item, an auxiliary continuous variable uc indicates whether it is occupied by at least one selected bid: 
+
+uc = I
+
+ X  
+
+> b:c∈N (b)
+
+yb ≥ 1
+
+ . (14) This relationship is represented exactly using 
+
+uc ≤ X  
+
+> b:c∈N (b)
+
+yb, ∀c ∈ C , (15) 
+
+uc ≥ yb, ∀c ∈ C , ∀b : c ∈ N (b). (16) The corresponding occupied-item embedding pool is 
+
+hocc (y) = X
+
+> c∈C
+
+uchc. (17) The readout additionally includes the compact scalar-summary vector 
+
+sCA (y) = [ sbid , s occ , s dummy , s conf , s mass , s value , s bundle , s risk ] , (18) whose components are the selected-bid fraction, occupied-item fraction, occupied dummy-item frac-tion, conflicted-item fraction, normalized conflict mass, normalized selected-value sum, normalized selected-bundle-size sum, and normalized selected conflict-risk sum, respectively. The complete CA readout is 
+
+z0CA (y) = 
+
+"X
+
+> b∈B
+
+ybhb, X
+
+> c∈C
+
+uchc, sCA (y), hG
+
+#
+
+. (19) The first pool represents the accepted bids, while the second captures their consequences on the item side of the bipartite graph. The scalar summaries provide compact information about selection density, item occupancy, aggregate value, bundle size, and conflict structure. 
+
+B.2 Quadratic Knapsack (QKP) 
+
+The Quadratic Knapsack Problem (Pisinger, 2007) selects a subset of n items to maximize a quadratic objective subject to a linear capacity constraint: 
+
+max 
+
+> y∈{ 0,1}n
+> n
+
+X
+
+> i=1
+
+pi yi +
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=i+1
+
+Qij yiyj s.t. 
+
+> n
+
+X
+
+> i=1
+
+wi yi ≤ W, (20) where pi is the linear profit of item i, Qij is the pairwise interaction profit between items i and j, wi
+
+is the weight of item i, and W is the knapsack capacity. The quadratic term captures both positive and negative interactions between co-selected items, which motivates learning an energy function over complete configurations rather than independent per-item scores. We consider instances with n = 150 items and interaction density ρ = 0 .30 . Linear profits are sampled as pi ∼ U [0 , 10] , item weights as wi ∼ U [1 , 10] , and the knapsack capacity is set to 
+
+W = 0 .5 P 
+
+> i
+
+wi. Pairwise interactions are obtained from a symmetric random matrix with off-diagonal entries drawn from U[−2, 8] , which is then sparsified to the target density ρ. Reference solutions are computed with Gurobi (Gurobi Optimization, LLC, 2023) using a time limit of 3600 sper instance. 16 Graph encoding. We represent each instance as a bipartite graph with item nodes I and interaction nodes P . Each interaction node p = ( i, j ) ∈ P corresponds to a nonzero upper-triangular pairwise coefficient Qij with i < j , and is connected to both item nodes i and j. This construction allows message passing to propagate pairwise interaction information into the item embeddings used by the downstream readout. 
+
+Features. For QKP, item-node features encode linear profit, weight, interaction degree, and average interaction strength, together with repeated global context such as graph density and aggregate interaction scale. Interaction-node features encode the magnitude and sign of the pairwise term, along with simple summaries of the associated item weights and profits. Edge features transmit normalized interaction strength and capacity-relevant pair information. 
+
+Readout. Each QKP instance is represented as a bipartite graph between item nodes I and inter-action nodes P. Each interaction node p = ( i, j ) ∈ P corresponds to a nonzero upper-triangular pairwise coefficient Qij and is connected to item nodes i and j. The resulting item embeddings hi
+
+therefore encode both item-level attributes and information propagated from the quadratic interactions. Let yi ∈ { 0, 1} indicate whether item i is selected. In addition to the selected-item embedding pool, QKP uses the unselected-item pool 
+
+hunsel (y) = X
+
+> i∈I
+
+(1 − yi)hi, (21) the selected-item fraction 
+
+rsel (y) = 1
+
+|I| 
+
+X
+
+> i∈I
+
+yi, (22) and the normalized capacity usage 
+
+rcap (y) = 1
+
+W
+
+X
+
+> i∈I
+
+wiyi. (23) The additional structured component is 
+
+zQKP lin (y) = [ hunsel (y), r sel (y), r cap (y)] . (24) The complete QKP readout is 
+
+z0QKP (y) = 
+
+"X
+
+> i∈I
+
+yihi, X
+
+> i∈I
+
+(1 − yi)hi, 1
+
+|I| 
+
+X
+
+> i∈I
+
+yi, 1
+
+W
+
+X
+
+> i∈I
+
+wiyi, hG
+
+#
+
+. (25) The selected- and unselected-item pools expose information about both sides of the current partition of the item set. The two scalar summaries describe the size of the selected set and its consumption of the available knapsack capacity. All four decision-dependent components are affine in y.
+
+B.3 Personalized Medicine Supply Chain (CART) 
+
+The personalized medicine supply chain problem optimizes the strategic selection of cell therapy manufacturing facilities and the routing of patient therapies through a multi-echelon logistics network under strict capacity and turnaround-time constraints (Triantafyllou et al., 2022). 
+
+Problem structure. The problem decomposes naturally into two levels: • Strategic master problem : select which subset of |M| candidate manufacturing facilities to open. This involves |M| binary variables ym ∈ { 0, 1}.• Operational subproblem : given open facilities, route all patient therapies through the network to minimize total cost subject to capacity and timing constraints. This involves continuous and binary flow variables but becomes tractable once the facility set is fixed. The monolithic MILP is intractable at scale because the number of patient routing variables grows as 
+
+|P | × | C| × | M | × | J| × | T |, which reaches millions for realistic instances. EnerGNN learns an energy over facility location configurations y = {ym} which is then optimized under the strategic feasibility constraints; the operational subproblem induced by the selected configuration is subsequently solved exactly by Gurobi. 17 Full MILP formulation. We provide the detailed mixed integer linear programming (MILP) formulation for the personalized medicine CAR T-cell therapy supply chain problem. The model jointly optimizes facility location, patient assignment, and time-dependent logistics under capacity and turnaround-time constraints. 
+
+Sets and indices Let P, C, M, H, J , and T denote the sets of patients, clinical leukapheresis sites, candidate manufacturing facilities, hospitals, transportation modes, and discrete time periods, respectively. Indices are denoted by p, c, m, h, j, and t.
+
+Parameters 
+
+• Cinv  
+
+> m
+
+: capital investment cost for opening manufacturing facility m.• Cfix  
+
+> m
+
+: fixed operating cost of facility m.• Cvar  
+
+> p
+
+: patient-specific variable manufacturing cost. • Cqc : quality-control cost per therapy. • Km: maximum processing capacity, or number of parallel manufacturing lines, at facility 
+
+m.• δpct : binary parameter equal to 1 if patient p arrives at clinical site c at time t.• τ lp : duration of leukapheresis. • τ man : duration of manufacturing. • τ qc : duration of quality control. • τ out  
+
+> j
+
+: transportation time from a clinical site to a manufacturing facility using mode j.• τ ret  
+
+> j
+
+: transportation time from a manufacturing facility to a hospital using mode j.• Cout  
+
+> cmj
+
+: transportation cost from clinical site c to facility m using mode j.• Cret  
+
+> mhj
+
+: transportation cost from facility m to hospital h using mode j.• B: maximum number of manufacturing facilities that can be opened. • D: maximum allowable vein-to-vein turnaround time. • NP : total number of patients in the planning horizon. Variables with time indices outside T are fixed to zero. 
+
+Decision variables Facility location variables. 
+
+ym ∈ { 0, 1}, ∀m ∈ M ,
+
+where ym = 1 if manufacturing facility m is opened. 
+
+Network design variables. 
+
+ucm ∈ { 0, 1}, ∀c ∈ C , m ∈ M ,
+
+where ucm = 1 if clinical site c is connected to manufacturing facility m.
+
+vmh ∈ { 0, 1}, ∀m ∈ M , h ∈ H ,
+
+where vmh = 1 if manufacturing facility m is connected to hospital h.
+
+Transportation variables. 
+
+xpcmjt ∈ { 0, 1}, ∀p ∈ P , c ∈ C , m ∈ M , j ∈ J , t ∈ T ,
+
+where xpcmjt = 1 if patient p’s material is transported from clinical site c to facility m using mode j
+
+at time t.
+
+wpmhjt ∈ { 0, 1}, ∀p ∈ P , m ∈ M , h ∈ H , j ∈ J , t ∈ T ,
+
+where wpmhjt = 1 if therapy p is transported from facility m to hospital h using mode j at time t.18 Flow variables. 
+
+ℓdep  
+
+> pcmjt
+
+≥ 0, ℓarr  
+
+> pcmjt
+
+≥ 0,
+
+denote, respectively, material leaving clinical site c for facility m, and material arriving at facility m,for patient p, mode j, and time t.
+
+qin  
+
+> pmt
+
+≥ 0, qout  
+
+> pmt
+
+≥ 0,
+
+denote, respectively, therapy p entering and leaving manufacturing facility m at time t.
+
+gout  
+
+> pct
+
+≥ 0, gin  
+
+> pht
+
+≥ 0,
+
+denote, respectively, material leaving clinical site c, and final therapy arriving at hospital h, for patient 
+
+p at time t.
+
+Timing variables. 
+
+sp, e p, r p ≥ 0, ∀p ∈ P ,
+
+denote the start time, completion time, and turnaround time of patient p.
+
+Objective function The objective minimizes total supply chain cost, including facility investment, fixed operating cost, patient-specific manufacturing cost, quality control, and transportation: 
+
+min Z = X
+
+> m∈M
+
+ Cinv  
+
+> m
+
++ Cfix 
+
+> m
+
+ ym + X
+
+> p∈P
+
+ Cvar  
+
+> p
+
++ Cqc 
+
++ X
+
+> p∈P
+
+X
+
+> c∈C
+
+X
+
+> m∈M
+
+X
+
+> j∈J
+
+X
+
+> t∈T
+
+Cout  
+
+> cmj
+
+xpcmjt 
+
++ X
+
+> p∈P
+
+X
+
+> m∈M
+
+X
+
+> h∈H
+
+X
+
+> j∈J
+
+X
+
+> t∈T
+
+Cret  
+
+> mhj
+
+wpmhjt .
+
+(26) Equivalently, if facility investment and fixed operating costs are allocated per patient as in the original implementation, the patient-level manufacturing cost may be written as 
+
+Cman  
+
+> p
+
+=
+
+P
+
+> m∈M
+
+ Cinv  
+
+> m
+
++ Cfix 
+
+> m
+
+ ym
+
+NP
+
++ Cvar  
+
+> p
+
+, ∀p ∈ P . (27) 
+
+Constraints Leukapheresis completion. A patient sample can leave the clinical site only after the leukapheresis duration has elapsed: 
+
+gout   
+
+> pc,t +τlp
+
+= δpct , ∀p ∈ P , c ∈ C , t ∈ T . (28) 
+
+Outbound shipment selection. Each patient is assigned to exactly one outbound shipment: 
+
+X
+
+> c∈C
+
+X
+
+> m∈M
+
+X
+
+> j∈J
+
+X
+
+> t∈T
+
+xpcmjt = 1 , ∀p ∈ P . (29) The outbound shipment variables define the material leaving the clinical site: 
+
+ℓdep  
+
+> pcmjt
+
+= xpcmjt , ∀p, c, m, j, t. (30) All material leaving a clinical site must be assigned to a manufacturing facility and a transportation mode: 
+
+gout  
+
+> pct
+
+= X
+
+> m∈M
+
+X
+
+> j∈J
+
+ℓdep 
+
+> pcmjt
+
+, ∀p, c, t. (31) 
+
+Outbound transportation timing. Material arriving at the manufacturing facility is delayed by the transportation time of the selected mode: 
+
+ℓarr  
+
+> pcmj,t +τout
+> j
+
+= ℓdep 
+
+> pcmjt
+
+, ∀p, c, m, j, t. (32) 19 The total material entering a manufacturing facility equals all arrivals from clinical sites: 
+
+qin  
+
+> pmt
+
+= X
+
+> c∈C
+
+X
+
+> j∈J
+
+ℓarr 
+
+> pcmjt
+
+, ∀p, m, t. (33) 
+
+Manufacturing and quality control timing. A therapy can leave the manufacturing facility only after manufacturing and quality control are completed: 
+
+qout    
+
+> pm,t +τman +τqc
+
+= qin 
+
+> pmt
+
+, ∀p, m, t. (34) 
+
+Return shipment after manufacturing. Every completed therapy must be assigned to exactly one return shipment: X
+
+> h∈H
+
+X
+
+> j∈J
+
+wpmhjt = qout 
+
+> pmt
+
+, ∀p, m, t. (35) 
+
+Hospital arrival timing. The final therapy arrives at the hospital after the return transportation delay: 
+
+gin  
+
+> ph,t +τret
+> j
+
+= X
+
+> m∈M
+
+wpmhjt , ∀p, h, j, t. (36) Each patient receives exactly one final therapy delivery: 
+
+X
+
+> h∈H
+
+X
+
+> t∈T
+
+gin  
+
+> pht
+
+= 1 , ∀p ∈ P . (37) 
+
+Manufacturing capacity. The number of therapies simultaneously occupying facility m cannot exceed the installed capacity: 
+
+X
+
+> p∈P
+> t
+
+X 
+
+> τ=0
+
+qin  
+
+> pmτ
+
+−
+
+> t
+
+X 
+
+> τ=0
+
+qout 
+
+> pmτ
+
+!
+
+≤ Kmym, ∀m ∈ M , t ∈ T . (38) 
+
+Network design and facility activation. A clinical site can only be connected to an opened manufac-turing facility: 
+
+ucm ≤ ym, ∀c ∈ C , m ∈ M . (39) A manufacturing facility can only be connected to a hospital if the facility is opened: 
+
+vmh ≤ ym, ∀m ∈ M , h ∈ H . (40) Outbound shipments are allowed only along selected clinical-site-to-facility links: 
+
+xpcmjt ≤ ucm , ∀p, c, m, j, t. (41) Return shipments are allowed only along selected facility-to-hospital links: 
+
+wpmhjt ≤ vmh , ∀p, m, h, j, t. (42) The total number of established manufacturing facilities is bounded: 
+
+X
+
+> m∈M
+
+ym ≤ B. (43) 
+
+Start, completion, and turnaround times. The start time of each patient is determined by the clinical site arrival time: 
+
+sp = X
+
+> c∈C
+
+X
+
+> t∈T
+
+t δ pct , ∀p ∈ P . (44) The completion time is the arrival time of the final therapy at the hospital: 
+
+ep = X
+
+> h∈H
+
+X
+
+> t∈T
+
+t g in 
+
+> pht
+
+, ∀p ∈ P . (45) Turnaround time is defined as the time between patient arrival and therapy delivery: 
+
+rp = ep − sp, ∀p ∈ P . (46) The vein-to-vein turnaround time must not exceed the clinical deadline: 
+
+rp ≤ D, ∀p ∈ P . (47) 20 Graph encoding. We represent each instance as a complete bipartite graph between clinical facility-demand nodes C and candidate manufacturing facility nodes M. Demand-node features summarize the local patient arrival profile at each clinical site using aggregate demand statistics, including total demand, variability, peak demand, empirical quantiles, and seasonal Fourier components. Facility node features encode normalized capacity, operating cost rate, and demand-weighted transport statistics. Each edge (c, m ) encodes the transport cost between clinical site c and facility m using a normalized scalar together with an RBF expansion. This compressed graph representation exposes the aggregate operational structure of the full supply chain without explicitly instantiating patient-level routing variables in the learned model. 
+
+Features. In the implementation used for our experiments, demand-node features have dimension 14 and include local demand statistics together with a small amount of repeated global context. Facility node features have dimension 9 and encode capacity, normalized fixed cost rate, and transport summaries, again augmented with repeated global context. Edge features have dimension 6, consisting of one normalized transport cost feature and a five-dimensional RBF expansion. 
+
+Readout. Each CART instance is represented as a complete bipartite graph 
+
+GCART = ( C ∪ M , E), E = C × M ,
+
+where C denotes clinical facility-demand nodes and M denotes candidate manufacturing-facility nodes. The encoder returns demand-node embeddings hc, facility-node embeddings hm, and a global graph embedding hG .Let ym ∈ { 0, 1} indicate whether manufacturing facility m is selected. For each demand node c, an auxiliary binary variable qc indicates whether it is covered by at least one selected facility: 
+
+qc = I
+
+ X
+
+> m∈M (c)
+
+ym ≥ 1
+
+ , (48) where M(c) is the set of candidate facilities connected to demand node c. This logical relationship is represented exactly through 
+
+qc ≤ X
+
+> m∈M (c)
+
+ym, ∀c ∈ C , (49) 
+
+qc ≥ ym, ∀c ∈ C , ∀m ∈ M (c). (50) The additional decision-dependent component is the pooled embedding of the covered demand nodes: 
+
+zCART lin (y) = X
+
+> c∈C
+
+qchc. (51) The complete CART readout is therefore 
+
+z0CART (y) = 
+
+" X
+
+> m∈M
+
+ymhm, X
+
+> c∈C
+
+qchc, hG
+
+#
+
+. (52) The first term represents the selected manufacturing facilities, while the second represents the clinical facility-demand nodes covered by the selected facility set. CART therefore uses pooled learned embeddings from both sides of the bipartite graph and does not include additional manually constructed scalar summaries. 
+
+# C Neural-MIP Encoding 
+
+We encode the learned ReLU energy head exactly inside the MIP using a standard Big-M formulation for ReLU activations. The benchmark-specific combinatorial constraints and the readout-level auxiliary variables are then combined with this head encoding to yield the final inference model. 21 C.1 ReLU Head Encoding 
+
+Let 
+
+alj = w⊤ 
+
+> j
+
+hl−1 + bj
+
+denote the affine pre-activation of neuron j in layer l, and let 
+
+hlj = max(0 , a lj )
+
+be the corresponding ReLU activation. Suppose valid finite bounds 
+
+alj ≤ alj ≤ alj
+
+are available. For neurons whose bounds satisfy alj < 0 < a lj , we introduce a binary activation indicator zlj ∈ { 0, 1} and impose the exact mixed integer linear formulation 
+
+hlj ≥ alj , (53) 
+
+hlj ≥ 0, (54) 
+
+hlj ≤ alj − alj (1 − zlj ), (55) 
+
+hlj ≤ alj zlj . (56) If alj ≥ 0, the neuron is always active and we set hlj = alj . If alj ≤ 0, the neuron is always inactive and we set hlj = 0 . The final linear layer is encoded by linear equality constraints, producing the scalar energy minimized by the inference MIP. 
+
+C.2 Interval Bound Propagation 
+
+The practical strength of the Neural-MIP depends on the tightness of the pre-activation bounds. We obtain these bounds using interval bound propagation through the assembled readout and energy head. For an affine layer 
+
+al = W lhl−1 + bl
+
+with elementwise input bounds [h l−1, h l−1], the pre-activation bounds are 
+
+alj = blj + X
+
+> i
+
+min 
+
+
+
+W lji h l−1 
+
+> i
+
+, W lji h l−1
+
+> i
+
+
+
+, (57) 
+
+alj = blj + X
+
+> i
+
+max 
+
+
+
+W lji h l−1 
+
+> i
+
+, W lji h l−1
+
+> i
+
+
+
+. (58) The corresponding post-ReLU bounds are 
+
+hlj = max(0 , a lj ), hlj = max(0 , a lj ).
+
+These pre-activation bounds are used directly in the exact ReLU formulation above. When the bounds imply a fixed activation state, the corresponding binary variable is removed. Overall, the benchmark-specific readout linearizations and subsequent interval propagation provide the neuron-wise pre-activation bounds used in exact MIP inference. 
+
+C.3 Benchmark-Specific Input Bounds 
+
+The input intervals for this propagation step are derived from the exact linearized readout features used by each benchmark. 
+
+CART. For CART, the readout combines pooled selected facility embeddings, pooled covered-demand embeddings, and a global graph embedding. Bounds for the selected-facility pooling terms are obtained from the facility cardinality constraints kmin ≤ ∥ y∥1 ≤ kmax . Coverage terms are linearized using auxiliary binary variables indicating whether each demand node is served by at least one selected facility, and their bounds are computed from sign-split sums over the corresponding coefficients. 22 CA. For CA, the readout includes pooled selected bid and occupied item embeddings together with scalar summaries such as selected bid fraction, occupied item fraction, and aggregate selected bid statistics. These are encoded with auxiliary continuous occupancy variables and count-based one-hot linearizations, which allow exact bounds to be propagated through the resulting MLP input. 
+
+QKP. For QKP, the readout pools selected item embeddings and, in the size-aware variant, also includes unselected item summaries, selected fraction, and used capacity mass. Under the knapsack constraint, selected pool bounds are tightened using a fractional knapsack relaxation rather than naive unconstrained cardinality intervals. This yields substantially tighter input bounds for the downstream ReLU encoding. Overall, the benchmark-specific readout linearizations and the subsequent interval propagation provide the neuron-wise Big-M constants used in exact MIP inference. 
+
+C.4 Problem-Specific Hard Feasibility Constraints 
+
+Beyond the energy encoding, the following hard constraints are added to the inference MIP for each benchmark: 
+
+CART. X
+
+> m
+
+ym ≤ kmax , (59) 
+
+X
+
+> m
+
+κmym ≥ κref , (60) 
+
+yj ≤ yi ∀(i, j ) ∈ S . (61) where (59) opens at most kmax facilities, (60) requires total open capacity to meet the peak reference demand κref , and (61) imposes symmetry-breaking cuts over pairs of identical capacity facilities S.
+
+CA. X 
+
+> b:c∈N (b)
+
+yb ≤ 1 ∀c ∈ C . (62) where (62) enforces that each item is allocated to at most one bid. Zero-shot injection experiments additionally introduce cardinality bounds P 
+
+> b
+
+yb ≤ K and bidder exclusion constraints yi + yj ≤ 1
+
+for specified pairs (i, j ).
+
+QKP. 
+
+X
+
+> i
+
+wiyi ≤ W (63) where (63) enforces that the total selected weight remains within the budget W .
+
+# D Dataset Splits and Candidate Pool Construction 
+
+Dataset splits. For each benchmark, we use 800 training instances, 100 validation instances, and 100 held-out test instances. For each training instance, we construct a candidate pool Y = F ∪I containing feasible and infeasible configurations. Pool construction is benchmark-specific. 
+
+CART. For CART, each instance has 16 candidate facilities. We first solve the unrestricted patient-level MIP to global optimality and collect incumbent facility selection configurations from branch-and-bound. Additional candidates are generated using capacity- and transport-guided heuristics, local Hamming perturbations, swaps, facility additions and removals, and random configurations with varying cardinality. Each candidate is evaluated by solving the corresponding tactical patient scheduling MIP. Feasible configurations attaining the proven global optimum within numerical tolerance are labeled positive, other feasible configurations are labeled feasible negatives, and 23 configurations certified infeasible are labeled infeasible negatives. We retain 160 candidates per instance through stratified selection, initially keeping up to three positives and targeting 30% infeasible negatives among the remaining candidates. 
+
+CA. For CA, we first solve each instance with Gurobi and collect incumbent solutions from branch-and-bound. Feasible solutions with relative primal gap at most ϵpos = 0 .01 are labelled positive, up to a maximum of 50 positives per instance. We then construct 64 feasible negatives using a quota-driven mixture of additional incumbent solutions, guided local Hamming perturbations, and farther Hamming perturbations of the best solution. The feasible-negative selection is balanced across Hamming distance buckets and primal gap bands. Finally, we generate 50 infeasible negatives by perturbing feasible masks into different violation bands, corresponding to mild, moderate, and severe item conflicts. 
+
+QKP. For QKP, we impose a one-hour time limit on Gurobi per instance. Training and validation may include instances for which global optimality is not certified within this limit. In contrast, the test set contains instances with Gurobi certified global optima, allowing all reported primal gaps to be measured against proven optimal solutions. For each training instance, we retain the best available solution together with all incumbent solutions whose relative primal gap is at most ϵpos = 0 .01 ; these form the positive subset. We then generate 128 feasible negatives and 64 infeasible negatives using stochastic mask proposals. Each proposal is either a random binary mask with random density or a mutation of the best mask obtained by flipping a random subset of items. Proposed masks that satisfy the knapsack constraint are retained as feasible negatives, while those that violate the capacity constraint are retained as infeasible negatives. 
+
+D.1 Offline Computational Cost and Amortization 
+
+The main benchmark runtimes report the online inference and optimization phase. EnerGNN also incurs a one-time offline cost for solver-based candidate generation and neural model training. Table 6 reports the complete elapsed wall-clock cost of this offline phase. Candidate generation was distributed across 1000 submitted jobs, with approximately 80 jobs running concurrently, subject to scheduler availability. Reported elapsed wall-clock times include queueing effects and therefore depend on cluster availability. Table 6: Offline computational cost and approximate amortization break-even points.                   
+
+> Benchmark Label generation Training Total offline Break-even instances
+> QKP 14.7 h 3.39 h 18.1 h ≈125
+> CA 0.12 h 5.54 h 5.66 h Not reached CART 123.2 h 3.52 h 126.72 h ≈130
+
+For a benchmark where EnerGNN is faster online than solving the full problem, the approximate number of deployment instances required to recover the offline investment is calculated as 
+
+Nbreak −even = Toffline 
+
+Tfull − TEnerGNN 
+
+,
+
+where Toffline includes label generation and training, Tfull is the mean time required to solve a new instance using the original optimisation formulation, and TEnerGNN is the mean online EnerGNN time. The offline investment is recovered after approximately 125 QKP instances and 130 CART instances under the reported experimental conditions. No break-even point is reported for CA because Gurobi is already faster on the original auction formulation. These results make explicit that EnerGNN is intended for repeated decision-making settings in which the one-time solver supervision and training costs can be amortised across many deployment instances. 
+
+D.2 Computational Setup 
+
+Experiments were conducted using the Imperial College London CX3 high-performance computing cluster and a local workstation. Training, validation, and test datasets were generated on CPU 24 nodes with up to 250 GB of RAM. Neural models were trained offline on GPU nodes equipped with NVIDIA Quadro RTX 6000 GPUs, using one GPU, 4 CPU cores, and 24 GB of RAM. Test time optimization and Neural-MIP inference were performed on a workstation with 64 GB of RAM. Optimization runs used Gurobi 12.0.2. Reported runtimes exclude dataset generation, candidate pool construction, and neural network training. For learning-based methods, reported online times include neural prediction or encoding, construction of the corresponding optimization problem, and all solver calls required to produce the final solution. 
+
+# E Loss Configuration Details 
+
+E.1 Loss Configuration Used in Reported Experiments 
+
+All reported experiments use the same loss formulation, consisting of an optimality-aware contrastive loss term, a feasible calibration term, and an infeasibility shaping term. The optimality-aware contrastive term is applied over the full candidate pool. Across these runs, we use a bipartite MPNN encoder with hidden dimension 128, two message-passing rounds, and dropout 0.1. The reported runs use a shallow MLP energy head with one hidden layer of width 32. 
+
+E.2 Training and Model Selection 
+
+All models are trained using Adam with the benchmark-specific hyperparameters reported in Table 7. Model selection is performed on the validation set. For each run, we retain the checkpoint with the lowest validation mean primal gap and report final test results from this checkpoint. 
+
+Adaptive Huber scale. For each candidate pool, the Huber transition scale is computed as 
+
+δF = min 
+
+
+
+δmax , max 
+
+
+
+δmin , κ δ
+
+
+
+max  
+
+> i∈F
+
+gi − min  
+
+> i∈F
+
+gi
+
+ 
+
+. (64) Table 7: Training hyperparameters for the full EnerGNN runs reported in the paper. Here λinf denotes the infeasible shaping weight, T is the prediction softmax temperature, τrank is the target ranking temperature, δinf is the infeasible Huber transition scale.                                                 
+
+> Hyperparameter CART CA QKP Learning rate 2×10 −61×10 −61×10 −5
+> Weight decay 1×10 −51×10 −51×10 −5
+> Epochs 2000 2000 2000
+> λcal 1.0 0.01 0.05
+> λinf 0.1 0.1 0.1
+> T0.1 0.2 0.5
+> τrank 0.05 0.005 0.05
+> δinf 0.1 0.1 0.1
+> κδ0.15 0.15 0.15
+> δmin 0.01 0.01 0.01
+> δmax 0.5 0.5 0.5
+
+# F Scale of the CART Formulation 
+
+The number of strategic variables alone understates the computational scale of the CART benchmark. Each strategic facility selection controls a large patient-level assignment and scheduling formulation. Across the 100 test instances with m = 16 , the dimensions of the complete monolithic formulations are reported in Table 8. 25 Table 8: Dimensions of the complete monolithic CART formulations in the extended m = 16 test set.                   
+
+> Model component Minimum Maximum Mean
+> Constraints 2,284,802 92,139,833 46,766,602 Binary variables 532,496 21,532,176 10,928,170 Continuous variables 1,177,490 47,445,565 24,082,020 General integer variables 8,336 336,456 170,768 Total variables 1,718,322 69,314,197 35,180,958
+
+EnerGNN selects 3.21 of the 16 candidate manufacturing facilities on average. Fixing the strategic facility set substantially reduces the induced patient-level scheduling formulations, as shown in Table 9. Table 9: Mean dimensions of the complete and EnerGNN-reduced CART formulations in the extended 
+
+m = 16 setting.                   
+
+> Model component Full model mean EnerGNN-reduced mean Reduction (%)
+> Constraints 46,766,602 10,819,588 76.9 Binary variables 10,928,170 2,434,726 77.7 Continuous variables 24,082,020 5,499,214 77.2 General integer variables 170,768 170,756 0.01 Total variables 35,180,958 8,104,696 77.0
+
+The numbers of constraints, binary variables, continuous variables, and total variables are reduced by approximately 77% on average. The number of general integer variables changes very little because these variables are primarily associated with patients and scheduling periods rather than with the candidate manufacturing facilities. 
+
+# G Primal Gap Distributions 
+
+Figure 3 shows the primal gap distribution across test instances for all learning-based methods on each benchmark. The x-axis uses a log scale to show both near zero and high gap distributions simultaneously. EnerGNN maintains a tight distribution near zero across all three benchmarks, confirming that the means reported in Table 1 are representative. Primal gaps are computed relative to the global optimum. 0 1 5 20 100 
+
+# (a) QKP 
+
+0 1 5 20 100 
+
+# (b) CART 
+
+0 1 5 20 100 
+
+# (c) CA 
+
+## Primal gap (%) 
+
+EnerGNN EnerGNN (Linear) Linear+MIP (Contrastive) Linear+MIP (BCE) Predict+Search Neural Diving ConPaS 
+
+Figure 3: Primal gap distributions for all learning-based methods. Infeasible outputs are assigned a 100% gap penalty. 26 H Additional Zero-Shot Constraint Injection Results 
+
+We provide additional zero-shot constraint injection experiments in which the trained energy is unchanged and only the feasible region of the inference MIP is modified. In CART, cardinality and facility activation constraints restrict the available strategic configurations. We use the linear head EnerGNN model for CA, as it achieved the best performance in the main experiments. Optimality gaps are measured relative to reference optima computed under the same injected constraints. These experiments complement the stronger constraint shifts reported in Section 4, where variables selected in the original optimal solution are explicitly made unavailable. Table 10: Additional zero-shot constraint injection results on CART. 
+
+Injected constraint Primal Gap (%) ≤ 1% (%) 
+
+P 
+
+> m
+
+ym ≤ 6 0.06 100 P 
+
+> m
+
+ym ≤ 5 0.07 100 P 
+
+> m
+
+ym ≤ 4 0.12 98 P 
+
+> m
+
+ym ≤ 3 0.30 93 
+
+ym10 = 0 0.05 100 
+
+ym10 = 0 , y m13 = 0 0.03 100 
+
+ym7 = 0 , y m10 = 0 , y m13 = 0 0.09 99 
+
+ym0 = 0 , y m3 = 0 , y m6 = 0 0.07 99 
+
+ym0 = 1 0.09 99 
+
+ym10 = 1 1.75 79 
+
+ym0 = 1 , y m10 = 1 0.00 100 
+
+ym10 = 0 , y m13 = 1 0.99 89 
+
+ym10 = 0 , y m13 = 0 , y m1 = 1 , y m7 = 1 4.83 54 P 
+
+> m
+
+ym ≤ 4, y m10 = 0 , y m13 = 0 , y m1 = 1 , y m7 = 1 3.55 55 P 
+
+> m
+
+ym ≤ 5, y m0 = 1 , y m10 = 1 0.00 100 
+
+Table 11: Additional zero-shot constraint injection results on CA. 
+
+Injected constraint Primal Gap (%) ≤ 1% (%) 
+
+P 
+
+> b
+
+yb ≤ 30 0.20 95 P 
+
+> b
+
+yb ≤ 20 0.22 94 P 
+
+> b
+
+yb ≤ 15 0.24 92 P 
+
+> b
+
+yb ≤ 10 0.17 96 P 
+
+> b
+
+yb ≤ 5 0.14 94 
+
+# I Cross-scale Generalization with Nonlinear Energy Head on Combinatorial Auctions 
+
+For CA, the main paper reports cross-scale generalization using the linear head variant of EnerGNN, which achieves the best performance on this benchmark. For completeness, Table 12 reports the corresponding results using the nonlinear ReLU energy head, evaluated without retraining. Table 12: CA cross-scale generalization with the nonlinear energy head. 
+
+Train → test Primal Gap (%) ≤1% (%) Feasibility (%) 
+
+175 → 175 0.53 77 100 
+
+175 → 250 1.40 45 100 
+
+# J Ablation Study Details 
+
+J.1 Energy Head Architecture Ablation 
+
+We evaluate the effect of energy head width and depth on QKP and CART. In all cases, the resulting Neural-MIP is solved to global optimality with respect to the learned energy. Increasing the width 27 or depth of the embedded ReLU head adds activation binaries to the inference MIP. Across both benchmarks, larger heads do not systematically improve solution quality, while deeper and wider architectures can substantially increase solution time. Table 13: Energy head architecture ablation on QKP. 
+
+Head Layers ReLU binaries Total binaries Gap (%) 
+
+≤ 1% 
+
+(%) Time (s) 
+
+MLP-16 1 16 166 0.47 97 1.07 MLP-16 2 32 182 0.31 100 2.77 MLP-32 1 32 182 0.31 99 3.56 MLP-32 2 64 214 0.35 100 19.78 MLP-64 1 64 214 0.42 99 4.72 MLP-64 2 128 278 0.37 99 186.23 Table 14: Energy head architecture ablation on CART. 
+
+Head Layers ReLU binaries Total binaries Gap (%) Time (s) 
+
+MLP-16 1 16 36 0.09 0.59 MLP-16 2 32 52 0.13 1.33 MLP-32 1 32 52 0.05 1.88 MLP-32 2 64 84 0.02 3.55 MLP-64 1 64 84 0.10 3.11 MLP-64 2 128 148 0.07 24.69 For QKP, increasing head capacity does not consistently improve solution quality. For example, the one-layer width-16 model achieves a 0.47% mean gap in 1.07 s, while the two-layer width-64 model achieves a similar 0.37% gap but requires 186.23 s. The same pattern appears in CART. Increasing from a one-layer width-16 head to a two-layer width-64 head raises inference time from 0.59 s to 24.69 s, while the mean gap changes only from 0.09% to 0.07%. These results illustrate the expressiveness–tractability trade-off of the Neural-MIP formulation. In-creasing the capacity of the embedded energy head adds ReLU binaries and can substantially increase solution time without a corresponding improvement in solution quality. Importantly, the GNN encoder is evaluated before optimization and is therefore not part of the inference MIP. Repre-sentational capacity can consequently be placed primarily in the graph encoder while keeping the optimization-compatible energy head compact. 
+
+J.2 Loss Variant Ablation 
+
+We evaluate three loss configurations on each benchmark: • Full loss : all three components active ( Lcon + Lcal + Linf ). • No primal gap term : λcal = 0 , contrastive and infeasibility only. • No infeasibility term : λinf = 0 , contrastive and calibration only. 
+
+J.3 Strict Feasible–Infeasible Dominance 
+
+The standard training objective does not enforce that every feasible candidate must have lower energy than every infeasible candidate. To test whether such a complete ordering would be beneficial, we evaluate a stricter alternative. Let 
+
+EF 
+
+> max
+
+= max  
+
+> i∈F
+
+Eθ (G, yi)
+
+denote the highest feasible energy in the current candidate pool. During backpropagation, EF 
+
+> max
+
+is treated as constant. We replace the original infeasibility shaping term with 28 Linf -margin = 1
+
+|I| 
+
+X
+
+> k∈I
+
+EF 
+
+> max
+
++ log(1 + νk) − Eθ (G, yk) 
+
+> +
+
+,
+
+where [a]+ = max(0 , a ) and νk is the normalized constraint violation. This term penalizes an infeasible candidate unless its energy lies at least log(1 + νk) above the highest energy feasible candidate in the sampled candidate pool, thereby explicitly enforcing feasible–infeasible ordering within that pool. We evaluate this alternative under the same Combinatorial Auctions protocol using EnerGNN with the linear head, which is the best performing EnerGNN variant for CA. Table 15: Effect of enforcing strict feasible–infeasible dominance on CA.             
+
+> Infeasibility loss Mean gap (%) Exact optimum (%)
+> ≤1%
+> (%) Feasible (%) Mean time (s)
+> Current calibration 0.20 67 95 100 0.28 Strict dominance margin 3.96 418 100 0.25
+
+The stricter loss enforces the desired ordering but substantially reduces solution quality: the mean gap increases from 0.20% to 3.96%, exact recovery decreases from 67% to 4%, and the fraction of solutions within 1% of optimality decreases from 95% to 18%. Both variants return feasible solutions on every test instance. This result clarifies the role of infeasibility supervision. The ranking and calibration terms are not intended to learn a global feasibility certificate, feasibility with respect to the encoded constraints is enforced by the inference MIP. Complete feasible–infeasible separation is therefore not required when those constraints are explicitly encoded, and in this experiment enforcing it substantially degrades optimization quality. 
+
+J.4 Readout Design Ablation 
+
+We evaluate how the choice of MIP-compatible readout affects solution quality and inference time. The proposed readouts combine pooled learned embeddings with compact structural summaries. We compare them with simpler embedding-only readouts and with variants that concatenate the complete binary decision vector y directly to the learned embedding pools. The latter reduces the need for structured summaries but produces an order-dependent, dimension-specific input. Table 16: Readout design ablation on CA and QKP.                                    
+
+> Problem Readout Mean gap (%) Exact (%)
+> ≤1%
+> (%) Time (s)
+> CA Embedding pools only 0.20 68 95 0.25 CA Full proposed readout 0.20 67 95 0.28 CA Embedding pools + full y0.21 67 95 0.25 QKP Selected item pool only 0.81 072 0.50 QKP Full proposed readout 0.31 499 3.56 QKP Selected item pool + full y0.94 061 1.17
+
+For CA, removing the compact scalar summaries leaves performance essentially unchanged, while directly exposing the complete decision vector provides no improvement. For QKP, the structured readout is substantially more effective: the mean gap decreases from 0.81% to 0.31% and the fraction within 1% increases from 72% to 99%. Directly concatenating the full decision vector performs worse. These results indicate that EnerGNN does not require a large collection of hand-crafted features. A practical readout should remain compact, permutation-invariant where possible, compatible with varying problem sizes, and exactly MIP-representable. Pooled learned embeddings can provide most of the representation, while compact structural summaries are useful when they capture meaningful consequences of the selected configuration. 29 K Baseline Implementation Details 
+
+All neural methods use the same bipartite GNN encoder architecture, with method-specific prediction or energy heads. We describe these heads, training objectives, and inference procedures below. 
+
+Predict+Search. Predict+Search applies a single linear layer to each variable embedding, followed by a sigmoid, to predict its probability pj of taking value one. The model is trained using binary cross entropy supervision on the variable assignments of positive candidate solutions. At inference, we rank variables by confidence |pj − 0.5| and fix the most confident 85% for QKP and 80% for CA to their predicted values 1[pj ≥ 0.5] . For CART, we instead use a two-sided confidence band, where facility variables with pj ≥ 0.6 are fixed to one, those with pj ≤ 0.4 are fixed to zero, and the remaining facility variables are left free. We then solve the reduced MIP. 
+
+Linear+MIP. Linear+MIP applies a single linear layer to each variable embedding to produce a scalar score sj . These scores define an additive objective s(y) = P 
+
+> j
+
+sj yj , which is maximized under the original hard constraints. We evaluate two training variants with the same architecture: (i) binary cross entropy supervision on variable assignments, using σ(sj ) as the predicted probability, and (ii) contrastive supervision over candidate solutions, using the energy E(y) = −s(y). At inference, both variants optimize the learned linear objective over all decision variables using a MIP solver. 
+
+Neural Diving. Our Neural Diving (Nair et al., 2020) baseline uses a two-layer variable-level MLP head, with one hidden layer of width dh, a ReLU activation, and dropout, followed by a sigmoid, to predict an independent Bernoulli probability pj for each binary decision variable. The model is trained with binary cross entropy supervision on the variable assignments of positive candidate solutions. At inference, we perform K stochastic dives by sampling candidate assignments from these Bernoulli probabilities. For each dive, a confidence-selected subset of variables is fixed to the sampled assignment, and the reduced MIP is optimized over the remaining free variables. The final solution is the best feasible solution found across all dives. We use K = 20 dives for QKP, K = 8 for CART, and K = 100 for CA. The smaller dive budget for CART reflects the higher computational cost of solving its reduced MIPs. For QKP and CA, we fix the most confident 85% and 50% of variables, respectively. For CART, because the number of facility variables is small, we instead use the same two-sided confidence band as Predict+Search: variables with pj ≥ 0.6 or pj ≤ 0.4 are fixed to their sampled values, and the remaining variables are left free. 
+
+ConPaS. Our controlled ConPaS-style (Huang et al., 2024) baseline applies a 3-layer variable-level MLP head, with 2 hidden layers of width 64 and ReLU activations, followed by a sigmoid, to predict independent Bernoulli probabilities pj for the binary decision variables. It scores a candidate assignment by its factorized log probability, 
+
+s(y) = X
+
+> j
+
+yj log pj + (1 − yj ) log(1 − pj ).
+
+Training uses an InfoNCE contrastive loss over the candidate pool, encouraging positive solutions to receive higher scores than suboptimal feasible and infeasible candidates. At inference, the neural model is not embedded in the MIP. Instead, variables are ranked by pj . Let X0 denote the k0 lowest probability variables and X1 the k1 highest probability variables. We solve the original MIP with the additional rank-neighbourhood constraint 
+
+X
+
+> j∈X0
+
+yj + X
+
+> j∈X1
+
+(1 − yj ) ≤ ∆,
+
+which allows at most ∆ disagreements with the predicted low/high probability sets while leaving all other variables unrestricted. Increasing ∆ relaxes this rank-neighbourhood restriction by allowing more disagreements with the neural ranking. This can improve solution quality under constraint shift, where variables predicted to be unlikely may become necessary because of exogenous constraints, but it also enlarges the MIP search space. We therefore tune ∆ per benchmark to balance solution quality and solve time. The rank-neighbourhood parameters are (k0, k 1, ∆) = (55 , 20 , 5) for QKP, 
+
+(8 , 2, 1) for CART, and (88 , 0, 3) for CA. For CA, we keep the paper-scaled choice k0 = ⌊n/ 2⌋ used by ConPaS. The original in-distribution ConPaS setting uses ∆ = 0 . However, under our constraint shift setting, exogenous outage and force-on constraints can make a small number of low-ranked bids 30 necessary. We therefore introduce a small slack of ∆ = 3 . We also evaluated the stricter paper-style setting (88 , 0, 0) , but it produced poor solution quality, with a mean gap of 6.23% , despite being fast, with an average solve time of 0.05 s compared with Gurobi’s 0.14 s. 
+
+# Broader Impact 
+
+This work develops learning-augmented optimization methods for constrained combinatorial decision-making. A potential positive impact is to make learned decision systems more reliable in settings where feasibility is essential, such as logistics, supply chain planning, manufacturing, and healthcare operations. Rather than producing decisions directly, EnerGNN learns an objective landscape that is optimized under explicit hard constraints. This may help decision-support tools adapt to changing demand, capacity, or operational requirements while preserving feasibility through the optimization layer. In personalized medicine supply chains, such methods could support the evaluation of strategic planning decisions under different patient demand and capacity scenarios. More broadly, the approach may be useful in domains where learned models must interact with exact algorithms to produce valid decisions. The method is not intended to replace domain expertise, clinical judgement, or human oversight in high-stakes settings. Exact constrained inference preserves feasibility with respect to the specified constraints, but it does not guarantee that the learned energy ranks all decisions correctly or that the specified objective captures all clinical, ethical, or operational priorities. If deployed without careful validation, a learned energy could favor suboptimal allocations or reinforce undesirable trade-offs. 31

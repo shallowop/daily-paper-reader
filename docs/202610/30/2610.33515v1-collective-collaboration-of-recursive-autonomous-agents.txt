@@ -1,0 +1,1750 @@
+Collective Collaboration of Recursive Autonomous Agents
+Ziqing Zhou†, Linqiang Hu, Yuning Chen, Hongda Zhang,
+Zhao Huang, Ding Zhou, Haining Xu*
+Abstract. Smart factories must translate order-level objectives into production tasks at multiple scales and combine the
+capabilities of individual units into an overall delivery capability. To address repeated adaptation of organizational mechanisms
+across equipment, workshops, and factories, as well as coordination across levels under changing production conditions, this
+paper develops a framework for the collective collaboration of recursive autonomous agents (RAAs). A common task and
+capability interface supports the recursive decomposition of production objectives from the top down and the aggregation
+of conditional capabilities through peer collaboration from the bottom up. Composite units can therefore participate in
+higher-level organizations as agents of the same kind. We formulate organizational models for leaf and composite units, specify
+interface closure under composition and conditions for finite task expansion, and develop operational mechanisms linking task
+decomposition, resource commitments, result aggregation, and coordination within the scope affected by change. A production
+network integrating machining, inspection, and logistics across multiple workshops illustrates how a common organizational
+kernel is instantiated at the equipment-service, workshop, and factory scales. The framework connects recursive organization
+with explicit task responsibilities, capability conditions, and execution interfaces for manufacturing systems.
+Keywords: recursive autonomous agents; collective collaboration; cross-level isomorphism; recursive task decomposition;
+capability aggregation; dynamic reconfiguration
+1 Introduction
+Traditional factories typically organize production around
+process requirements and managerial responsibilities. Pro-
+duction management systems develop order and resource
+plans, workshops dispatch work to stations and equipment,
+and local control systems execute the required operations.
+This organization provides clear responsibilities and supports
+continuous production when products, processes, and re-
+source configurations remain relatively stable. As batch sizes
+decrease, product mixes change, and delivery requirements
+become more demanding, production schedules must respond
+more frequently to equipment failures, fluctuations in pro-
+cessing rates, and material delays. Revising an existing plan
+therefore involves not only individual equipment operations
+but also interactions among process handovers, shared re-
+sources, and order due dates. Manufacturing control research
+has consequently expanded from plan execution within fixed
+structures to distributed decision-making and production-
+system reconfiguration in response to change [1, 2].
+Smart factories strengthen the connection between pro-
+duction operations and management through equipment con-
+nectivity, state sensing, cyber-physical systems, and data-
+driven decisions. The cyber-physical production systems
+discussed by Monostori et al. integrate computation, com-
+munication, and physical processes, providing a basis for
+synchronized production-state information and decisions at
+multiple scales [3]. The 5C architecture of Lee et al. orga-
+nizes the progression from data connection and information
+conversion to cognition and configuration [4]. These de-
+velopments allow manufacturing resources to participate in
+task allocation according to their current states and extend
+production management from periodic planning to rolling op-
+timization and event-driven rescheduling [5]. Smart factories
+thus provide the technical foundations for connecting opera-
+tional information with production decisions. Their further
+development requires a coherent organizational process that
+†First author: Ziqing Zhou. Email:zhouziqing@fudan.edu.cn.
+*Corresponding author: Haining Xu. Email: xuhaining@jscltec.com.
+links local responses, collaboration among units, and overall
+delivery.
+This coherence depends on how production units are orga-
+nized as well as on decision quality. Local optimization by
+individual machines does not by itself establish a deliverable
+workshop capability. Similarly, information sharing among
+workshops still requires coordination of process handovers,
+transport windows, and shared resources. If equipment, work-
+shops, and factories use separate task representations and
+coordination procedures, adding production units or chang-
+ing management boundaries can require repeated adaptation
+of interfaces and organizational logic across levels. The re-
+sulting research question is how to reuse production-task
+organization as units are composed, while preserving differ-
+ences in domain activities and communicating local changes
+to the appropriate coordination scope.
+Recursive autonomous agents (RAAs) organize produc-
+tion through individual autonomy and collective collabora-
+tion. Here, engineering autonomy denotes a unit’s ability to
+select and revise its execution strategy within specified objec-
+tives, constraints, and authorization. Collective collaboration
+connects the tasks, resources, and handover conditions of
+multiple units so that their local execution jointly satisfies an
+overall objective. An RAA factory is therefore a recursively
+composed production organization: equipment or operational
+units collaborate with peers to establish workshop-level ca-
+pabilities, and workshops further establish factory-level ca-
+pabilities. The composite entity continues to participate in
+higher-level collaboration as an agent with a defined identity,
+capability, and responsibility boundary. Figure 1 outlines
+the relationship among traditional manufacturing, connected
+smart factories, and recursive RAA organization.
+The defining feature of recursion is that composition pre-
+serves the same kind of organizational capability. From the
+top down, order objectives are decomposed into workshop
+and equipment tasks, with subtasks retaining the same con-
+tract until they map to executable skills. From the bottom
+up, members establish joint arrangements subject to process,
+1
+arXiv:2610.33515v1  [cs.LG]  24 Oct 2026
+
+
+Traditional
+manufacturing
+Connected
+smart factory
+Recursive RAA organization
+Production planning
+Production optimization
+Factory composite agent
+Dispatch
+Execution
+feedback
+State sensing & connectivity
+Goals & constraints
+Capabilities
+& results
+Workshop A
+Workshop B
+Peer
+collaboration
+Plan → dispatch → execution
+Connectivity & dynamic decisions
+Equipment → workshop → factory
+Common interfaces · Recursive composition
+Figure 1. Three representative forms of production organization. (a) Traditional manufacturing establishes vertical management through
+planning, dispatch, and equipment execution. (b) Smart factories use operational sensing, data connectivity, and decision services to support
+production optimization and dynamic adjustment. (c) Building on these technologies, RAA organization uses common task and capability
+interfaces across scales, enabling downward objective decomposition, peer collaboration, and upward aggregation of composite capabilities.
+The panels summarize organizational emphases; they neither imply that existing smart factories lack distributed coordination nor rank their
+performance.
+material, time, and resource conditions, after which a com-
+posite unit publishes its overall capabilities and execution re-
+sults. Cross-level isomorphism supports this process through
+consistent semantics and lifecycles for objective acceptance,
+capability queries, task delegation, resource commitments,
+and result feedback. Domain knowledge, time scales, and
+solution algorithms may differ across levels; the reusable
+elements are organizational interfaces and operating rules.
+Holonic and fractal manufacturing have already investi-
+gated the aggregation, self-similarity, and dynamic recon-
+figuration of autonomous entities. PROSA explicitly sep-
+arates aggregation of manufacturing entities from control
+algorithms; fractal manufacturing builds self-similar organi-
+zations from recurring functional modules; and ADACOR
+examines the dynamic relationship between overall coordi-
+nation and local self-organization [6–9]. Building on these
+foundations, this paper specifies RAA recursion through a
+common task contract, conditional capability aggregation, a
+reusable organizational kernel, and collaborative reconfigu-
+ration within the scope affected by change. The focus is on
+how recursion connects production-task expansion with the
+formation of composite capabilities.
+The main contributions are: (1) a unified organizational
+model for leaf and composite agents, with conditions for
+cross-level interface consistency, closure under composi-
+tion, and finite task expansion; (2) a recursive collaboration
+mechanism connecting task decomposition, peer negotiation,
+resource commitments, and result aggregation, including
+rules for determining coordination scope after task or capa-
+bility changes; and (3) a cross-scale task mapping in a multi-
+workshop machining–inspection–logistics network, together
+with an implementation architecture based on a common
+organizational kernel and configurable domain components.
+2 Related Work
+2.1 Manufacturing Reconfiguration and Cyber-Physical
+Production Systems
+Adapting manufacturing systems to changing demand re-
+quires coordinated adjustments to physical resources, control
+functions, and production organization. Koren et al. in-
+troduced reconfigurable manufacturing systems, in which
+adaptable machines, controllers, and system-design meth-
+ods allow production capacity and functionality to change
+with demand [2]. This work connects reconfigurability with
+system structure: adaptation encompasses both runtime task
+rescheduling and changes in resource configurations and con-
+trol structures. For collaboration across equipment and work-
+shops, resource modularity provides a basis for composition,
+while capability descriptions, task delegation, and handover
+constraints must still be established among modules.
+Cyber-physical production systems further connect manu-
+facturing entities with their digital representations. Monos-
+tori et al. discuss advances in sensing, connectivity, and col-
+laboration through the integration of manufacturing science,
+computation, and communication [3]. The 5C architecture of
+Lee et al. organizes data connection, conversion, networked
+analysis, cognition, and configuration to bring operational
+data into decision-making [4]. Reconfiguration and cyber-
+physical integration thus provide complementary resource
+and information foundations for dynamic production organi-
+zation. This paper examines how task and capability inter-
+faces remain consistent as organizational scale changes and
+how composite units continue to participate in higher-level
+collaboration.
+2
+
+
+2.2 Holonic Manufacturing and Fractal Organization
+Holonic manufacturing treats production entities as au-
+tonomous, cooperative units that are simultaneously wholes
+and parts of larger systems. PROSA, proposed by Van Brus-
+sel et al., comprises product, order, and resource holons,
+with staff holons providing specialized decision support [6].
+Aggregation allows entities at different scales to retain dis-
+tinct external identities, while specialization permits different
+manufacturing functions to use different internal implementa-
+tions. PROSA also explicitly separates organizational struc-
+ture from control algorithms, using self-similarity to support
+component integration and system reconfiguration. These
+principles are directly relevant to the encapsulation of com-
+posite units and reuse of mechanisms across levels considered
+here.
+Fractal manufacturing likewise emphasizes self-similar
+functional organization. Ryu et al. describe basic units using
+five functional modules—observer, analyzer, organizer, re-
+solver, and reporter—that handle production tasks through
+inter-agent collaboration and negotiation [7]. Repeating a
+common functional structure across scales enables units to
+adjust internal behavior and interactions as conditions change.
+These studies establish a direct foundation for cross-scale
+self-similarity and functional reuse. This paper further de-
+scribes their operational connections through task contracts,
+conditional composite capabilities, and commitment lifecy-
+cles.
+ADACOR addresses the relationship between global coor-
+dination and local responsiveness. Its supervisor, task, prod-
+uct, and operational holons organize production and adjust co-
+ordination under normal and disturbed conditions to balance
+overall planning with local adaptation [8]. The evolution-
+ary architecture of Barbosa et al. extends self-organization
+to behavioral and structural adaptation, allowing both unit
+strategies and organizational relationships to change with pro-
+duction conditions [9]. Drawing on these ideas, the present
+work focuses on cross-level consistency in task decompo-
+sition, composite capabilities, resource commitments, and
+result feedback, and describes their operational integration
+through a common kernel.
+2.3 Hierarchical Task Planning and Capability-Driven
+Allocation
+Hierarchical task network (HTN) planning progressively ex-
+pands compound tasks into primitive tasks using domain
+methods. SHOP2 selects decomposition methods according
+to the planning state and supports partially ordered tasks and
+their dependencies [10]. HTN provides a representation from
+production objectives to operation sequences, but task hier-
+archies and organizational hierarchies are distinct modeling
+constructs. A single planner may expand the entire task hi-
+erarchy centrally, or delegate tasks to other units for further
+planning. RAA adopts the latter organization: a compos-
+ite assignee organizes its members under the same contract
+while retaining responsibility for fulfilling the parent task.
+The Contract Net Protocol establishes distributed dele-
+gation through task announcements, bids, and awards; as-
+signees can also organize further subcontracting [11]. Re-
+cursive delegation is therefore not unique to RAA. Its appli-
+cation to manufacturing depends on a shared interpretation
+of task information, capability conditions, commitment up-
+dates, and handovers. The capability and skill reference
+model of Köcher et al. provides a common information
+basis for describing resource functions and callable imple-
+mentations [12]. Building on this distinction, the present
+work separates available functions from the tasks a unit can
+currently accept, incorporating resource calendars, quality
+applicability, and handovers among members into composite
+capability descriptions.
+Task structures can also constrain learning-based decisions.
+Mu et al. combine HTN with multi-agent reinforcement
+learning, using task decomposition and subgoals to orga-
+nize cooperative policy learning [13]. Such approaches show
+how planning knowledge can connect to lower-level policies,
+while cross-level reuse of an organizational kernel requires a
+separate definition. RAA permits rules, HTN, mathematical
+optimization, and learned policies as internal solution meth-
+ods, connected through common task, resource, and result
+contracts.
+2.4 Production–Logistics Coordination and Dynamic
+Scheduling
+Dynamic scheduling revises existing arrangements when pro-
+duction states change. Vieira et al. organize rescheduling
+research in terms of strategies, triggering policies, and meth-
+ods, and discuss the relationship between schedule revision
+and stability [5]. Event-driven scheduling, periodic rolling
+planning, and local schedule repair can be used within dif-
+ferent organizational architectures. Dynamic responsiveness
+therefore depends jointly on scheduling policies, triggering
+mechanisms, and organizational structures. Architectural dif-
+ferences chiefly concern the distribution of information and
+decisions, which constraints are handled locally, and when
+coordination must be expanded.
+Integrated production and logistics scheduling requires
+joint treatment of processing and transport resources.
+Gehlhoff and Fay investigate agent-based decentralized in-
+tegrated scheduling, coordinating production and transport
+arrangements to address temporal and resource coupling in
+dynamic manufacturing [14]. Their work demonstrates that
+task allocation and logistics services must share feasibility
+conditions. In a recursive organization, aggregating process-
+ing capabilities without transport and handover conditions
+can produce an external capability description that exceeds
+what is executable. Capability aggregation must therefore
+retain external resource dependencies relevant to higher-level
+decisions.
+Multi-agent reinforcement learning combines local poli-
+cies with global guidance for large-scale scheduling. Jang
+et al. investigate agent coordination under directed acyclic
+graph (DAG) constraints, linking dependent subtasks through
+leader–follower roles and reward mechanisms [15]. Their
+semiconductor-factory scheduling study further combines
+abstract global objectives with local equipment scheduling in
+a leader–follower structure [16]. These approaches provide
+algorithmic context for hybrid production decisions, while
+scheduling performance and recursive reuse across levels
+remain distinct properties. This paper models organizational
+structure separately from local solvers, making coordina-
+tion scope, capability encapsulation, and mechanism reuse
+3
+
+
+explicit.
+2.5 Industrial
+Agent
+Implementation
+and
+Model-
+Assisted Planning
+Industrial agent deployment must connect operational inter-
+actions with heterogeneous automation equipment. Seitz et
+al. develop an automation-platform-independent multi-agent
+system, connecting production resources through common in-
+formation representations and OPC UA communication, and
+evaluate it in order-driven production and adaptable-factory
+scenarios [17]. This work shows how common communi-
+cation, resource self-description, and modular integration
+support heterogeneous production systems. Cross-level task
+responsibilities, composite capabilities, and lifecycles addi-
+tionally require explicit organizational rules.
+Large models offer new ways to connect unstructured pro-
+duction requirements with manufacturing capabilities. Lim
+et al. introduce large language models into multi-agent man-
+ufacturing, enabling product and resource agents to interpret
+user requirements and exchange task information [18]; their
+subsequent work investigates model-assisted adaptive task
+planning and coordination [19]. PaLM-E jointly uses visual,
+state, and language information for embodied tasks, provid-
+ing a methodological reference for incorporating multimodal
+operational information into planning [20]. These approaches
+primarily extend task interpretation, knowledge use, and can-
+didate generation. Organizational recursion concerns how
+task delegation and composite-unit identity remain consistent
+as scale increases.
+Here, large models generate candidates within the organi-
+zational kernel, while explicit task models, process rules, and
+resource constraints determine execution conditions. Model-
+generated candidates undergo the same checks as those pro-
+duced by rules or optimizers, and confirmed plans connect to
+equipment through skill interfaces. Semantic reasoning can
+therefore be configured according to task requirements, while
+recursive organization rests on common contracts, closure
+under composition, and lifecycle reuse across levels.
+3 Recursive Organizational Model of RAA
+Figure 2 presents the recursive organizational structure and
+instantiation of the common kernel. Equipment-service units
+form workshops, while workshops and shared services form
+a factory. Each composite unit maintains the same exter-
+nal interface and organizes collaboration among its internal
+members. Downward objective delegation and upward capa-
+bility and result feedback connect scales; peer interactions
+coordinate task handovers and resources among members.
+3.1 Leaf Units, Composite Units, and Organizational
+Relationships
+A production-service unit with a defined identity, capability,
+responsibility boundary, and execution feedback is repre-
+sented as agent Av. Equipment participates as a leaf agent
+only when it supports a closed operational loop encompassing
+objective acceptance, state assessment, execution supervision,
+and result feedback. Sensors, actuators, and communication
+gateways participate through resource interfaces. The bound-
+ary of an autonomous unit is determined by an operational
+scope within which tasks can be independently accepted and
+their results verified. A leaf may correspond to a single ma-
+chine or a group of devices required for a service, depending
+on that scope. Members form a composite agent under a
+coordinator:
+Av = C
+ {Au : u ∈ch(v)}, Θv
+
+,
+(1)
+where ch(v) is the member set, Θv specifies membership, do-
+main methods, handover conditions, resource-management
+responsibilities, and permissions, and C is the composition
+operation. The composite unit coordinates its members inter-
+nally and accepts tasks, commits capabilities, and submits
+results externally under a single identity. The coordinator is
+an organizational role of the composite entity and does not
+provide additional physical capacity. Resource accounting
+must resolve to unique resource identifiers to avoid counting
+both a composite entity and its members as separate capacity.
+Organizational containment is represented by a finite
+rooted tree T = (V, Eo) to make recursive expansion and
+responsibility assignment explicit. Peers interact through
+negotiation relations Eh(t), while each task has a separate
+dependency graph Gτ. The organizational tree, negotiation
+network, and task dependency graph specify coordination
+responsibilities, interactions, and process dependencies, re-
+spectively. A shared resource has one responsible manager
+and may serve different organizations; serving multiple tasks
+does not duplicate it into independent resources.
+3.2 Cross-Level Interface Consistency and the Organiza-
+tional Kernel
+Cross-level isomorphism is defined here as consistency in
+interface semantics, organizational operations, and state tran-
+sitions among units at different scales. It denotes a functional
+and protocol-level correspondence, allowing physical struc-
+tures and workflow topologies to differ. Every unit uses the
+common interface schema
+I = ⟨Goal, Capability, State,
+Commitment, Result⟩.
+(2)
+These fields represent objectives and constraints, capabilities
+and applicability conditions, current state, active task and re-
+source commitments, and completion status with acceptance
+evidence. Equipment, workshops, and factories may pub-
+lish different service content, but the meanings, references,
+and versioning rules of the fields remain consistent. From a
+higher-level perspective, delegating an integrated machining-
+and-inspection service to a workshop follows the same kind
+of delegation, confirmation, and feedback rules as delegating
+a machining service to an equipment unit.
+The common organizational kernel K handles objective
+reception, capability queries, candidate decomposition, ne-
+gotiated scheduling, commitment confirmation, execution
+supervision, and result aggregation. Each unit instantiates
+the kernel using configuration θv and a local solver Sv:
+Πv = K(I; θv, Sv).
+(3)
+Cross-level reuse requires consistency in these organizational
+operations and their state-transition rules. Task decompo-
+sition methods, equipment models, queueing rules, trans-
+port planners, and optimization algorithms are configurable.
+4
+
+
+Recursive organization & capability aggregation
+Cross-level organizational units
+Factory composite agent
+Factory coordinator
+Higher-level agent
+Delegate goal
+Capabilities
+& results
+Delegate goal
+Capabilities
+& results
+Workshop A
+Workshop B
+Workshop coordinator
+Workshop coordinator
+Peer negotiation
+Delegate goal
+Capabilities & results
+Delegate goal
+Capabilities & results
+Peer link
+Peer link
+Peer link
+Peer link
+Machining
+Inspection
+Logistics
+Machining
+Inspection
+Logistics
+Member
+collaboration
+Capability
+encapsulation
+Upward
+aggregation
+Goals & constraints
+Capabilities & results
+Common task & capability interfaces
+Objective
+acceptance
+Decompose
+& negotiate
+Execute
+& aggregate
+Confirm
+commitments
+Lower-level unit
+Lower-level unit
+Peer
+negotiation
+One organizational kernel across levels
+Domain methods · Resource models · Local solvers
+Figure 2. Recursive RAA organization. (a) Operational units collaborate to form workshop and factory composite agents. Nested boundaries
+indicate organizational containment; blue arrows indicate objective delegation; teal arrows indicate capability and result feedback; dashed
+links indicate peer negotiation. (b) Each scale reuses task, capability, state, commitment, and result interfaces, together with an organizational
+kernel for objective acceptance, decomposition and negotiation, commitment confirmation, and execution and aggregation. Domain methods,
+resource models, and solvers are configured separately.
+Reusing a scheduling process means reusing problem submis-
+sion, resource requests, commitment activation, and feedback
+updates; it does not require equipment-level path planning
+and factory-level scheduling to use the same numerical algo-
+rithm.
+Interface consistency must be coupled with lifecycle reuse.
+Different solvers connect to the kernel through common task,
+resource, and result interfaces. The kernel maintains task
+states, delegation relationships, and commitment versions.
+Common interface names or message fields alone are insuf-
+ficient: reuse also requires shared implementations of these
+operations and state transitions.
+3.3 Cross-Level Isomorphism in Workflow Networks
+Workflow networks provide an intuitive illustration of cross-
+level isomorphism. Figure 3 shows the operational structure
+of a level-1 agent: low-temperature treatment, impact test-
+ing, buffers, loading/unloading points, robots, and conveyors
+jointly provide a service through material input, output, han-
+dover, and transport relationships. The level-1 agent is not
+identical to any single machine shown. It assumes overall re-
+sponsibility for objective acceptance, resource organization,
+and result feedback within this collaborative scope. Exter-
+nally, it provides a complete service capability; internally, it
+coordinates processing, storage, and transport resources.
+Figure 4 shows the operational structure of a level-2 agent.
+Service nodes for impact testing to Chinese and US stan-
+dards, automated tensile testing, sorting and measurement,
+and drop-weight testing form a broader collaborative system
+with incoming-sample buffers, residual-sample collection,
+transfer points, and a shared automated guided vehicle (AGV)
+network. A service organized within the level-1 scope can
+be encapsulated as a processing node in the level-2 network.
+The level-2 agent again organizes input, service processing,
+buffering, handovers, and transport, and publishes an inte-
+grated service externally. Encapsulation requires registering
+the lower-level unit’s capabilities and handover conditions
+with the corresponding service node. The different test nodes
+are not assumed to have identical internal equipment config-
+urations.
+The isomorphism illustrated by these networks lies in
+corresponding operational roles and organizational rules.
+Equipment-level processing can be aggregated into a service-
+level processing node; local buffering and handovers can be
+aggregated into inter-unit input/output conditions; and inter-
+nal transport can be exposed as a queryable logistics service.
+Once the whole is encapsulated, the next level continues to
+organize tasks through the same roles of processing, stor-
+age, handover, and transport. The networks need not have
+the same number of nodes or the same topology. Purple
+paths and teal loading/unloading associations describe opera-
+tional resource relationships rather than task delegation itself.
+Common contracts and the organizational kernel connect
+delegation to these resources and their service capabilities.
+These role correspondences provide a structural basis for
+recursive encapsulation. A lower-level unit publishes its ca-
+pabilities as a whole; a higher-level unit delegates a service
+through the common contract; and the assignee organizes exe-
+cution through its internal workflow network before returning
+results to the parent task. Interface consistency, capability en-
+capsulation, and the task lifecycle jointly turn this structural
+correspondence into an operational recursive process.
+5
+
+
+Impact tester
+Input
+Output
+Impact conveyor
+Conveyor
+Residual-sample
+collection
+Residual-sample
+transfer point
+Transfer point
+Impact receiving
+buffer
+Cold chamber
+Cold-chamber
+buffer
+Transfer point
+Incoming-sample
+unloading
+Incoming-sample
+receiving buffer
+Incoming-sample
+receiving point
+Stock: 0
+Stock: 0
+Stock: 2
+Stock: 1
+Input
+Output
+Conveyor-1
+Robot-1
+Load / unload
+Load / unload
+Load / unload
+Load / unload
+Load / unload
+Load / unload
+Path (1 m)
+Path (1 m)
+Path (1 m)
+1 m
+Figure 3. Workflow network of a level-1 agent. Processing equipment, buffers, loading/unloading points, and transport resources form an
+operational unit. Orange and blue dashed links indicate input and output relationships in the original interface; teal dashed links indicate
+loading/unloading associations; purple links indicate transport paths. Inventory, operating states, and distances are snapshot values used
+solely to illustrate the operational structure.
+3.4 Recursive Expansion, Upward Aggregation, and Ter-
+mination
+Organizational recursion requires interface closure under
+composition: members satisfying the composition conditions
+form a whole through Eq. (1) that continues to use Eq. (2)
+in higher-level composition. Task recursion requires decom-
+posed subtasks to retain the same task contract, allowing
+each assignee to choose between direct execution and further
+decomposition. The first requirement establishes the compos-
+ability of composite units; the second connects production
+objectives to primitive operations.
+Peer collaboration links these two directions. The pres-
+ence of individual functions does not guarantee a deliverable
+composite capability. Machining and inspection equipment
+must also have compatible product scopes, material han-
+dovers, and transport conditions before jointly committing
+to a machining-and-inspection service. Members first estab-
+lish executable internal arrangements through collaboration.
+The coordinator then abstracts these arrangements into an
+integrated service and reports its applicability, timing, and
+external resource dependencies. Cross-level isomorphism
+allows higher levels to organize this service in turn.
+Recursion requires finite termination conditions. Orga-
+nizational expansion can visit only members of the finite
+organizational tree. Within a unit, task methods must strictly
+decrease the rank of remaining compound tasks along every
+expansion branch until an approved skill with valid precondi-
+tions and permissions is matched. If no applicable method
+or leaf capability can be matched, the process reports infea-
+sibility or insufficient conditions. Limits on decomposition
+depth, query time, and negotiation rounds bound computa-
+tion; reaching a limit returns an incomplete status and its
+reason.
+Equipment, workstations, lines, workshops, and factories
+are not mandatory fixed levels. Tightly coupled equipment
+may first form an operational module, with several modules
+forming a workshop, or a workshop may directly organize
+equipment with complete service capabilities. Levels depend
+on service responsibilities, resource coupling, and encapsula-
+ble capabilities. An additional composition level retains the
+existing interface and kernel while configuring the required
+domain knowledge, membership, and verification conditions.
+3.5 Structural Conditions for Recursive Organization
+Hierarchical organization assigns decision responsibilities
+at different scales; hybrid organization combines vertical
+coordination with local decisions; recursive organization ad-
+ditionally specifies interface closure of composite units and
+reuse of organizational processes across levels. RAA adopts
+a hybrid organization with recursive properties. Levels inter-
+act through common contracts and run the common kernel
+within their responsibility boundaries. Hierarchical depth can
+vary with operational scale, resource coupling, encapsulable
+capabilities, and fulfillment responsibilities.
+Table 1 summarizes the structural and operational condi-
+tions. Common interfaces let members and composite units
+interact through the same kind of contract. Finite expansion
+and acceptance traceability connect tasks to execution out-
+comes. Preservation of these conditions after reconfiguration
+supports continued operation. These conditions characterize
+implementation consistency; production performance also
+depends on capability abstraction, resource coupling, and
+6
+
+
+CN impact
+US impact
+Automated
+tensile test
+Sort &
+measure
+Drop-weight
+test
+Incoming
+buffer 1
+Residual
+buffer 1
+Incoming
+buffer 2
+Residual
+buffer 2
+Incoming
+buffer 3
+Residual
+buffer 3
+Buffer
+Incoming
+buffer 4
+Residual
+buffer 4
+CN-impact
+transfer point
+US-impact
+transfer point
+Tensile-test
+transfer point
+Measurement
+transfer point
+Drop-weight
+transfer point
+Residual
+store 1
+Residual-sample
+transfer 1
+Residual
+store 2
+Residual-sample
+transfer 2
+Incoming
+sample store
+Incoming-store
+transfer point
+Stock: 46
+Stock: 44
+Stock: 56
+Stock: 44
+Stock: 56
+Stock: 44
+Stock: 200
+Stock: 56
+Stock: 44
+Stock: 0
+Stock: 0
+Stock: 3800
+In
+In
+In
+In
+In
+Out
+Out
+Out
+Out
+Out
+Load / unload
+Load / unload
+Load / unload
+Load / unload
+Load / unload
+Load / unload
+Load / unload Load / unload
+Load / unload
+Load / unload
+Load / unload
+Load / unload
+Path (1 m)
+Path (1 m)
+Path (1 m)
+Path (1 m)
+Path (1 m)
+Path (6 m)
+Path (6 m)
+Path (6 m)
+1 m
+Path (1 m)
+Path (1 m)
+Path (1 m)
+Path (1 m)
+Path (1 m)
+Path (1 m)
+Figure 4. Workflow network of a level-2 agent. Test and measurement service nodes form an integrated operating system through buffers,
+transfer points, and a shared AGV network. An encapsulated level-1 service can participate as a capability node at this level, reusing the
+roles and connection rules of input, processing, storage, handover, and transport at a larger scale. Internal implementations may differ among
+service nodes. Inventory, states, and path values are retained from the original interface snapshot.
+scheduling methods.
+4 Capability-Driven Recursive Collaboration
+Figure 5 presents the organizational lifecycle shared across
+scales: task acceptance, capability matching and decomposi-
+tion, cross-level and peer negotiation, joint checks and com-
+mitment confirmation, execution and acceptance, and state
+updates. Equipment-service units, workshops, and factories
+handle different domain objects while retaining the same
+stage semantics and feedback relationships. The following
+subsections specify this lifecycle through task contracts, com-
+posite capabilities, resource constraints, and recursive calls.
+4.1 Common Task Contracts and Feasible Task Capabil-
+ities
+A task is represented as
+τ = ⟨id, g, o, Γ, [r, d], q, b, ν⟩,
+(4)
+where g is the objective; o identifies a workpiece, batch, or
+material object; Γ contains process, quality, resource, and
+safety constraints; r and d specify the release time and deliv-
+ery requirement; q gives acceptance conditions; b specifies
+decision and execution authority; and ν is the version. Lev-
+els may refine objects and objectives, but tasks must retain
+references to their parents, applicable constraints, and result
+associations. Higher levels delegate required outcomes and
+their boundaries, while assignees select execution methods
+within the approved scope.
+A unit’s capabilities distinguish existing functions from
+the tasks it can currently accept. Let Fv(t) denote the set of
+task contracts for which Av can construct a feasible execution
+arrangement at time t, given its state, existing commitments,
+and specified resource conditions. This set is constrained
+by product scope, available skills, resource calendars, and
+processing rates. Implementations can use finite descriptions
+such as capability types, parameter ranges, available time
+windows, and conditional duration models rather than enu-
+merating all tasks. After querying candidate capabilities, a
+higher-level unit uses commitment confirmation to turn con-
+ditional feasibility into a resource arrangement with a defined
+validity period.
+Composite capability depends on feasible internal decom-
+position. Let Dv produce subtasks and a dependency graph,
+σ specify participants, timing, and resources, and Hv express
+handover and cross-member constraints. The semantics are
+τ ∈Fv(t) ⇐⇒∃(Dv, σ),
+τu ∈Fu(t),
+Hv(Dv, σ) ∧Cover(Dv, τ).
+(5)
+Member feasibility must hold for every selected subtask
+assignee. Cover means that the decomposition outcomes
+and their handovers jointly cover the parent requirements.
+Member capability queries use the same candidate resource-
+allocation conditions, and the joint arrangement σ rules out
+conflicting allocations. Equation (5) specifies the semantic
+conditions for composite capability. An implementation pub-
+lishes capability ranges supported by applicable methods or
+7
+
+
+Table 1. Structural and operational conditions for recursive RAA organization.
+Property
+Required condition
+Meaning in production organization
+Common task and ca-
+pability interfaces
+Leaf and composite units share contract and state
+semantics
+Equipment, workshops, and factories can accept
+objectives, report capabilities, and submit results.
+Closure under compo-
+sition
+A composite whole can participate as the same kind of
+member in higher-level collaboration
+An added workshop or coordination level provides
+services under a single identity.
+Reusable
+organiza-
+tional operations
+Objective acceptance, decomposition, negotiation,
+confirmation, and aggregation share a lifecycle
+Domain algorithms connect as plugins without separate
+coordination procedures for every level.
+Finite task expansion
+Subtasks retain the same contract and expand to
+approved skills or return infeasibility
+Objectives map to executable operations; unmatched
+capabilities are not silently bypassed.
+Constraint and result
+traceability
+Subtask results and handover evidence jointly map to
+parent-task acceptance conditions
+Local completion supports an overall delivery decision.
+Preservation
+after
+change
+Revised membership and tasks still satisfy the interface
+and composition conditions
+A reconfigured workshop participates in factory
+collaboration in the same way.
+Task acceptance
+Goals, constraints & authority
+Define acceptance criteria
+Capability matching & decomposition
+Query capabilities & current states
+Propose subtasks & participants
+Cross-level & peer negotiation
+Exchange conditions & resource needs
+Revise assignments & timing
+Joint checks & commitment confirmation
+Check processes, resources & timing
+Confirm allocations & preconditions
+Controlled execution & acceptance
+Invoke approved skills
+Monitor execution & verify results
+State & capability updates
+Collect completion data & exceptions
+Identify changes & affected scope
+Acceptance-condition feedback
+Revise affected tasks
+Reuse planning–scheduling–execution at every level
+Checks
+not
+passed
+Figure 5. Operational process of recursive collaboration. Task acceptance, capability matching and decomposition, negotiation, joint checks,
+controlled execution, and state updates form a closed loop at each level. Solid links indicate the main execution and feedback relationships;
+dashed links indicate condition feedback or plan revision after failed checks. Depending on the scope affected by change, the system uses
+internal adjustment, negotiation among affected peers, or higher-level coordination.
+feasible arrangements and distinguishes an unresolved search
+from confirmed infeasibility.
+4.2 Top-Down Capability-Driven Task Decomposition
+After accepting a task, a unit checks its objects, objectives,
+and constraints, then queries member capabilities and ex-
+isting commitments. Domain methods provide candidate
+decompositions, while current capabilities determine which
+methods and participants remain applicable. Planning pro-
+duces a DAG Gτ = (Vτ, Eτ) whose edges describe process
+precedence or material handovers. Subtasks retain Eq. (4).
+A composite assignee invokes the same kernel for further
+expansion, while a leaf selects approved skills, completing
+the mapping from task objectives to equipment execution.
+Capability feedback can change the decomposition itself
+rather than only the assignee. Suppose machining and final
+inspection were originally assigned to one workshop. If its
+inspection resource becomes unavailable, the higher-level
+unit can reformulate the objective as machining, inter-area
+transport, and independent inspection instead of simply sub-
+stituting a machine within the original task structure. This
+change is valid only if alternative inspection satisfies the orig-
+inal quality requirements, the workpiece can be transported,
+and transport resources are available. Domain methods and
+currently composable capabilities jointly determine task gran-
+ularity, while mandatory quality steps and acceptance require-
+ments remain in force.
+Decomposition must also preserve applicable constraints.
+An overall due date can be allocated to local time windows
+where process relationships permit; quality requirements map
+to step-specific acceptance conditions; and authority can only
+be refined within higher-level authorization. The coordinator
+continues to maintain constraints that cannot be delegated
+independently to a single member, such as a shared resource
+limit across workshops. Each level records who checks a con-
+straint, when it is confirmed, and which higher-level commit-
+ments would be affected by its violation, preventing global
+requirements from being lost during refinement.
+4.3 Peer Collaboration and Resource Commitments
+Peer units establish joint arrangements around handover con-
+ditions, execution windows, and shared resources. A ma-
+chining unit reports expected completion and output state, a
+transport unit supplies service windows, and an inspection
+8
+
+
+unit returns receiving and inspection requirements. Negotia-
+tion may use contract-net procedures, rules, or optimization,
+but every proposal must become a checkable set of tasks,
+time intervals, and resource requests. Different solvers enter
+execution through the same commitment-management pro-
+cess, allowing algorithms to be replaced while retaining the
+organizational mechanism.
+For each process dependency (i, j) ∈Eτ, timing must
+satisfy at least
+sj ≥ci + ℓij,
+(6)
+where sj is the start time, ci the completion time, and ℓij a
+handover or transport delay not modeled as a separate task.
+If transport is already an explicit task node, adjacent depen-
+dency constraints account for it to avoid double counting.
+For resource k, candidate arrangements must also satisfy
+X
+i∈Jk(t)
+aik(t) ≤Bk(t),
+(7)
+where Jk(t) includes all tasks using resource k under candi-
+date and existing valid arrangements, aik(t) is their resource
+usage, and Bk(t) is available capacity. This scope includes
+requests from different parent tasks.
+Once a proposal passes process, time, resource, and au-
+thority checks, its participants and responsible resource man-
+agers confirm a versioned commitment with a validity period.
+Members manage their internal resources; a unique manager
+confirms cross-member shared resources. Atomic calendar
+updates or equivalent mutual-exclusion mechanisms prevent
+concurrent requests from receiving conflicting allocations.
+Confirmation across multiple managers uses a commit pro-
+cess with timeout, cancellation, and recovery rules. The joint
+arrangement becomes effective only after all required parties
+confirm. The specific distributed commit protocol depends
+on implementation conditions.
+Peers may confirm revisions within existing authorization
+and notify the coordinator if external commitments remain
+unchanged. Revisions affecting parent-task delivery condi-
+tions or resources committed to other tasks require a coordi-
+nator whose responsibility covers the affected parties. Thus,
+valid commitments and resource responsibilities determine
+the scope of local autonomy; a common organizational mech-
+anism does not authorize any member to independently revise
+the overall plan.
+4.4 Bottom-Up Capability and Result Aggregation
+Capability aggregation translates internal collaboration into
+a service description usable by higher levels. Member capa-
+bilities, interface compatibility, resource conditions, and task
+methods jointly determine the objectives a composite unit
+can accept. The aggregate description retains at least service
+type, applicable products, quality scope, service windows, ex-
+pected completion conditions, and external shared-resource
+dependencies. A composite unit may hide specific internal
+equipment choices, but it must expose shared constraints af-
+fecting other units’ feasibility. Otherwise, higher levels may
+mistake conflicting local commitments for simultaneously
+executable arrangements.
+Aggregation must retain the conditional nature of capabil-
+ity. Two machining units may each provide processing ca-
+pacity, yet their joint service rate may be limited by a shared
+transport device. Likewise, idle machining and inspection
+equipment do not guarantee a feasible handover window
+before a given due date. Overall capacity and completion
+times depend on serial and parallel relationships, waiting, and
+shared-resource occupancy. When necessary, a composite
+unit returns a conditional quotation or feasible time window
+for a specific objective rather than a misleading scalar capac-
+ity.
+Results return along task dependencies. Members submit
+evidence associated with objects, task versions, and accep-
+tance conditions. The coordinator checks whether subtask
+results and handover records jointly satisfy the parent task.
+This relationship can be expressed as
+ ^
+i∈Vτ
+qi(zi)
+
+∧Hexec
+v
+=⇒qτ(zτ),
+(8)
+where zi is subtask result evidence and Hexec
+v
+denotes han-
+dover consistency during execution. This implication is an ac-
+ceptance relationship that the domain decomposition method
+must establish. Insufficient process conditions or evidence
+lead to a pending-verification status. Its validity depends on
+the specific method and measurement basis; no general for-
+mal guarantee for industrial quality requirements is asserted
+here.
+Through successive capability and result aggregation, a
+factory can make delivery commitments based on integrated
+workshop services. If a workshop changes its internal equip-
+ment arrangement while retaining a valid external commit-
+ment, higher levels need not reconsider all internal details.
+Such encapsulation provides a basis for limiting reconfigura-
+tion scope, conditional on retaining the information needed
+in capability abstractions and on lower-level units being able
+to absorb changes within their commitments.
+4.5 Recursive Invocation of the Common Kernel
+These mechanisms form a task process R(Av, τ) applicable
+to any unit scale. If a task maps to an approved skill, the
+unit confirms resources and preconditions, executes it, and
+submits results. If member composition is required, the
+unit constructs subtasks and a joint arrangement, confirms
+commitments, invokes the same process on the subtasks,
+and aggregates their results. If neither an applicable skill
+nor a feasible decomposition is available, it reports unmet
+conditions:
+R(Av, τ) =
+
+
+
+
+
+Ev(τ),
+skill executable,
+Vv({R(Au, τu)}) ,
+plan confirmed,
+Fail(τ),
+not executable.
+(9)
+Here, Ev executes skills and checks results, while Vv ag-
+gregates results against parent-task acceptance conditions.
+Subcalls start according to task dependencies and resource
+arrangements; they need not run sequentially. Capability
+queries, decomposition, and negotiation before confirmation
+form the kernel’s preparation process. Candidates without
+commitments do not enter physical execution. Tasks awaiting
+additional conditions remain pending. Fail indicates that the
+current invocation has not established an executable basis,
+rather than deleting the operational objective.
+The same process in Eq. (9) applies to equipment services,
+workshops, and factories. A composite unit acts as a single
+9
+
+
+invocation target when accepting a parent task and as an
+organizer when invoking its members internally. If an origi-
+nal condition becomes invalid during execution, the process
+suspends the affected branch and returns to preparation and
+confirmation at the appropriate scope. The members, sub-
+tasks, and versions used for result aggregation are updated
+accordingly. Recursion is thus realized as a shared invocation
+and state-transition process across scales.
+4.6 Recursive Reconfiguration Within the Affected Scope
+Figure 6 illustrates how task structure and participant compo-
+sition change together after inspection capability is with-
+drawn.
+Machining and inspection originally completed
+within one workshop are replaced by local machining, inter-
+area transport, and inspection in another workshop. The fac-
+tory coordinator receives the constrained objective, decom-
+poses the relevant tasks again, and confirms cross-workshop
+services. Each workshop continues to organize internal exe-
+cution through the same kernel.
+Production changes include updates to objectives and due
+dates, changes in equipment rates, resource withdrawal or
+addition, and invalid handover conditions. Event e first up-
+dates directly associated state and capability descriptions. Its
+effects are then traced through task dependencies, shared-
+resource occupancy, and higher-level commitments, yielding
+the set of affected tasks and their units AV (e). The analy-
+sis considers both dependencies and resource competition:
+changing one vehicle’s occupancy may affect several work-
+shops, while a local process delay may propagate through
+downstream tasks to order delivery.
+If a unit can absorb the change internally while maintain-
+ing its external commitments, it invokes its kernel to revise
+internal arrangements. Changes involving peer handovers
+trigger negotiation among the relevant members. If the origi-
+nal composition no longer satisfies commitments or the nec-
+essary resources exceed local management authority, the unit
+escalates the constrained objective, alternative conditions,
+and confirmed progress. Higher levels receive this infor-
+mation through the same task and capability interfaces and
+repeat decomposition, negotiation, and confirmation, thereby
+implementing recursive reconfiguration during operation.
+Given the organizational tree and resource responsibilities,
+an initial coordination scope can be determined by the lowest
+common ancestor of affected units and responsible resource
+managers:
+ve = LCA
+ AV (e) ∪O(e)
+
+,
+(10)
+where O(e) is the set of relevant resource-management units.
+Equation (10) determines an initial scope covering known
+dependencies and responsibilities. If higher-level commit-
+ments, authority, or newly identified coupling require broader
+coordination, the scope expands upward along organizational
+relationships. This rule assigns coordination responsibility; it
+is not a sufficient condition for globally optimal scheduling.
+Reconfiguration proceeds from confirmed production
+states. Completed steps with valid acceptance results are
+retained; unstarted steps may be canceled or reassigned;
+and operations in progress are handled according to their
+interruptibility. Releasing old commitments and confirming
+new ones requires version linkage to prevent old instructions
+and revised plans from becoming effective simultaneously.
+Schedule stability also matters. Small changes recurring over
+a short interval can be consolidated within permitted toler-
+ances and decision windows to reduce execution losses from
+frequent switching.
+When members join or composition levels change, inter-
+faces, capabilities, resource ownership, and task methods are
+verified before the common kernel organizes tasks. Equip-
+ment failure usually changes available capabilities and task
+arrangements without requiring a change to the organiza-
+tional tree. Adding a workshop or changing management
+boundaries may alter organizational structure. These are dis-
+tinct changes with different implications for scheduling and
+composition. If no feasible alternative exists, the unit reports
+waiting, delay, or an unattainable objective and updates the
+relevant delivery conditions.
+5 Production-Task Mapping
+5.1 A Multi-Workshop Machining–Inspection–Logistics
+Network
+An abstract production network comprising flexible work-
+shops, shared transport units, and material buffers illustrates
+cross-level isomorphism and response to change. Orders con-
+tain batches with machining, inspection, and delivery require-
+ments. Products may follow different process routes, and
+equivalent operations may run on multiple capable resources.
+Machining and inspection equipment have availability win-
+dows and processing rates. Transport resources are limited
+by load capacity, service duration, and concurrent occupancy.
+Tasks must jointly satisfy precedence, quality applicability,
+material handovers, resource exclusion, and due dates.
+The scenario captures constraints common to multi-
+operation production, heterogeneous resources, and logistics
+across areas. Product routes, resource capabilities, and orga-
+nizational configurations describe particular production in-
+stances. Logistics is represented through conditional service
+windows and transport times; path conflicts can be included
+as additional constraints. The network connects the recursive
+organizational model with concrete production tasks.
+Equipment-service agents form leaf units. Machining, in-
+spection, and internal transport units form workshop compos-
+ite agents, while workshops and inter-area transport services
+are organized by a factory agent. Additional workstation or
+operational-module levels can be incorporated through the
+same composition operation. Internal and inter-area transport
+may have different managers or share one provider, provided
+that resource identities and allocation responsibilities remain
+unique and joint calendars prevent double counting.
+5.2 Cross-Scale Order Expansion and Capability Aggre-
+gation
+Consider the root task of machining and inspecting a prod-
+uct batch and delivering it to the outbound area before its
+due date. The factory queries workshop capabilities and
+inter-area transport conditions to construct batch allocations
+and delivery arrangements. A workshop receives a contract
+specifying products, quantities, quality requirements, and
+deadlines. It then queries internal equipment and logistics
+capabilities and decomposes the task into machining, han-
+dling, inspection, and related subtasks. Equipment units map
+their subtasks to approved operations executed through local
+10
+
+
+Shared objective: batch machining & quality inspection
+Collaboration within a workshop
+Cross-workshop collaborative reconfiguration
+Workshop A composite agent
+Workshop coordinator
+Factory coordinator
+Redecompose tasks & confirm resources
+Machining & inspection tasks
+Capabilities & results
+Machining unit
+Inspection unit
+Machining
+autonomy
+Inspection
+autonomy
+Machining
+Inspection
+Capability
+feedback
+Inspection unavailable
+Machining remains available
+Task delegation & resource coordination
+Capability &
+result feedback
+Workshop A:
+machining
+Shared logistics
+Workshop B:
+inspection
+Machining
+Inter-area transport
+Off-site inspection
+Retain accepted results · Revise affected tasks · Confirm commitments · Aggregate batch results
+Figure 6. Capability-driven collaborative reconfiguration across workshops. (a) Workshop A organizes machining and inspection internally
+and commits to batch delivery. (b) After its inspection resource is withdrawn, the affected objective is reported to the factory, which
+coordinates machining, shared logistics, and inspection in workshop B. Accepted results are retained; unexecuted tasks are reconfirmed
+under a new version; and overall quality and delivery requirements remain traceable. The figure illustrates the mechanism.
+control systems.
+Peer collaboration occurs in the same way at each scale.
+Equipment units coordinate machining outputs and trans-
+port reception; workshops coordinate inter-workshop process
+handovers; and the factory coordinates integrated workshop
+services and outbound transport. Although domain content
+differs, each follows objective reception, capability feedback,
+candidate arrangement, resource confirmation, and result
+return. Table 2 shows the same organizational mechanism
+instantiated across scales.
+In upward aggregation, equipment publishes current func-
+tions and service conditions. Workshops combine process
+methods and internal logistics into batch-level capabilities,
+and the factory combines workshops and delivery logistics
+into order-level capabilities. A higher-level unit treats a
+workshop as one assignee without reinterpreting every equip-
+ment operation at each decision. Abstractions retain external
+dependencies on cross-workshop shared resources so that
+encapsulation remains consistent with resource allocation.
+5.3 Changing Production Conditions and Organizational
+Adjustment
+The first type of change is a task update. New orders, revised
+quantities, and changed due dates alter root or batch con-
+tracts. If a workshop can absorb the change within its exist-
+ing commitments, it updates only internal subtasks. Changes
+affecting other batches, inter-area transport, or factory de-
+livery require reassignment by the appropriate higher-level
+unit. Frequent updates require a balance between continual
+revision and execution stability.
+The second type is a reduction in processing rate. When
+processing time increases, the equipment-service unit first
+revises its expected completion conditions. A workshop may
+reassign work to an internal alternative while maintaining
+external commitments. If it can no longer meet the batch
+due date, it reports the capability change to the factory. The
+factory checks whether other workshops and inter-area trans-
+port provide a feasible alternative. Equipment, workshops,
+and the factory invoke the same organizational operations
+within their respective scopes, with the validity of external
+commitments determining how far coordination extends.
+The third type is a change in resource conditions. After
+an inspection device is withdrawn, an internal machining-
+and-inspection task may be replaced, where feasible, by local
+machining, inter-area transport, and external inspection. Ad-
+ditional equipment or transport resources can expand the
+available compositions. Such changes may alter both the task
+structure and the resulting composite capability.
+The fourth type is organizational expansion. An existing
+equipment network may be composed into a new workshop,
+or an intermediate coordination module may be added among
+workshops. The resulting composite unit retains the common
+interface and kernel. Expansion still requires capability regis-
+tration, membership configuration, and verification; recursive
+composition does not remove these domain and integration
+responsibilities.
+6 Implementation Architecture
+6.1 Common Organizational Kernel and Domain Plugins
+At the implementation level, Eq. (3) maps to a common
+runtime kernel for task-object management, capability regis-
+tration, membership queries, negotiation messages, commit-
+ment versions, event routing, and result aggregation. Equip-
+ment and workshop units use the same object and lifecycle
+implementation. Domain plugins supply machining methods,
+inspection rules, transport services, resource models, and ap-
+plicable constraints. Changes in product mix are represented
+11
+
+
+Table 2. Instantiation of the common recursive mechanism across production scales.
+Operation
+Equipment-service unit
+Workshop composite unit
+Factory composite unit
+Objective
+accep-
+tance
+Machine or inspect a specified
+workpiece
+Complete batch machining and
+inspection
+Fulfill orders and outbound delivery
+by due dates
+Capability query
+Skills, tools, materials, and
+availability windows
+Equipment, internal logistics, and
+process feasibility
+Workshop services, inter-area
+logistics, and batch acceptance
+conditions
+Task decomposi-
+tion
+Approved operations and
+pre-/postconditions
+Machining, handling, inspection, and
+dependencies
+Batches, cross-workshop services,
+and delivery transport
+Peer collaboration
+Material and resource handovers
+among equipment units
+Process and logistics windows
+among workshops
+Composite services and shared
+resources within factory scope
+Commitment con-
+firmation
+Local resources and execution
+permission
+Member acceptance and internal
+resource calendars
+Workshop commitments and shared
+inter-area resources
+Upward aggrega-
+tion
+Operation results and current service
+capability
+Batch results and conditional
+workshop capabilities
+Order results and overall delivery
+capability
+through applicable methods and member configurations; new
+processes extend the corresponding methods, skills, and veri-
+fication basis.
+Scheduling is separated from organizational management.
+The kernel provides solvers with task dependencies, can-
+didate capabilities, resource calendars, and objectives, and
+receives feasible arrangements, unmet conditions, or infeasi-
+bility explanations. Rules, mathematical optimization, and
+learned policies can all provide candidates through this in-
+terface. Algorithm adaptation may involve interface conver-
+sion, parameter adjustment, domain modeling, and model
+retraining. Kernel reuse applies primarily to interfaces and
+coordination processes; a policy’s suitability for a new scale
+or resource distribution remains a separate concern.
+Composite units publish external capabilities and depen-
+dencies through a capability registry, with internal state up-
+dated by events. Capability abstraction must match task
+needs. An overly coarse abstraction can omit shared-resource
+constraints, whereas an overly detailed one exposes internal
+complexity to higher levels. Objective-specific queries can re-
+turn conditional acceptance proposals after a higher-level unit
+states its requirements, combining capability encapsulation
+with necessary information exchange.
+6.2 Multimodal-Assisted Planning and Local Execution
+Figure 7 presents a multimodal-assisted implementation of re-
+cursive collaboration. Task descriptions, process knowledge,
+operational images, and resource states are first associated
+with a common task context. A multimodal model com-
+bines with rules or planning methods to generate candidate
+decompositions. Candidates become structured tasks with ob-
+jectives, constraints, participants, and dependencies, then pro-
+ceed through capability matching, resource checks, and nego-
+tiated confirmation. Semantic processing connects unstruc-
+tured inputs to the organizational kernel, and specific models
+can be replaced according to operational needs [18, 19].
+Rules, HTN, or optimizers can directly handle structured
+orders and known processes. Multimodal models are use-
+ful where text, images, or heterogeneous knowledge require
+interpretation. Their scope is configured independently of
+organizational recursion. All candidates pass through com-
+mon task objects and constraint checks before commitment
+management, so different generation methods do not change
+task responsibility or acceptance rules. Cross-level reuse
+resides in the organizational kernel, while semantic models
+provide revisable candidates.
+Local computation can use dedicated edge computers or
+existing industrial computing platforms. Domain plugins
+hold methods and models; industrial gateways map PLC,
+robot, instrument, and logistics interfaces; and existing con-
+trollers execute approved skills. Before execution, the system
+checks task versions, resource permissions, and physical pre-
+conditions. Operational coordination, equipment control, and
+independent safety functions operate at their respective time
+scales. Research on learning-based robotic control likewise
+emphasizes coordination between learning mechanisms, con-
+straints, and safety-control layers [21]. The implementation
+follows this separation of responsibilities: higher-level se-
+mantic reasoning does not replace local control or safety
+functions.
+6.3 Version Management and Execution Consistency
+Tasks, capabilities, domain methods, and organizational con-
+figurations retain version links. Resource changes can update
+current availability, while modifications to skills or capability
+boundaries require verification before publication. Com-
+posite capability versions record the member and method
+versions on which they depend, allowing higher levels to
+determine whether existing commitments remain valid. State
+updates that do not affect current tasks need not immediately
+trigger global revision. Changes to commitment conditions
+are handled using the scope rules in Section 4.
+After communication timeouts or node recovery, work-
+piece states, execution receipts, task versions, and resource
+occupancy are reconciled before continuation or cancellation.
+Requests carry unique invocation identifiers so that message
+retries do not trigger duplicate physical operations. If a co-
+ordinator fails, the scope in which members can continue
+is determined by valid commitments and locally verifiable
+conditions. New cross-unit commitments require restored
+coordination or an explicit takeover satisfying the specified
+takeover and consistency conditions.
+Deployment verification covers at least interface semantics,
+termination of task expansion, constraint inheritance, unique
+12
+
+
+Task & operational information
+Recursive plan generation
+Constraint checks & negotiation
+Production task
+Assemble and pass quality inspection
+Specify objects, delivery & acceptance
+Process knowledge
+Operational images
+Process rules
+Procedures
+Experience
+Standards
+Resource model & runtime state
+Capabilities · Preconditions
+Load · Available windows
+Source · Time · Version
+Task context
+Goal g   Constraints Γ   Due d
+Acceptance q   Authority b
+Task conditions
+State & capability feedback
+Validated methods & skills
+Industrial knowledge
+Mature process methods
+Skills & interfaces
+Multimodal model
+Semantic reasoning · Candidate composition
+Rules & planning methods
+Task planning
+Constraint reasoning
+Heuristic search
+Temporal planning
+Structured subtasks (candidate plan)
+Conflict feedback
+Assembly & inspection task
+Capability &
+condition feedback
+Assembly service agent
+Assembly subtask
+Logistics service agent
+Transport subtask
+Vision inspection agent
+Inspection subtask
+Positioning skill
+Assembly skill
+Stop expansion when skill conditions hold
+Candidate plan
+Preconditions · Task dependencies · Acceptance
+Reuse the same task interface across levels
+Independent planning & constraint checks
+Goal coverage & acceptance
+Process dependencies & capability
+Resource allocation & timing
+Safety conditions & authority
+Recheck after changes
+Cross-level & peer negotiation
+Higher-level coordinator
+Agent A
+Agent B
+Agent C
+Proposals · Conditions · Confirmation
+Collaboration commitment
+Plan version · Resource windows · Confirmation
+Confirmed plan
+Controlled execution & runtime feedback
+Pre-execution checks
+Current state · Authority · Parameters
+Edge computer
+Approved skill interface
+Assembly plugin
+Transport plugin
+Inspection plugin
+Domain plugins & execution management
+Industrial gateway
+Protocol adaptation · State integration
+Equipment control & physical devices
+PLCs · Robots · Instruments
+Independent safety
+Interlocks · Protection · Safe response
+State, results & capability updates
+Execution log
+Acceptance
+Conditions
+Affected scope:
+Local revision / Peer negotiation / Escalation
+State & capability feedback
+Figure 7. Multimodal-assisted implementation of recursive collaboration. (a) Tasks, process knowledge, operational images, and resource
+states form a common context. (b) Models and planning methods generate structured subtasks that expand recursively where needed. (c)
+Capability, process, resource, and authority checks, together with cross-level and peer negotiation, establish commitments. (d) Confirmed
+tasks enter local execution through skill interfaces and industrial gateways, with state, capability, and acceptance results returned to the
+kernel. Assembly illustrates one domain plugin; validated service agents represent verified operational units. Edge computers and gateways
+are replaceable computing and integration components. This is an implementation schematic, not a claim that every module shown has been
+deployed.
+resource identities, and result traceability. It also checks
+resource failures, task updates, and version transitions after
+reconfiguration. Correct capability composition must be
+verified against domain methods. A common kernel permits
+reuse of verification tools and some test scenarios, while new
+processes, physical interfaces, and operational boundaries
+require their own verification.
+7 Discussion
+7.1 Organizational Reuse and Engineering Adaptation
+Recursive design extracts objective acceptance, task delega-
+tion, commitment confirmation, and result aggregation from
+scale-specific implementations into a common organizational
+process. When a composition level is added, the compos-
+ite unit retains existing contracts and represents its internal
+structure through membership and domain configurations.
+This reuse provides a basis for reducing cross-level interface
+adaptation. Its practical value depends on the operational
+scope covered by the kernel and the modularity of existing
+systems.
+Domain processes, physical interfaces, and operational
+constraints still require modeling and verification.
+New
+products may require additional decomposition methods,
+new equipment needs state and skill mappings, and learning
+policies may require retraining after resource distributions
+change. Interface adaptation, domain modeling, equipment
+integration, and algorithm adjustment therefore remain dis-
+tinct engineering responsibilities. Additional levels also in-
+troduce query, negotiation, and confirmation overhead.
+7.2 Dynamic Responsiveness and Schedule Quality
+When external commitments remain valid, local reconfigura-
+tion can preserve other units’ arrangements and limit change
+propagation. Restricted coordination may, however, miss
+better solutions requiring resource exchanges across units.
+Capability aggregation reduces details exposed to higher-
+level solvers but can introduce abstraction error. Faster re-
+sponse therefore does not by itself establish lower tardiness,
+higher throughput, better resource utilization, or more stable
+schedules.
+Coordination within the affected scope is most applicable
+when dependency information is sufficient, resource responsi-
+13
+
+
+bilities are explicit, and disturbances can be absorbed locally.
+Strong coupling through shared resources or simultaneous in-
+validation of multiple delivery commitments requires broader
+coordination at a higher level. For small problems with cen-
+tralized information, centralized solution methods may incur
+less runtime overhead. Frozen windows, adjustment thresh-
+olds, and decision deadlines can suppress repeated reschedul-
+ing; their effects are distinct from the recursive structure
+itself.
+7.3 Applicability and Limitations
+The model uses a finite rooted tree for primary contain-
+ment relationships and a unique responsible manager for
+resources shared across organizations. This representation
+simplifies task responsibility and coordination-scope determi-
+nation. Resource coalitions belonging simultaneously to sev-
+eral organizations require extensions to containment, author-
+ity inheritance, and commitment management. Capability
+composition also depends on domain methods and handover
+conditions. Unknown processes, measurement errors, and
+unmodeled coupling can affect feasibility judgments.
+PROSA, fractal manufacturing, and ADACOR provide
+direct foundations for the framework. RAA is specified here
+through the connection among common contracts, condi-
+tional composite capabilities, and a common organizational
+kernel. The present contribution comprises an organizational
+model, operational mechanisms, production-task mappings,
+and an implementation architecture. These establish how re-
+cursive collaboration is organized without establishing quan-
+titative advantages in development effort or dynamic schedul-
+ing performance.
+8 Conclusion
+This paper develops a recursive organizational model and
+operational mechanisms for collective RAA collaboration
+across production scales in smart factories. Common con-
+tracts expand production objectives into executable tasks
+from the top down. Peer collaboration establishes conditional
+capabilities, and composite units participate in higher-level
+organization as agents of the same kind. Consistent cross-
+level interfaces and lifecycles connect task decomposition,
+resource commitments, execution supervision, and result ag-
+gregation, allowing equipment-service units, workshops, and
+factories to reuse a common organizational kernel.
+The framework specifies conditions for composite capa-
+bilities, finite expansion, shared-resource allocation, and co-
+ordination within the scope affected by change. A multi-
+workshop machining–inspection–logistics network illustrates
+the corresponding production-task mapping. Multimodal-
+assisted planning, domain solvers, and local execution inter-
+faces provide configurable implementation support. Together,
+these elements connect recursive composition with explicit
+operational responsibilities and execution conditions in man-
+ufacturing organizations.
+References
+[1] Paulo Leitão. Agent-based distributed manufacturing
+control: A state-of-the-art survey. Engineering Appli-
+cations of Artificial Intelligence, 22(7):979–991, 2009.
+[2] Yoram Koren,
+Ulrich Heisel,
+Francesco Jovane,
+Toshimichi Moriwaki, Günter Pritschow, A. Galip Ul-
+soy, and Hendrik Van Brussel. Reconfigurable manu-
+facturing systems. CIRP Annals, 48(2):527–540, 1999.
+[3] László Monostori, Botond Kádár, Thomas Bauernhansl,
+Shinsuke Kondoh, Soundar Kumara, Gunther Reinhart,
+Olaf Sauer, Günther Schuh, Wilfried Sihn, and Kanji
+Ueda. Cyber-physical systems in manufacturing. CIRP
+Annals, 65(2):621–641, 2016.
+[4] Jay Lee, Behrad Bagheri, and Hung-An Kao. A cyber-
+physical systems architecture for Industry 4.0-based
+manufacturing systems. Manufacturing Letters, 3:18–
+23, 2015.
+[5] Guilherme E. Vieira, Jeffrey W. Herrmann, and Edward
+Lin. Rescheduling manufacturing systems: A frame-
+work of strategies, policies, and methods. Journal of
+Scheduling, 6(1):39–62, 2003.
+[6] Hendrik Van Brussel, Jo Wyns, Paul Valckenaers, Luc
+Bongaerts, and Patrick Peeters. Reference architecture
+for holonic manufacturing systems: PROSA. Comput-
+ers in Industry, 37(3):255–274, 1998.
+[7] Kwangyeol Ryu, Youngjun Son, and Mooyoung Jung.
+Modeling and specifications of dynamic agents in frac-
+tal manufacturing systems. Computers in Industry, 52
+(2):161–182, 2003.
+[8] Paulo Leitão and Francisco Restivo.
+ADACOR: A
+holonic architecture for agile and adaptive manufac-
+turing control. Computers in Industry, 57(2):121–130,
+2006.
+[9] José Barbosa, Paulo Leitão, Emmanuel Adam, and
+Damien Trentesaux.
+Dynamic self-organization in
+holonic multi-agent manufacturing systems: The ADA-
+COR evolution. Computers in Industry, 66:99–111,
+2015.
+[10] Dana Nau, Tsz-Chiu Au, Okhtay Ilghami, Ugur Kuter,
+J. William Murdock, Dan Wu, and Fusun Yaman.
+SHOP2: An HTN planning system. Journal of Artificial
+Intelligence Research, 20:379–404, 2003.
+[11] Reid G. Smith. The contract net protocol: High-level
+communication and control in a distributed problem
+solver. IEEE Transactions on Computers, C-29(12):
+1104–1113, 1980.
+[12] Aljosha Köcher, Alexander Belyaev, Jesko Hermann,
+Jürgen Bock, Kristof Meixner, Magnus Volkmann,
+Michael Winter, Patrick Zimmermann, Stephan Grimm,
+and Christian Diedrich. A reference model for common
+understanding of capabilities and skills in manufactur-
+ing. at – Automatisierungstechnik, 71(2):94–104, 2023.
+[13] Xuechen Mu, Hankz Hankui Zhuo, Chen Chen, Kai
+Zhang, Chao Yu, and Jianye Hao. Hierarchical task
+network-enhanced multi-agent reinforcement learning:
+Toward efficient cooperative strategies. Neural Net-
+works, 186:107254, 2025.
+[14] Felix Gehlhoff and Alexander Fay. On agent-based
+decentralized and integrated scheduling for small-scale
+manufacturing. at – Automatisierungstechnik, 68(1):
+15–31, 2020.
+14
+
+
+[15] Jaeyeon Jang, Diego Klabjan, Han Liu, Nital S. Pa-
+tel, Xiuqi Li, Balakrishnan Ananthanarayanan, Husam
+Dauod, and Tzung-Han Juang. Learning multiple coor-
+dinated agents under directed acyclic graph constraints.
+Expert Systems with Applications, 283:127744, 2025.
+[16] Jaeyeon Jang, Diego Klabjan, Han Liu, Nital S. Pa-
+tel, Xiuqi Li, Balakrishnan Ananthanarayanan, Husam
+Dauod, and Tzung-Han Juang. Scalable multi-agent re-
+inforcement learning for factory-wide dynamic schedul-
+ing in semiconductor manufacturing. Engineering Ap-
+plications of Artificial Intelligence, 161:112168, 2025.
+[17] Matthias Seitz, Felix Gehlhoff, Luis Alberto Cruz
+Salazar, Alexander Fay, and Birgit Vogel-Heuser. Au-
+tomation platform independent multi-agent system for
+robust networks of production resources in Industry 4.0.
+Journal of Intelligent Manufacturing, 32:2023–2041,
+2021.
+[18] Jonghan Lim, Birgit Vogel-Heuser, and Ilya Kovalenko.
+Large language model-enabled multi-agent manufactur-
+ing systems. In 2024 IEEE 20th International Confer-
+ence on Automation Science and Engineering (CASE),
+pages 3940–3946. IEEE, 2024.
+[19] Jonghan Lim, Jiabao Zhao, Ezekiel Hernandez, and
+Ilya Kovalenko. Adaptive task planning and coordina-
+tion in multi-agent manufacturing systems using large
+language models. Robotics and Computer-Integrated
+Manufacturing, 100:103245, 2026.
+[20] Danny Driess, Fei Xia, Mehdi S. M. Sajjadi, Corey
+Lynch, Aakanksha Chowdhery, Brian Ichter, Ayzaan
+Wahid, Jonathan Tompson, Quan Vuong, Tianhe Yu,
+Wenlong Huang, Yevgen Chebotar, Pierre Sermanet,
+Daniel Duckworth, Sergey Levine, Vincent Vanhoucke,
+Karol Hausman, Marc Toussaint, Klaus Greff, Andy
+Zeng, Igor Mordatch, and Pete Florence. PaLM-E:
+An embodied multimodal language model.
+In Pro-
+ceedings of the 40th International Conference on Ma-
+chine Learning, volume 202 of Proceedings of Machine
+Learning Research, pages 8469–8488. PMLR, 2023.
+URL https://proceedings.mlr.press/v2
+02/driess23a.html.
+[21] Lukas Brunke, Melissa Greeff, Adam W. Hall, Zhao-
+cong Yuan, Siqi Zhou, Jacopo Panerati, and Angela P.
+Schoellig. Safe learning in robotics: From learning-
+based control to safe reinforcement learning. Annual
+Review of Control, Robotics, and Autonomous Systems,
+5:411–444, 2022.
+15

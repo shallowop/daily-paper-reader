@@ -1,0 +1,1762 @@
+Title: Differentiable Combinatorial Auction Design: Optimizing Revenue-Welfare-Fairness Frontiers With Graph Attention Networks
+
+URL Source: https://arxiv.org/pdf/2610.31977v1
+
+Published Time: Mon, 26 Oct 2026 00:21:03 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# Differentiable Combinatorial Auction Design: Optimizing Revenue-Welfare-Fairness Frontiers With Graph Attention Networks 
+
+Mai Pham 
+
+Thayer School of Engineering, Dartmouth College 
+
+mai.p.pham.th@dartmouth.edu 
+
+Vikrant Vaze 
+
+Thayer School of Engineering, Dartmouth College 
+
+vikrant.s.vaze@dartmouth.edu 
+
+Peter Chin 
+
+Thayer School of Engineering, Dartmouth College 
+
+peter.chin@dartmouth.edu 
+
+# Abstract 
+
+Designing optimal auctions for allocating public infrastructure—such as airport slots and energy resources—is challenging due to interdependent resources and complex side-constraints. While the Vickrey-Clarke-Groves (VCG) auction guar-antees maximum welfare, it cannot maximize revenue or accommodate the multi-objective trade-offs inherent in public infrastructure systems. We propose a dif-ferentiable, constraint-aware framework for combinatorial auction design that enables end-to-end learning of fractionally feasible, approximately strategy-proof mechanisms. Our primary contribution is a combinatorial constraint enforcement technique that ensures fractional feasibility by construction, bypassing the need for penalty-based approximations. We introduce CAGraph , a novel graph-based architecture designed to capture dependencies between items and bidders, alongside CANet 
+
+and CAFormer as deep learning baselines, for combinatorial settings. We also provide a Matching Pursuit-inspired decomposition that maps fractional allocations to feasible discrete allocations and empirically evaluates the resulting discretization gap. In synthetic benchmarks and an airport slot-divestiture case study, respectively, the learned mechanisms achieve up to 73.5% and 180% higher expected revenue than VCG, under small empirical regret. Finally, we visualize the Pareto frontiers for revenue, welfare, and fairness, providing regulators with a decision-support tool to design infrastructure auctions that balance profitability, efficiency and equity. 
+
+# 1 Introduction 
+
+Designing optimal auctions has significant real-world implications for the allocation of public infras-tructure—such as airport slots, energy markets, and transportation networks—as well as digital assets like online advertising. While mechanism design provides a theoretical framework for achieving de-sirable outcomes like efficiency and revenue maximization, analytically deriving optimal mechanisms is often intractable in high-dimensional strategic environments. Traditional approaches, such as the 
+
+> Preprint. arXiv:2610.31977v1 [cs.GT] 22 Oct 2026
+
+Vickrey-Clarke-Groves (VCG) mechanism, offer theoretical guarantees for welfare maximization but are unable to maximize revenue or handle complex side-constraints. Recent advances in differentiable economics offer a promising data-driven path forward, utilizing deep neural networks to flexibly approximate optimal auction rules. However, extending these methods to combinatorial auctions—where bidders value bundles of items—remains a formidable challenge due to the complex, non-convex nature of allocation constraints. This paper introduces a differentiable, constraint-aware framework for combinatorial mechanism design that enables the end-to-end learning of fractionally feasible, approximately strategy-proof, and multi-objective mechanisms that balance revenue, efficiency, and fairness. 
+
+1.1 Background 1.1.1 The Allocative Challenge 
+
+Combinatorial auctions play an important role in allocating scarce public resources of high economic value, such as spectrum licenses and airport slots. However, designing effective mechanisms for these domains presents two fundamental challenges. First, bidders often exhibit complex valuation structures characterized by strong complementarities and substitutabilities—for instance, an airline values a landing slot only if paired with a corresponding takeoff slot. This necessitates the use of bundle-based valuations, where the package value differs from the sum of its parts. Second, the allocation of public goods is inherently multi-objective. Governments often prioritize allocative efficiency (welfare) to ensure that resources are assigned to their most productive users. However, this focus can lead to significant shortcomings in raising public funds or compensating divesting parties. Furthermore, traditional auction mechanisms often fail to uphold fairness, which is essential to protect disadvantaged agents and prevent monopolistic dominance. A critical gap exists in the literature: traditional mechanisms prioritize single objectives in isolation—VCG for welfare [Vickrey, 1961, Clarke, 1971, Groves, 1973], Myerson for revenue in single-item settings [Myerson, 1981], or Random Serial Dictatorship (RSD) for fairness [Abdulkadiroglu and Sönmez, 1998, Bogomolnaia and Moulin, 2001]. Extending these frameworks to multi-objective settings is analytically intractable and computationally prohibitive, as even the single-objective winner determination problem is NP-hard [Sandholm, 2003]. 
+
+1.1.2 Application to Airport Slot Allocation 
+
+We focus on airport slot allocation, a domain characterized by extreme scarcity and high economic value, with slot portfolios often valued in the millions of dollars. The current administrative regime, governed by the International Air Transport Association (IATA) guidelines and “Grandfather Rights,” perpetuates inefficiencies by allowing incumbents to hold slots in perpetuity, often leading to hoarding and suboptimal utilization. While theoretical proposals such as congestion pricing [Carlin and Park, 1970, Daniel, 1995, Vaze and Barnhart, 2012] and primary auctions [Rassenti et al., 1982, Ball et al., 2020] have been suggested, they have failed to gain widespread adoption due to their complexity and the lack of fairness guarantees [Jacquillat and Vaze, 2018, Zografos and Jiang, 2019], which are essential for political and regulatory acceptability. 
+
+1.1.3 Methodological Gap 
+
+A significant methodological gap persists in addressing these multi-faceted challenges. Traditional mechanism design [e.g., Vickrey, 1961, Myerson, 1981] excels at optimizing single objectives but struggles to incorporate complex side-constraints like fairness. Conversely, computational approaches for combinatorial auctions must explicitly handle winner-determination and feasibility constraints, which are known to be computationally challenging in high-dimensional bundle spaces [Rothkopf et al., 1998, Sandholm, 2002, de Vries and Vohra, 2003]. While deep learning, specifically Differentiable Economics [Duetting et al., 2019], offers a promising avenue due to its adaptability to data, standard neural network architectures do not automatically encode the combinatorial structures. This motivates architectures with problem-specific inductive biases, i.e., the architectural assumptions that help the model respect the structures of the problem that are necessary to satisfy the constraints [Battaglia et al., 2018, Cappart et al., 2023a]. This paper addresses these challenges by examining and quantifying the trade-offs between three key objectives—Revenue, Welfare, and Fairness. Our work contributes to multi-objective auction 2design, with real-world case studies focusing on airport resource allocation as an exemplar application domain, by leveraging deep neural networks for constrained resource allocation. 
+
+1.2 Contributions 
+
+1. Data-driven Multi-Objective Optimization. We provide a data-driven framework to discover high-performing, approximately strategy-proof mechanisms for combinatorial auctions where analytical results are unavailable. This framework models and quantifies the trade-offs between Revenue, Welfare, and Fairness, enabling policymakers to quantify the Price of Fairness and calibrate trade-offs between protecting disadvantaged agents and maintaining efficiency. 2. Constraint-Aware Neural Architectures. We introduce differentiable constraint enforce-ment techniques for the fractional relaxation of combinatorial allocation constraints. This enables us to extend existing architectures to the combinatorial setting (CANet, CAFormer) and propose CAGraph , a novel graph-based architecture that generalizes the winner deter-mination problem to a learned, differentiable set-packing task. 3. Resolution-Aware Implementation. We identify the implementability gap created by fractional combinatorial allocations and propose a Matching Pursuit-inspired decomposi-tion that constructs an implementable lottery over feasible deterministic schedules. The method is used as an approximation procedure, with ex-post discretization effects evaluated empirically. 4. Empirical Evaluation on a Real-World Case Study. We evaluate CAGraph on an airport slot-allocation case study using real-world datasets, showing tunable rev-enue–welfare–fairness trade-offs relative to VCG and Random Serial Dictatorship. In the Washington National Airport (DCA) slot-divestiture setting, the conditional full-assignment implementation variant reaches mean realized revenue of $536.3k, a 284.2% increase relative to VCG. 
+
+1.3 Paper Outline 
+
+The remainder of the paper is organized as follows. Section 2 reviews related literature. Section 3 formalizes the multi-objective combinatorial auction problem. Section 4 presents the differentiable combinatorial auction framework, including constraint enforcement, neural architectures, and the discrete implementation step. Section 5 reports computational results, while Section 6 presents a real-world airport slot allocation case study. Section 7 concludes with directions for future work. 
+
+# 2 Related Literature 
+
+Our research relates to multi-objective auction theory, differentiable economics, and airport resource allocation. In each subsection, we summarize the relevant literature in one of these streams. 
+
+2.1 Multi-Objective Auction Theory 
+
+Classical auction theory has primarily focused on single-objective optimization. The Vickrey-Clarke-Groves (VCG) mechanism serves as the standard solution for guaranteeing dominant-strategy incentive compatibility (DSIC) and exact welfare maximization [Vickrey, 1961, Clarke, 1971, Groves, 1973]. In contrast, Myerson’s optimal auction provides the theoretical foundation for revenue maximization in single-item settings based on virtual valuations [Myerson, 1981]. However, even in bilateral trade, efficiency can conflict with incentive and participation require-ments. The Myerson-Satterthwaite Theorem establishes that no mechanism can simultaneously achieve ex-post efficiency, Bayesian incentive compatibility, interim individual rationality, and bud-get balance [Myerson and Satterthwaite, 1983]. This inherent tension is further exemplified by the Revenue-Welfare Non-Coincidence: even in symmetric settings with uniform valuations, the revenue-maximizing allocation rule (which may withhold items to drive up competition) differs from the welfare-maximizing rule (which always allocates to the highest value) [Myerson, 1981]. Beyond efficiency and revenue, fairness is increasingly recognized as a critical requirement in public resource allocation. Unlike private markets, public domains often require an equitable distribution of 3utility to ensure political and regulatory acceptability. Fairness can be quantified by metrics such as the Jain Index, Gini Coefficient, and Coefficient of Variation. Recent works have explored fairness-welfare trade-offs [e.g., Zografos and Jiang, 2019] and welfare-revenue trade-offs via Automated Mechanism Design [Sandholm, 2003]. However, most existing multi-objective approaches are restricted to single-item or simple unit-demand settings and do not extend to the combinatorial constraints inherent in resource allocation domains, such as airport slot allocation. In contrast to this literature, we do not seek an analytical characterization of a single optimal mechanism. Instead, we provide a data-driven framework for empirically tracing revenue–welfare– fairness frontiers in combinatorial auctions with side constraints. This allows the designer to evaluate policy-relevant trade-offs even when closed-form optimal mechanisms are unavailable. 
+
+2.2 Airport Resource Allocation 
+
+The allocation of airport slots is currently governed by administrative procedures such as the IATA Worldwide Slot Guidelines (WSG). A central feature of this regime is “Grandfather Rights,” which allow incumbent airlines to retain slots in perpetuity, provided they utilize them sufficiently. While providing operational stability, this system creates significant barriers to entry and encourages slot hoarding, impeding allocative efficiency [Ball et al., 2020]. Theoretical alternatives, including congestion pricing [Carlin and Park, 1970, Daniel, 1995, Vaze and Barnhart, 2012] and combinatorial auctions [Rassenti et al., 1982, Ball et al., 2018], have been proposed to address these rigidities but have struggled to gain political traction due to implementation complexities and equity concerns. In practice, regulatory interventions must balance conflicting objectives that pure market mechanisms often ignore. Regulators aim to maximize allocative efficiency (welfare) while frequently needing to generate public funds (revenue) or ensure competitive equity (fairness) [Jacquillat and Vaze, 2018, Zografos and Jiang, 2019]. This multi-objective complexity was exemplified by the 2011 slot transfers at Washington National Airport ( DCA ) and LaGuardia Airport ( LGA ), where regulators sought to foster competition [U.S. Department of Transportation, 2011, Federal Aviation Administration, 2011] by requiring divestitures that expanded access for new-entrants and limited-incumbent carriers. More recently, Spirit Airlines’ 2026 bankruptcy led to a competitive auction of 22 slots at LGA, with JetBlue named the successful bidder at $58.5 million[Federal Aviation Administration, 2026, JetBlue Airways Corporation, 2026]. Consequently, acceptable auction mechanisms must balance revenue generation against allocative efficiency and bidder surplus so that the resulting allocation remains politically feasible and commercially viable for participating airlines. We model airport slot divestiture as a constrained combinatorial auction and use real-world airline data to quantify how alternative learned mechanisms trade off revenue, allocative efficiency, and fairness. Rather than prescribing a single regulatory rule, the framework provides a decision-support tool for comparing policies. 
+
+2.3 Deep Neural Networks for Mechanism Design 
+
+Differentiable Economics has emerged as a promising paradigm for automated mechanism design, leveraging deep learning to learn optimal mechanism rules directly from data. This approach, exemplified by RegretNet [Duetting et al., 2019], parameterizes the mechanism as a neural network and optimizes an objective function—such as revenue maximization—via gradient descent, subject to regret penalties that encourage approximate dominant-strategy incentive compatibility (DSIC). Concurrently, Graph Neural Networks (GNNs) have shown great promise in solving combinatorial optimization problems [Cappart et al., 2023b] and winner determination problems in energy markets [Ahmed et al., 2023]. The differentiable mechanism-design framework pioneered by RegretNet has demonstrated remarkable success in recovering known optimal auctions in single-item settings and discovering new mechanisms where analytical solutions are unknown. However, extending this paradigm to high-stakes domains like airport slot allocation presents signifi-cant combinatorial challenges. Bidders value specific combinations of items (e.g., paired landing and takeoff slots), creating an exponential valuation space. Crucially, allocations must satisfy strict integrality and feasibility constraints: each item can be allocated at most once, and agents often demand valid bundles rather than fractional fragments. Standard feed-forward neural networks or standard transformer architectures often fail to produce outputs that strictly adhere to these complex feasibility constraints, frequently outputting impractical fractional assignments. 4This creates a critical need for specialized neural architectures that enforce fractional feasibility by design, and for a separate discrete implementation step. Birkhoff’s theorem provides exact lottery implementability for simple assignment structures, whereas overlapping combinatorial constraints need not admit such a decomposition [Budish et al., 2013], we therefore measure and report the residual of a greedy discrete approximation. Our work bridges this gap by introducing graph-based architectures and differentiable resolution layers that inherently satisfy these combinatorial feasibility constraints. 
+
+# 3 Problem Statement and Model 
+
+General auction setting. We study a setting with one seller, a set N of n bidders, and a set M of 
+
+m items for sale. An auction rule is a pair: an allocation rule g(.) and a payment rule p(.). In the differentiable mechanism studied here, giS (b) ∈ [0 , 1] denotes the probability, or fractional allocation weight, that bidder i receives bundle S under bid profile b, and pi(b) denotes bidder i’s payment under bid profile b. Deterministic allocations are treated as a case in which giS (b) ∈ { 0, 1}.
+
+Non-additive valuations. Let K = {S ⊆ M : S̸ = ∅} denote the set of all non-empty bundles, with |K| = k = 2 m − 1. Each bidder i has a private valuation function vi : K → R≥0, where 
+
+vi(S) is bidder i’s value for bundle S. Because K is finite, we represent this function by the vector 
+
+vi =  viS 
+
+ 
+
+> S∈K
+
+∈ Rk
+
+> +
+
+, where viS ≡ vi(S). The valuation profile is v = ( vT 
+
+> 1
+
+, . . . , v Tn ) ∈ Rn×k 
+
+> ≥0
+
+, and is private information unknown to the auctioneer. Let Vi ⊆ Rk 
+
+> ≥0
+
+denote bidder i’s valuation space. We assume vi is drawn from distribution Fi over Vi. The auction environment is symmetric if Fi = F
+
+for all i ∈ N , and asymmetric if bidders’ valuation distributions differ. 
+
+Bids and quasi-linear utilities. Each bidder reports a bid vector bi = ( biS )S∈K ∈ Rk
+
+> ≥0
+
+, where 
+
+biS is bidder i’s reported bid for bundle S. Let b = ( bT 
+
+> 1
+
+, . . . , b Tn ) ∈ Rn×k 
+
+> ≥0
+
+denote the bid profile. We assume quasi-linear utilities in expectation over the mechanism’s stochastic allocation rule. Given allocation probabilities gi(b) = ( giS (b)) S∈K and payment pi(b), bidder i’s utility is ui(vi; b) = P 
+
+> S∈K
+
+giS (b)viS − pi(b). For a deterministic allocation in which bidder i receives bundle S, this reduces to ui(vi; b) = viS − pi(b).
+
+Incentive Compatibility and Regret. A mechanism is a dominant-strategy incentive compatible (DSIC) mechanism if each bidder’s utility is maximized when reporting their true valuation, regardless of what other bidders report. 
+
+ui(vi; ( vi, b −i)) ≥ ui(vi; ( bi, b −i)) ,
+
+∀vi, b i ∈ Vi, ∀b−i ∈ V−i,
+
+∀i ∈ N. 
+
+(1) Following Dütting et al. [2015], we quantify the violation of DSIC using expected ex-post regret ,defined for each bidder as follows. 
+
+rgt i = Ev∼F
+
+ max 
+
+> bi∈Vi
+
+ui(vi; ( bi, v −i)) 
+
+− ui(vi; ( vi, v −i)) ,
+
+∀i ∈ N. 
+
+(2) 
+
+Individual Rationality (IR). A mechanism is ex-post individually rational if each bidder receives a nonnegative utility when participating truthfully. 
+
+ui(vi; ( vi, b −i)) ≥ 0, ∀vi ∈ Vi, ∀b−i ∈ V−i, ∀i ∈ N (3) The incentive audit below applies to the learned fractional mechanism and does not automatically transfer through the discrete-resolution and conditional-pricing steps. Section 6.7 therefore audits the decomposition residual and realized economic outcomes, but does not claim that post-resolution regret has been established. 5Combinatorial Feasibility. We first state the deterministic feasibility constraints and then relax them to obtain the stochastic/fractional feasibility region used by the differentiable mechanism. Let 
+
+ziS specify whether a bundle S is allocated to bidder i (ziS = 1 ) or not ( ziS = 0 ). The standard CA formulation requires the following constraints to hold. 
+
+X
+
+> i∈N
+
+X
+
+> S∈K:j∈S
+
+ziS ≤ 1 ∀j ∈ M (4) 
+
+X
+
+> S∈K
+
+ziS ≤ 1 ∀i ∈ N (5) 
+
+ziS ∈ { 0, 1} ∀i ∈ N, S ∈ K (6) Constraints (4) ensure that each item j is allocated to at most one combination of a bidder and a bundle, implicitly guaranteeing that no two bidders can receive overlapping bundles. Constraints (5) ensure that each bidder i is assigned at most one bundle. Any allocation satisfying these constraints is considered combinatorially feasible .To make the solution space differentiable, we relax the binary constraints (6). 
+
+ziS ∈ [0 , 1] ∀i ∈ N, S ∈ K (7) Fractional feasibility is enforced during neural-network training. Because it does not necessarily imply exact implementability as a lottery over deterministic combinatorial allocations, Section 4 discusses the resulting implementation gap and the discrete decomposition procedure. 
+
+Multi-Objective Formulation The auctioneer maximizes a specific design goal (e.g., revenue, welfare, or a combination) while respecting the constraints of the mechanism. For a valuation profile 
+
+v and a fractional allocation Z = g(v), social welfare is given as follows. 
+
+Wel( v, Z ) = ⟨v, Z ⟩ = X
+
+> i∈N
+
+X
+
+> S∈K
+
+viS ziS .
+
+For a given valuation profile v, let O(v, g, p ) denote the auxiliary objective function to be maximized. The mechanism observes reports b, not true valuations v. For training and evaluation, the expected design objective is computed on truthful valuation profiles by setting b = v. The multi-objective mechanism design problem can be formulated as an optimization of the allocation and payment rules as follows. 
+
+max  
+
+> g,p
+
+Ev∼F [O(v, g (v), p (v))] 
+
+subject to (1), (3), (4), (5), (7). Fairness can be incorporated as a soft training target. We measure fairness over bidder utilities using the Jain index, J(u) = (P   
+
+> i∈Nui)2
+> nP
+> i∈Nu2
+> i
+
+, where larger values indicate a more equal distribution of utility, and J = 1 corresponds to equal utility across bidders. We use the Jain index because it provides a scale-invariant measure of the concentration of bidder surplus. In the fairness experiments, the implemented equality-style penalty targets a selected value of J(u).Following the RegretNet framework [Duetting et al., 2019], we model optimal auction design as a learning task in which the allocation and payment rules are parameterized by neural networks, allowing us to address multi-bidder, multi-item scenarios where analytical solutions are unknown. 
+
+# 4 Solution approach 
+
+Throughout this section, all operations are applied profile-wise, and batch dimensions are suppressed unless explicitly stated. The bid profile is denoted by b ∈ Rn×k 
+
+> ≥0
+
+, the fractional agent-bundle allocation matrix by Z = ( ziS ) ∈ [0 , 1] n×k, and the payment vector by p ∈ Rn
+
+> ≥0
+
+. The neural architectures produce unnormalized allocation scores, which are transformed by the constraint-enforcement layer into feasible fractional allocations. We use superscripts such as “agent,” “bundle,” and “agent-bundle” to distinguish the intermediate arrays used in this transformation. 6Figure 1: Overview of the proposed differentiable auction framework. The architecture enforces fractional feasibility via constraint factorization and optimizes revenue–welfare–fairness trade-offs. 
+
+4.1 Constraint Enforcement via Factorization 
+
+Recall from Section 3 that the allocation must satisfy constraints (4), (5), and (7). We decompose the allocation matrix Z ∈ [0 , 1] n×k into the product of two matrices. Let B ∈ Rm×k and A, A ′ ∈ Rn×k
+
+denote unnormalized score matrices produced by the allocation network for the item–bundle and agent-bundle normalization steps, respectively. The constraint-enforcement layer takes unnormalized network outputs and maps them to a fractional allocation matrix Z ∈ [0 , 1] n×k. Let Bbundle ∈
+
+[0 , 1] n×k be the bundle-availability factor, and let Aagent −bundle ∈ [0 , 1] n×k denote the agent-bundle assignment factor (defined in (9)–(11)). The final allocation is obtained by the element-wise product 
+
+Z = Bbundle ⊙ Aagent −bundle . (8) The item-to-bundle allocation matrix Bbundle is derived from the output of the Allocation Network, normalized to represent item-wise probabilities. To construct Bbundle , we define the incidence matrix 
+
+I ∈ Rm×k, where IjS = 1 if item j is included in bundle S, and 0 otherwise. The initial bundle allocation matrix B ∈ Rm×k is adjusted by mapping bundles to items using a softmax function across the k bundles for each item. 
+
+Badjusted = softmax K B ⊙ I. (9) Here ⊙ denotes element-wise multiplication. To exclude entries corresponding to items not contained in a bundle, zero values in Badjusted are replaced with a large constant Cmask . For each bundle S, we compute the minimum value across its constituent items Bmin  
+
+> S
+
+= min j∈S Badjusted  
+
+> jS
+
+and replicate Bmin 
+
+to include the agent dimension to get Bbundle  
+
+> iS
+
+= Bmin  
+
+> S
+
+for all i ∈ N .Let A, A ′ ∈ Rn×k denote two agent-bundle score matrices produced by the allocation network. We normalize A across agents and A′ across bundles as follows. 
+
+Aagent = softmax N (A), Abundle = softmax K (A′) (10) The agent-bundle assignment factor is then obtained via an element-wise minimum as follows. 
+
+Aagent −bundle = min {Aagent , A bundle }. (11) The allocation matrix Z is then given by (8). We now formally establish that this structural decompo-sition restricts the network’s output space to feasible fractional allocations. 
+
+Theorem 1 (Guaranteed Combinatorial Feasibility) . For any input bid profile b, the allocation matrix 
+
+Z produced by the factorized constraint layer satisfies the following conditions. 1. Item-wise Feasibility: P
+
+> i∈N
+
+PS∈K:
+
+> j∈S
+
+ziS ≤ 1, ∀j ∈ M
+
+2. Agent-wise Feasibility: P 
+
+> S∈K
+
+ziS ≤ 1, ∀i ∈ N
+
+See Appendix D for the complete proof. 74.2 Enhancing Existing Architectures 4.2.1 CANet Architecture 
+
+CANet is a deep feed-forward multilayer perceptron (MLP) that maps the flattened valuation profile 
+
+b ∈ Rnk to allocation and payment decisions. The network consists of an input linear projection to a hidden dimension H, followed by L fully connected layers with LeakyReLU activations. To support multi-objective optimization, the architecture splits into two task-specific heads: (i) an Allocation Head that outputs unnormalized logits, which are processed by the constraint factorization layer (Section 4.1) to ensure feasibility; and (ii) a Payment Head that projects the hidden representation to a fractional vector ˜p ∈ [0 , 1] n via Sigmoid activation. 
+
+4.2.2 CAFormer Architecture 
+
+To enhance expressivity and ensure permutation-equivariance, we introduce CAFormer, aTransformer-based architecture that processes the auction state as two parallel streams of exchange-able embeddings: an Item Stream Xitem ∈ Rq×m×H and an Agent Stream Xagent ∈ Rq×n×H , where 
+
+q is the batch size and H is the hidden embedding dimension. These streams pass through L layers of Multi-Head Self-Attention (MHSA) and a specialized Cross-Attention mechanism. Unlike Regret-Former [Ivanov et al., 2022], our architecture uses agent representations to query item representations, allowing the model to learn complex demand structures before producing agent–bundle logits for the constraint enforcement layer. The final output is processed via an invariant attention head to ensure the mechanism’s results are independent of bidder ordering. 
+
+4.3 Proposed New Architecture: CAGraph 
+
+We model the combinatorial auction as a Conflict Graph G = ( V, E ), where each node viS is an agent-bundle pair (i, S ). An edge exists between (i, S ) and (j, S ′) if either i = j or the bundles overlap ( S ∩ S′̸ = ∅), ensuring exclusivity. This set-packing formulation allows the network to reason about feasibility as a maximum weighted independent set problem. The initial node representation 
+
+h(0)  
+
+> iS
+
+is constructed by concatenating the scalar bid biS with learnable bidder and bundle embeddings. These features propagate through Graph Attention (GAT) layers [Veliˇ ckovi´ c et al., 2018] as follows. 
+
+h(l+1)  
+
+> iS
+
+= σ
+
+ X 
+
+> (j,S ′)∈N (i,S )
+
+α(l)(i,S ),(j,S ′)W(l)h(l)
+
+> jS ′
+
+ . (12) Here N (i, S ) ⊆ N × K denotes the set of agent-bundle nodes (j, S ′) that conflict with node (i, S ),and α(l)(i,S ),(j,S ′) is the learned attention coefficient from neighbor (j, S ′) to node (i, S ) at layer l. By attending to contested slots (i.e., those included in the high-contention nodes), the network learns a dense representation of market friction. The GAT layers encode agent-bundle conflicts, while feasibility is enforced by the constraint factorization rather than by graph attention alone. 
+
+4.4 Training Procedure 
+
+The same training procedure is used for CANet, CAFormer, and CAGraph. For mechanism parameters 
+
+θ, let gθ and pθ denote the learned allocation and payment rules. The mechanism observes reports 
+
+b, not true valuations v; in the training objective, gθ (v) and pθ (v) denote the evaluation of the bid-dependent rules at truthful reports b = v. Let Obj( θ) = Ev∼F [O(v, g θ (v), p θ (v))] . The implemented objective uses a log-transformed economic loss together with adaptive penalty terms: 
+
+min 
+
+> θ
+
+(
+
+− log(1 + Obj( θ)) + X
+
+> c∈C
+
+wcGc(θ)
+
+)
+
+, (13) Here C is the set of penalized design requirements, Gc(θ) is the empirical extent of the violation of requirement c, and wc ≥ 0 is its adaptive penalty weight. For example, the regret term penalizes violations of approximate DSIC, while an equality-style fairness penalty is included when a Jain-index target is selected. The weights wc are updated during training according to the adaptive controller described in Appendix C; these penalty weights are unrelated to the GAT weight matrices W (l) in Section 4.3. The revenue–welfare trade-off used in our multi-objective experiments is summarized as follows. 8Remark 2 (Revenue–welfare weighting) . Define Rev θ (v) = P 
+
+> i∈N
+
+pθ,i (v) and Wel θ (v) =P
+
+> i∈N
+
+P 
+
+> S∈K
+
+viS gθ,iS (v). For λ ∈ [0 , 1] , define 
+
+Obj λ(θ) = Ev∼F [λ Rev θ (v) + (1 − λ) Wel θ (v)] .
+
+Training minimizes 
+
+− log(1 + Obj λ(θ)) + X
+
+> c∈C
+
+wcGc(θ).
+
+Hence, λ traces an empirical revenue–welfare frontier. The resulting changes in allocation reflect the trade-off between revenue and welfare; we characterize this trade-off empirically rather than claiming a closed-form solution in the combinatorial, approximately DSIC setting. 
+
+4.5 Implementability and Discrete Decomposition 
+
+The neural architectures described above output fractional allocation matrices Z ∈ [0 , 1] n×k, whereas airport slots are indivisible and must ultimately be implemented as deterministic schedules. Thus, fractional feasibility is not sufficient; the learned allocation must either be representable as a lottery over feasible integer allocations or approximated by such a lottery. In simple assignment settings, this implementation gap is closed by the Birkhoff–von Neumann theorem. After augmenting the problem with dummy agents or items so that a doubly sub-stochastic assignment can be completed to a doubly-stochastic matrix, every fractional doubly-stochastic matrix can be written as a convex combination of permutation matrices and is therefore implementable as a lottery over deterministic assignments. Combinatorial slot allocation is more difficult because overlapping bundles induce constraints that are not captured by the standard assignment polytope. Budish et al. [2013] show that universal implementation depends on the structure of the constraints: roughly, constraints must be nested or disjoint rather than partially overlapping. They call such constraint systems bihierarchies . When this structure fails, some feasible fractional allocations may not be implementable exactly as lotteries over deterministic feasible allocations. In particular, their necessity result implies the following. 
+
+Lemma 3 (Budish et al. 2013) . If a canonical two-sided constraint structure is not a bihierarchy, then it is not universally implementable. 
+
+We formalize the connection between this implementability limitation and our slot-allocation setting in Appendix F. This limitation is relevant here because overlapping slot bundles can induce non-bihierarchical constraint structures. Let B denote the set of feasible deterministic schedules satisfying the binary constraints (4)–(6). Then the exact implementation of a fractional allocation Z requires 
+
+Z ∈ conv( B). Fractional feasibility under (4), (5), and (7) does not guarantee this condition. 
+
+Proposition 4 (Implementability limitation) . Fractional feasibility under constraints (4) , (5) , and (7) 
+
+does not, in general, imply exact implementability as a lottery over feasible deterministic bundle allo-cations. In particular, overlapping slot bundles can induce non-bihierarchical constraint structures, for which some feasible fractional points lie outside conv( B), where B denotes the set of feasible deterministic schedules. 
+
+This motivates an explicit resolution step. Rather than assuming exact implementability, we construct an implementable lottery over feasible deterministic schedules using a Matching Pursuit-inspired decomposition. Let R0 = Z. At iteration t, define 
+
+Dt ∈ arg max 
+
+> D∈B
+
+⟨Rt, D ⟩, (14) 
+
+γt = min 
+
+> (i,S )∈Ωt
+
+Rt,iS , (15) 
+
+Rt+1 = Rt − γtDt, (16) where Ωt = {(i, S ) : Dt,iS = 1 }.Because feasibility is downward closed, selected bidder–bundle pairs with zero residual can be removed from a maximizing schedule without changing its objective or violating feasibility. We use this reduced maximizer and terminate if it is empty or if γt is below the numerical tolerance. The extracted support after T iterations is ΛT = {Dt : γt > 0, t = 0 , . . . , T − 1}, where γt is the raw 9extraction weight associated with schedule Dt; the valid lottery weights are defined below. Here 
+
+⟨Rt, D ⟩ = P
+
+> i∈N
+
+P 
+
+> S∈K
+
+Rt,iS DiS denotes the Frobenius inner product. 
+
+Proposition 5 (Residual reduction) . If Rt ≥ 0 and γt is chosen by (15) , then Rt+1 ≥ 0 and 
+
+∥Rt+1 ∥1 ≤ ∥ Rt∥1,
+
+with strict decrease whenever γt > 0 and Ωt̸ = ∅.
+
+See Appendix F.2 for the proof. For a valuation profile v, the welfare induced by allocation Z is ⟨v, Z ⟩ = P
+
+> i∈N
+
+P 
+
+> S∈K
+
+viS ziS .After T iterations, set cT = max {1, PT −1 
+
+> t=0
+
+γt} and use lottery weights πt = γt/c T , assigning the remaining mass to the feasible null schedule. The expected allocation of the implementable lottery is 
+
+bZT = PT −1 
+
+> t=0
+
+πtDt. This normalization does not require P 
+
+> t
+
+γt ≤ 1 and leaves the extracted weights unchanged when their sum is at most one. Let ET = Z − bZT denote the implementation residual. Suppose 0 ≤ viS ≤ vmax for all i ∈ N and S ∈ K.
+
+⟨v, Z ⟩ − ⟨ v, bZT ⟩ = |⟨ v, E T ⟩| ≤ vmax ∥ET ∥1. (17) The inequality follows directly from Hölder’s inequality: |⟨ v, E T ⟩| ≤ ∥ v∥∞∥ET ∥1 ≤ vmax ∥ET ∥1.The bound shows that the economic loss from implementation is proportional to the implementation residual. In particular, if bundle values are bounded by vmax , then replacing the fractional allocation 
+
+Z with the expected allocation bZT of the implementable lottery changes expected welfare by at most vmax ∥ET ∥1. Thus, ET provides an interpretable certificate of implementation error: a smaller implementation residual implies a tighter worst-case welfare bound. The greedy decomposition is not guaranteed to recover the sparsest lottery representation. Rather, it provides a computationally tractable nonnegative sparse approximation: each iteration selects the feasible deterministic allocation most aligned with the current residual and extracts the largest coefficient that preserves nonnegative raw residual mass. Every schedule in the resulting support is feasible and interpretable. The raw residual RT measures unextracted mass, whereas ET measures the error of the normalized lottery that is actually implemented. 
+
+Scope of guarantees. Our guarantees concern fractional feasibility, raw-residual reduction, and an economic bound in terms of the implementation residual. We do not claim universal exact lottery implementability for non-bihierarchical combinatorial environments. When Z /∈ conv( B), the decomposition is an approximation procedure, and its ex-post revenue, welfare, and fairness effects are evaluated empirically. Incentive properties of the fractional mechanism do not automatically transfer through decomposition and conditional pricing; post-resolution regret must be audited separately when making incentive claims about the implemented lottery. 
+
+# 5 Computational Results: Synthetic Benchmarks 
+
+We validate our framework on standard distributions to assess its ability to recover optimal solutions and scale to complex bundle valuations. Models are trained for 100,000 iterations across two settings: (i) Non-combinatorial with additive item values drawn from U [0 , 1] , and (ii) Combinatorial with a complementarity term ciS ∼ U [−1, 1] added to the sum of item values to test non-additive preferences, allowing both super-additive and sub-additive bundle values. For brevity, we denote the non-combinatorial additive setting by (A), the symmetric combinatorial setting by (B), and the asymmetric combinatorial setting by (C). More precisely, let vitem  
+
+> ij
+
+be bidder i’s value for item j and construct viS = P 
+
+> j∈S
+
+vitem  
+
+> ij
+
++ ciS , where ciS ∼ U [−1, 1] . In Setting B, vitem  
+
+> ij
+
+∼ U [1 , 2] for every bidder and item. In the two-bidder Setting C, vitem 1j ∼ U [1 , 2] and vitem 2j ∼ U [1 , 5] . All draws are independent. 
+
+Revenue and Welfare Analysis. Table 1 summarizes performance in additive settings. While the Myerson baseline for two separate items yields ∼0.833 revenue, optimal mechanisms can reach 0.86– 0.88 [Manelli and Vincent, 2006]. CANet and CAFormer match these baselines, confirming that our architectures recover standard auction outcomes. Notably, in the 2 × 2 setting, CAGraph achieves revenue of 1.111 , approximately 83% of the expected efficient-welfare benchmark ( E[Welfare ] ≈
+
+1.33 ). The result shows substantial revenue under small measured regret (approximately 0.008 ), even though the empirical regret is not reliably interpreted as a proof of DSIC [Anshelevich et al., 2004]. 10 2×2 (A) 2×3 (A) 2×5 (A) 
+
+VCG 0.667 / 0 1.000 / 0 1.671 / 0 AMA 0.860 / 0 – / – – / – VVCA 0.866 / 0 – / – – / – BLAMA 0.786 / 0 1.222 / 0 2.231 / 0 ABAMA 0.786 / 0 1.255 / 0 2.251 / 0 BBBVVCA 0.776 / 0 1.238 / 0 2.242 / 0 RegretNet 0.878 / 1e −3 1.317 / 1e −3 2.339 / 1e −3RegretFormer 0.908 / 1e −3 1.416 / 1e −3 2.453 / 1e −3CANet 0.879 / 1e −3 1.317 / 1e −3 2.282 / 4e −3CAFormer 0.891 / 1e −3 1.326 / 1e −3 2.329 / 5e −3CAGraph 1.111 / 8e −3 1.640 / 14e −3 2.671 / 10e −3Table 1: Non-combinatorial results (per cell: Revenue / Regret ): CANet and CAFormer achieve revenue comparable to RegretNet and RegretFormer, while CAGraph achieves higher revenue. 
+
+Symmetric (B) Asymmetric (C) Method 2×2 2×3 2×5 2×2 2×3 2×5
+
+VCG 2.405 / 0 3.537 / 0 5.838 / 0 2.847 / 0 4.239 / 0 6.987 / 0 AMA 2.760 / 0 — / — — / — 4.240 / 0 — / — — / — VVCA 2.770 / 0 — / — — / — 4.240 / 0 — / — — / — BLAMA 2.630 / 0 4.125 / 0 7.280 / 0 4.080 / 0 4.812 / 0 8.164 / 0 ABAMA 2.630 / 0 4.166 / 0 7.145 / 0 4.010 / 0 5.916 / 0 11.140 / 0 BBBVVCA 2.620 / 0 4.105 / 0 7.156 / 0 4.010 / 0 5.898 / 0 11.135 / 0 RegretNet 2.871 / 1e-3 — / — — / — 4.270 / 1e-3 — / — — / — CANet 2.904 / 1e-3 4.369 / 2e-3 7.304 / 7e-3 4.285 / 1e-3 6.556 / 1e-3 11.393 / 2e-3 CAFormer 2.919 / 1e-3 4.388 / 2e-3 7.318 / 3e-3 4.403 / 2e-3 6.693 / 1e-3 11.534 / 4e-3 CAGraph 3.202 / 1e-3 4.710 / 1e-3 7.774 / 5e-3 4.844 / 3e-3 7.204 / 3e-3 12.123 / 6e-3 Table 2: Combinatorial results (per cell: Revenue / Regret ). Grid search methods (AMA and VVCA) become computationally infeasible in higher dimensions. RegretNet results are limited to 2 × 2 cases. CANet and CAFormer beat the benchmarks in all settings. But CAGraph consistently outperforms the others in revenue. In symmetric (B), the revenue upper bound attains 3.548, 5.467, 9.243 for 2 × 2 , 2 × 3 , 2 × 5; in asymmetric (C): 6.184, 9.296, 15.573. 
+
+Combinatorial Advantages. Table 2 reports results for 2 × 2 to 2 × 5 combinatorial settings. The classical benchmarks include the Affine Maximizer Auction (AMA), Virtual Valuations Combinatorial Auction (VVCA), basic local optimization of AMA (BLAMA), allocation-boosting AMA (ABAMA), and bidder-bundle-boosting VVCA (BBBVVCA) [Sandholm and Likhodedov, 2015]. While grid-search methods (AMA and VVCA) and RegretNet are limited by dimensionality, CAGraph performs well across the tested dimensions. In the complex 2 × 5 asymmetric case, CAGraph achieves 12.123 revenue—a 73.5% improvement over VCG (6.987) and 6.4% over CAFormer . These results suggest that approximate DSIC can yield substantial revenue gains in the tested combinatorial settings. CAGraph’s conflict-graph representation improves revenue relative to CANet and CAFormer while preserving feasibility. 
+
+# 6 Practical Applications: Airport Slot Allocation 
+
+Capacity-constrained "Level 3" airports (IATA) [International Air Transport Association, 2019] currently rely on administrative "Grandfather Rights," where incumbents retain perpetual tenure via the "80/20 rule." This system incentivizes incumbents to "babysit" underutilized slots to block competition, stifling allocative efficiency. A key regulatory response was the 2011 DOJ-mandated slot divestiture at New York LaGuardia (LGA) and Washington National (DCA) [U.S. Department of Justice, 2011]. Anchoring on this scenario, we model a combinatorial auction among four carriers— JetBlue (B6), Frontier (F9), Spirit (NK), and Sun Country (SY), four candidate slot times (08:00, 11 10:00, 17:00, and 22:00), which generate six two-slot bundles and one four-slot bundle, at DCA, a realistic regulatory approach targeted at facilitating market entry. 
+
+6.1 Data-Driven Problem Formulation 6.1.1 Experimental Setup 
+
+Routes and fares are derived from the Airline Origin and Destination Survey (DB1B) dataset. Seat capacities are obtained from the T-100 Domestic Segment (U.S. Carriers) dataset. All data are downloaded from https://www.transtats.bts.gov . A profit-maximizing assignment of flights to available slots determines the bundles’ valuations. 
+
+Parameter Specification. To instantiate the valuation model, we incorporate specific industry parameters. Revenue is estimated as the product of the average fare, the number of seats, and the average load factor. Operational costs follow the aircraft cost specification of Swan and Adler [2006] as a function of distance and seat capacity. For training, we use the calibrated per-mile cost coefficient cmile = 0 .019 ; uncertainty in this coefficient is examined out of sample in Section 6.8. Profile heterogeneity enters through independently perturbed time-of-day multipliers. Time-of-day preferences are incorporated to reflect empirically observed variation in airline departure-time demand [Lurkin et al., 2016]. 
+
+Optimization Model. We model the assignment of directional flights to slots, subject to feasibility and flow balance. The problem is formulated as follows. 
+
+Given: 
+
+• F : set of feasible flights for the airline (each with a direction) • T : set of time slots in the slot bundle • V (f, t ): profit from assigning flight f ∈ F to slot t ∈ T
+
+• dir( f ) ∈ { +1 , −1}: direction of flight f ∈ F (+1 = departure, −1 = arrival) 
+
+Decision Variables: 
+
+• zf t ∈ { 0, 1}: equals 1 if flight f ∈ F is assigned to slot t ∈ T
+
+• wf ∈ { 0, 1}: equals 1 if flight f ∈ F is not operated (canceled) 
+
+Objective: 
+
+max 
+
+> z,w
+
+X 
+
+> f∈F
+
+X
+
+> t∈T
+
+V (f, t ) · zf t (18) 
+
+Subject to: X 
+
+> f∈F
+
+zf t ≤ 1, ∀t ∈ T (19) 
+
+X
+
+> t∈T
+
+zf t + wf = 1 , ∀f ∈ F (20) 
+
+X 
+
+> f∈F
+
+X
+
+> t∈T
+
+dir( f ) · zf t = 0 (21) 
+
+6.1.2 Statistical Properties of Valuations 
+
+Inferred valuations exhibit three critical properties: (i) a right-skewed distribution dominated by high-value peak connections; (ii) systematic subadditivity, with the value of the four-slot bundle generally below the sum of the values of two disjoint two-slot bundles; and (iii) bidder asymmetry, with incumbents (B6, F9) showing higher valuations than niche entrants (NK, SY). This asymmetry, illustrated in Figure 2, justifies our multi-objective approach, as standard VCG risks revenue collapse in such settings. We generate 100,000 profiles with a fixed load factor of 0.7 while sampling the per-mile operating-cost coefficient and time-of-day preference multipliers: 80,000 profiles are used for training and 20,000 for testing. 12 Figure 2: Statistical summary of generated valuations. (A) Bidder asymmetry in full-bundle distributions. (B)   
+
+> The four-slot bundle value is compared with the sum of two disjoint two-slot bundle values; observations below the dashed additive benchmark indicate subadditivity and diminishing returns. (C) Consistency in marginal values across time blocks driven by high-demand anchor slots.
+
+6.2 Benchmark Mechanisms 
+
+Our framework is compared against two opposite ends of the welfare-fairness spectrum. 
+
+Vickrey-Clarke-Groves (VCG). As the canonical welfare-maximizing mechanism, VCG selects the maximum weighted independent set on the conflict graph. However, it is poorly suited for slot divestitures due to: (i) Low revenue , as VCG payments can be small relative to revenue-maximizing alternatives, providing insufficient compensation; and (ii) Market Concentration , as welfare maximization can concentrate allocations among high-value bidders. 
+
+Random Serial Dictatorship (RSD / Lottery). The FAA procedure under 14 CFR §93.225 uses random draws to establish priority for sequential slot selection. It provides procedural symmetry and does not solicit valuation reports. Standard serial dictatorship is strategy-proof under its direct-choice model, but the administrative priority lottery is not the same as a direct-revelation combinatorial mechanism. Because it ignores monetary valuations, it can sacrifice welfare. For instance, a bidder with a $10M peak-hour valuation may lose to a $1M bidder based solely on draw order, failing to allocate capacity to its highest-value use. 
+
+Learned Mechanism (CAGraph). Our CAGraph architecture serves as a tunable alternative to static benchmarks, via the mixing parameter λ, with fairness controlled separately through a soft Jain-index target. It enables regulators to navigate trade-offs among revenue, welfare, and fairness while maintaining approximate incentive compatibility. To ensure a consistent comparison, Sections 6.3-6.5 report ex-ante metrics derived from the fractional allocations Z ∈ [0 , 1] n×k, with realized ex-post outcomes analyzed in Section 6.7. 
+
+6.3 Empirical Results I: Economic Efficiency and Revenue 
+
+Using RSD and VCG as baselines, we evaluate how the learned mechanism interpolates between welfare and revenue objectives while maintaining low empirical regret; detailed regret values are reported in Appendix J. Table 3 and Figure 3 show a clear revenue–welfare frontier. At λ = 0 , the mechanism nearly matches VCG welfare ($814k versus $819k) while generating slightly higher revenue ($150k versus $139k). As λ increases, revenue rises substantially: at the balanced setting 
+
+λ = 0 .5, revenue reaches $376k, approximately 171% higher than VCG, while retaining 77% of VCG welfare; at λ = 1 , revenue reaches $391k, approximately 181% higher than VCG, but welfare falls by 49%. The frontier exhibits diminishing returns beyond λ = 0 .25 , which captures approximately 92% of the maximum observed revenue gain over VCG while retaining 78% of VCG welfare. Moderate revenue weighting ( λ ≤ 0.5) preserves most welfare, whereas aggressive revenue weighting induces 13 Figure 3: Economic frontiers and sensitivity. (A) Pareto trade-off between revenue and welfare. (B–C) Impact of mixing weight λ on economic objectives and the resulting Jain fairness index. 
+
+Metric RSD VCG λ=0 λ=0 .25 λ=0 .5 λ=0 .75 λ=1 
+
+Revenue ($k) 0 139 150 370 376 377 391 Welfare ($k) 518 819 814 635 625 615 418 Fairness 1.00 0.25 0.35 0.32 0.25 0.25 0.25    
+
+> Table 3: Airport slot auction results. The learned mechanism traces tunable trade-offs between welfare, revenue, and fairness as λvaries. For RSD, the fairness entry reflects equality of allocation shares; the VCG and learned-mechanism entries are utility-based Jain indices and are therefore not directly comparable.
+
+sharper welfare losses. Fairness also declines as λ → 1, with the Jain index falling to 0.25, consistent with revenue maximization concentrating allocations among high-value bidders. 
+
+6.4 Empirical Results II: Equity and Efficiency 
+
+In divestiture auctions, regulators must balance allocative efficiency with competitive equity. Table 4 and Figure 4 show a favorable welfare–fairness frontier. The lowest-target welfare-maximizing model ( J = 0 .25 ) is highly concentrated (Gini = 0.75), while a target of J = 0 .5 reduces Gini to 0.54 with only a 4% welfare loss. Higher targets continue to improve dispersion metrics, but welfare losses become more pronounced near the target J = 0 .875 . Thus, the learned mechanism provides a tunable alternative to VCG, which maximizes welfare but concentrates utility, and RSD, which equalizes access but ignores valuations. 
+
+6.5 Empirical Results III: Revenue–Fairness Trade-offs 
+
+Section 6.4 examined the welfare cost of fairness. We now consider the revenue-maximizing regime, where airport operators may seek infrastructure funding while maintaining market equity. Table 5 shows that the price of fairness is modest: increasing the Jain target from J = 0 .25 to J = 0 .875 
+
+reduces revenue by only 4.3% ($396k to $379k), while reducing the Gini coefficient from 0.75 to 0.17. Together, the two frontiers show that the price of fairness is objective-dependent: the same increase in the soft Jain target costs 14.9% of welfare when λ = 0 , but only 4.3% of revenue when 
+
+λ = 1 .As fairness targets increase, the revenue-maximizing mechanism extracts surplus while equalizing bidder utilities. This cautions against using λ = 1 without additional surplus-preservation constraints. The learned allocation and payment rules also exhibit revenue-screening behavior: allocations and payments shift toward stronger bidders as revenue weight increases. This resembles virtual-value screening, but should be interpreted as an empirical pattern rather than exact Myerson ironing in the combinatorial approximately-IC setting. Figure 5 visualizes the resulting redistribution. RSD equalizes shares without using valuation information, whereas VCG concentrates allocations among high-value carriers. Under the higher fairness target, the learned mechanism redistributes probability toward entrants (NK, SY) while 14 Figure 4: Welfare–fairness trade-offs. (A–C) Pareto frontier and welfare decay relative to target Jain values.                                           
+
+> (D–F) Auxiliary metrics show how equity changes as the soft targets increase.
+> Metric RSD VCG Target J=0 .25 Target J=0 .50 Target J=0 .75 Target J=0 .875
+> Welfare ($) 518,000 819,620 813,929 779,292 720,709 692,753 Achieved Fairness 1.00 0.27 0.25 0.48 0.73 0.86 CV 0.00 1.65 1.73 1.03 0.61 0.41 Gini 0.00 0.73 0.75 0.54 0.33 0.22 Soft-Min Utility –-0.099 -0.110 -0.074 -0.035 -0.025
+> Table 4: Welfare–fairness trade-offs under welfare maximization ( λ= 0 ). Higher Jain targets improve equity metrics while reducing welfare. For RSD, the distributional metrics summarize equal allocation shares; for VCG and the learned mechanism, they summarize bidder utilities.
+
+preserving efficiency by assigning a larger share to the most productive carrier, B6. Entrant SY receives a slightly higher allocation probability than F9 despite lower average valuation, reflecting the fact that less efficient carriers require more allocation probability to reach comparable utility. 
+
+6.6 Incentive Compatibility Audit 
+
+We audit approximate incentive compatibility using the aggregate validation regret produced by the adversarial misreport optimization procedure. For each validation profile, candidate misreports are initialized and optimized by gradient ascent according to the saved validation configuration; the largest utility improvement found by that search is reported. As in prior differentiable mechanism design work, this regret is an empirical local-best-response estimate. Table 6 summarizes the maximum mean regret observed across each reported frontier. In all three families, empirical regret is small relative to the revenue gains obtained over VCG. These values audit the learned fractional mechanism. They do not by themselves establish low regret after discrete resolution and conditional pricing. 
+
+6.7 Empirical Results IV: Ex-Post Outcomes and Practical Implementation 
+
+The frontiers above are ex-ante quantities computed from the learned fractional allocation and payment rules. To implement the mechanism, we resolve the fractional allocation into a feasible deterministic schedule via the lottery procedure in Appendix H. Because this introduces sampling variation, realized ex-post outcomes may differ from ex-ante expectations. We quantify this implementation risk using 1,000 lottery draws across 20,000 holdout valuation instances. 
+
+Decomposition Audit. As a reproducibility check, we independently retrained a seed-0 CAGraph model using the checked-in airport data and configuration and decomposed all 20,000 holdout allocations. The normalization factor was cT = 1 for every profile. Mean and maximum ∥ET ∥1 were 15 Target Revenue ($) Welfare ($) Achieved Fair CV Gini 
+
+J = 0 .25 396,103 423,713 0.25 1.73 0.75 
+
+J = 0 .50 382,777 382,784 0.50 1.00 0.50 
+
+J = 0 .75 380,960 381,474 0.75 0.58 0.27 
+
+J = 0 .875 379,054 379,313 0.87 0.38 0.17             
+
+> Table 5: Revenue–fairness trade-offs under revenue maximization ( λ= 1 ). Higher Jain targets substantially improve dispersion metrics with modest revenue loss.
+> Figure 5: Bidder efficiency and allocation outcomes. (a) Normalized average valuations. (b) RSD provides equal shares regardless of efficiency. (c) VCG produces concentrated allocations. (d) The mechanism trained with target J= 0 .875 redistributes probability toward entrants while preserving efficiency through B6.
+
+3.81 × 10 −15 and 1.25 × 10 −14 , respectively, and the largest vmax ∥ET ∥1 was below 1.50 × 10 −8
+
+dollars. The mean support size was 15.5 schedules and the maximum was 28. Appendix H.2 reports the complete audit and its provenance. This structural rerun is separate from the economic estimates reported below. 
+
+Welfare Stability. Allocative efficiency is stable across draws. Under a welfare-maximizing (λ = 0 ) configuration, the mechanism achieves mean social welfare of $816,527 with standard deviation $12,028. Across draws, 100% of realized outcomes fall within 20% of the continuous ex-ante target, and 54.5% fall within 5%. This suggests that the learned fractional allocations are close to high-confidence deterministic schedules. 
+
+Revenue Reliability. Revenue is more volatile because proportional ex-post pricing imposes a no-entrance-fee condition: bidders who receive no bundle pay zero. The learned mechanism has ex-ante expected revenue of $390,357, compared with $139,599 for VCG. In this experiment, the standard lottery approximately preserves the target on average, with realized mean revenue of $390,605, but has a wide lower tail: the 25th percentile is zero because some draws produce no paying winner. The full-assignment variant eliminates this lower-tail risk by resampling until a nonempty feasible assignment is obtained.     
+
+> Figure 6: Economic performance. (a) Expected revenue difference distribution. (b) Revenue CDF comparing VCG, standard lottery, and full-assignment implementation.
+
+Full-Assignment Implementation. As shown in Table 7 and Figure 6, full assignment improves both mean revenue and downside protection. Mean revenue rises to $536,328, a 284.2% increase over 16 Table 6: Aggregate empirical regret audit for airport-slot experiments. Regret is the mean validation regret from adversarial misreport optimization. Detailed per-configuration values are in Appendix J. Frontier Revenue gain ($k) Max regret Max regret/gain Revenue–welfare 11.2–252.4 0.003304 0.001750 Welfare–fairness 11.4–252.6 0.009387 0.004900 Revenue–fairness 240.1–257.1 0.002331 0.000057                          
+
+> Metric Mean ($) Std. Dev ($) 25th Pct ($) Median ($) 75th Pct ($) Revenue (VCG Baseline) 139,599 25,608 122,366 141,425 158,656
+> Revenue (Ex-Ante Expected) 390,357 78,168 336,750 374,910 439,440
+> Revenue (Lottery) 390,605 283,853 0429,735 548,226
+> Revenue (Lottery, Full Assignment) 536,328 180,213 411,399 487,287 647,464
+
+Table 7: Empirical distribution of ex-post revenue over 1,000 lottery draws. The standard lottery approximately preserves ex-ante expected revenue in this experiment, while full assignment increases mean revenue by 284.2% relative to VCG. 
+
+VCG, and its 25th percentile ($411,399) exceeds the 75th percentile of VCG ($158,656). Thus, full assignment provides a practical implementation rule that preserves feasibility, avoids entrance fees, and delivers more reliable revenue than the standard lottery. Because conditioning on a nonempty outcome changes the lottery distribution, it also changes expected allocation, revenue, and potentially regret; it should therefore be treated as a separate implementation variant. 
+
+6.8 Structural Robustness and Scalability 
+
+Parameter sensitivity. Because the airport valuations are model-based estimates, we regenerate bundle valuations after perturbing the calibrated operating-cost coefficient and time-of-day preference levels one at a time from 75% to 125% of baseline. Each level contains 100 independently regenerated profiles, and the fixed trained mechanism is evaluated using its training-data normalization and bidder-level dollar-payment conversion. Figure 7 shows distinct responses. Operating-cost changes are economically modest: at the ±25% endpoints, welfare changes by +3 .6% / − 3.3% and revenue by +3 .2% / − 2.8% , with local point elasticities of −0.13 and −0.12 , respectively. Time-of-day preferences are more consequential: the corresponding welfare changes are −24 .9% / + 24 .6% and the revenue changes are −19 .1% / + 21 .0% , with local point elasticities of 0.98 and 0.81 . The bootstrap bands show that the cost response is small relative to Monte Carlo uncertainty, whereas the endpoint time-preference effects remain separated from baseline. Reallocation remains concentrated between B6 and F9: the ±25% time perturbations move their allocation shares by about 1.1–1.2 percentage points in opposite directions, whereas NK and SY remain unchanged at the reported precision. The shaded bands are 95% nonparametric bootstrap intervals and appropriately reflect that the profiles are independently regenerated at each level. These results use the welfare–fairness checkpoint with target J = 0 .25 ; this differs from the target-J = 0 .875 mechanism in Figure 5(d). 
+
+Allocation stability. We measure allocation stability by ∥Z(ϵ) − Z(0) ∥F , the Frobenius distance between perturbed and baseline allocation matrices. Even under ±25% perturbations, this distance remains below 0.08, with changes concentrated on marginal bundles rather than core allocations. 
+
+Computational scalability. On an NVIDIA Quadro RTX 8000, a forward pass, including winner determination and pricing, takes under 15ms. Complexity analysis is presented in Appendix I. For larger slot systems, Appendix K outlines a possible hierarchical decomposition that would partition the conflict graph into weakly coupled temporal submarkets, solve local combinatorial auctions in parallel, and reconcile inter-block dependencies through a coordination layer. This extension is proposed for future work and is not evaluated in the present experiments. 
+
+6.9 Policy Implications and Practical Feasibility 
+
+The transition from traditional, rigid mechanisms to differentiable combinatorial auctions offers three primary strategic advantages for infrastructure managers and regulators: 17 75% 80% 85% 90% 95% 100% 105% 110% 115% 120% 125%                  
+
+> Parameter level (% of baseline)
+> 70% 80% 90% 100% 110% 120% 130%
+> Outcome (% of baseline)
+> (a) Economic response of the fixed mechanism
+> Operating cost Time preference Welfare Revenue
+> Cost 25%
+> Cost +25% Time 25%
+> Time +25% B6 F9 NK SY
+> +0.16 -0.19 +1.18 -1.08 -0.16 +0.19 -1.18 +1.08 -0.00 +0.00 +0.00 -0.00 +0.00 +0.00 +0.00 +0.00
+> Baseline shares: B6 14.8%, F9 35.2%, NK 0.0%, SY 50.0%
+> (b) Reallocation from the baseline J= 0.25 model
+> 1.0
+> 0.5
+> 0.0 0.5 1.0
+> Allocation-share change (pp)
+
+Figure 7: One-at-a-time sensitivity of the fixed trained mechanism. (a) Welfare and revenue are indexed to their parameter-specific baseline means; shaded bands are 95% nonparametric bootstrap intervals over the 100 regenerated profiles at each level. (b) Endpoint changes in bidder-level allocation shares, in percentage points, relative to the corresponding baseline evaluation. The sensitivity checkpoint uses the welfare–fairness objective with target J = 0 .25 and differs from the target-J = 0 .875 mechanism in Figure 5(d). 
+
+Auditing Incentive Trade-offs Reporting empirical regret alongside revenue and welfare allows managers to compare economic gains with the largest deviations found by the configured misreport search. A regulator may use this evidence to screen candidate mechanisms. By accepting a regret budget, regulators can unlock higher revenue or welfare in complex markets, transforming incentive compatibility from a binary constraint into a manageable economic variable for the public interest. 
+
+Policy Validation Support While neural mechanisms are trained for specific market distributions, their sub-15ms inference enables rapid re-evaluation as bids change within the trained market specification. Structural changes to the feasible bundles or conflict graph require a separate validation or retraining. The model may therefore supplement, rather than replace, transparent policies by providing rapid checks of candidate trade-offs. 
+
+Flexible Policy Instrument Our multi-objective framework introduces flexible policy via the weighting factor λ or the Jain-index target J. By tuning these quantities, managers can prioritize different objectives, transforming a fixed auction into a tunable policy instrument. 
+
+# 7 Conclusion 
+
+Beyond extending differentiable economics to the combinatorial domain, this paper presents an airport-slot case study and addresses the “last-mile” problem of converting fractional combinatorial allocations into feasible discrete schedules. CAGraph models bundle conflicts while tracing the revenue–welfare–fairness frontier, and the Matching Pursuit-inspired decomposition provides a tractable discrete approximation whose residual quantifies the remaining implementation gap. Our empirical case study on airport slot allocation demonstrates that this integrated ap-proach—combining CAGraph architectures with discrete implementation logic—allows regulators to explicitly navigate the revenue–welfare–fairness Pareto frontier with unprecedented precision. We find expected revenue gains of up to 73.5% in synthetic settings and 180% in the airport-slot case study compared to VCG, while maintaining low empirical regret. Ultimately, this framework transforms auction design from a rigid mathematical exercise into a flexible, data-driven policy instrument for modern resource management. Beyond revenue, the mechanism’s millisecond inference enables agile management, such as intra-day reallocation. While our models are currently distribution-specific, future work in zero-shot transfer, or meta-learning could adapt these architectures to structural market changes without retraining. By treating incentive alignment as a manageable economic variable and providing the tools to visualize its impact on policy goals, this work offers a practical, high-performance path for modernizing large-scale resource allocation. 18 References 
+
+Atila Abdulkadiroglu and Tayfun Sönmez. Random serial dictatorship and the core from random endowments in house allocation problems. Econometrica , 66(3):689–701, 1998. ISSN 00129682, 14680262. URL http://www.jstor.org/stable/2998580 .Awadelrahman M. A. Ahmed, Frank Eliassen, and Yan Zhang. Combinatorial auctions and graph neural networks for local energy flexibility markets, 2023. URL https://arxiv.org/abs/ 2307.13470 .Elliot Anshelevich, Anirban Dasgupta, Jon Kleinberg, Eva Tardos, Tom Wexler, and Tim Roughgar-den. The price of stability for network design with fair cost allocation. In Foundations of Computer Science, 2004. Proceedings. 45th Annual IEEE Symposium on , pages 295–304. IEEE, 2004. Michael O. Ball, Frank Berardino, and Mark Hansen. The use of auctions for allocating airport access rights. Transportation Research Part A: Policy and Practice , 114:186–202, 2018. ISSN 0965-8564. doi: https://doi.org/10.1016/j.tra.2017.09.026. URL https://www.sciencedirect. com/science/article/pii/S0965856416303287 .Michael O. Ball, Alexander S. Estes, Mark Hansen, and Yulin Liu. Quantity-contingent auctions and allocation of airport slots. Transportation Science , 54(4):858–881, 2020. doi: 10.1287/trsc.2020. 0995. URL https://doi.org/10.1287/trsc.2020.0995 .Peter W. Battaglia, Jessica B. Hamrick, Victor Bapst, Alvaro Sanchez-Gonzalez, Vinicius Zambaldi, Mateusz Malinowski, Andrea Tacchetti, David Raposo, Adam Santoro, Ryan Faulkner, et al. Relational inductive biases, deep learning, and graph networks. arXiv preprint arXiv:1806.01261 ,2018. Anna Bogomolnaia and Hervé Moulin. A new solution to the random assignment problem. 
+
+Journal of Economic Theory , 100(2):295–328, 2001. ISSN 0022-0531. doi: https://doi.org/ 10.1006/jeth.2000.2710. URL https://www.sciencedirect.com/science/article/pii/ S0022053100927108 .Eric Budish, Yeon-Koo Che, Fuhito Kojima, and Paul Milgrom. Designing random mechanisms: Theory and applications. American Economic Review , 103(2):731–767, 2013. Quentin Cappart, Didier Chételat, Elias Khalil, Andrea Lodi, Christopher Morris, and Petar Veliˇ ckovi´ c. Combinatorial optimization and reasoning with graph neural networks. Journal of Machine Learning Research , 24(130):1–61, 2023a. Quentin Cappart, Didier Chételat, Elias Khalil, Andrea Lodi, Christopher Morris, and Petar Velickovic. Combinatorial optimization and reasoning with graph neural networks. Journal of Machine Learning Research , 24(130):1–61, 2023b. Alan Carlin and R. E. Park. Marginal cost pricing of airport runway capacity. The American Economic Review , 60(3):310–319, 1970. ISSN 00028282. URL http://www.jstor.org/ stable/1817981 .Edward H. Clarke. Multipart pricing of public goods. Public Choice , 11:17–33, 1971. ISSN 00485829, 15737101. URL http://www.jstor.org/stable/30022651 .Joseph I. Daniel. Congestion pricing and capacity of large hub airports: A bottleneck model with stochastic queues. Econometrica , 63(2):327–370, 1995. ISSN 00129682, 14680262. URL 
+
+http://www.jstor.org/stable/2951629 .Sven de Vries and Rakesh V. Vohra. Combinatorial auctions: A survey. INFORMS Journal on Computing , 15(3):284–309, 2003. Paul Duetting, Zhe Feng, Harikrishna Narasimhan, David Parkes, and Sai Srivatsa Ravindranath. Optimal auctions through deep learning. In Kamalika Chaudhuri and Ruslan Salakhutdinov, editors, Proceedings of the 36th International Conference on Machine Learning , volume 97 of 
+
+Proceedings of Machine Learning Research , pages 1706–1715. PMLR, 09–15 Jun 2019. URL 
+
+https://proceedings.mlr.press/v97/duetting19a.html .19 Paul Dütting, Felix Fischer, Pichayut Jirapinyo, John K. Lai, Benjamin Lubin, and David C. Parkes. Payment rules through discriminant-based classifiers. ACM Transactions on Economics and Computation , 3(1), 2015. doi: 10.1145/2559049. Federal Aviation Administration. Operating Limitations at New York LaGuardia Airport; High Density Rule at Ronald Reagan Washington National Airport. Federal Register, Vol. 76, No. 145, 2011. Notice concerning the Delta/US Airways slot-swap waiver and associated slot divestiture conditions. Federal Aviation Administration. Petition for exemption and other relief. Federal Register, August 2026. URL https://www.federalregister.gov/documents/2026/08/31/2026-17800/ petition-for-exemption-and-other-relief . Docket No. FAA-2026-9043; Document No. 2026-17800. Theodore Groves. Incentives in teams. Econometrica , 41(4):617–631, 1973. ISSN 00129682, 14680262. URL http://www.jstor.org/stable/1914085 .International Air Transport Association. Worldwide slot guidelines (wsg). https://www.iata. org/en/programs/ops-infra/slots/wsg/ , 2019. Dmitry Ivanov, Iskander Safiulin, Igor Filippov, and Ksenia Balabaeva. Optimal-er auctions through attention, 2022. URL https://arxiv.org/abs/2202.13110 .Alexandre Jacquillat and Vikrant Vaze. Interairline equity in airport scheduling interventions. 
+
+Transportation Science , 52(4):941–964, 2018. doi: 10.1287/trsc.2017.0817. URL https://doi. org/10.1287/trsc.2017.0817 .JetBlue Airways Corporation. Quarterly report on form 10-q for the quarter ended june 30, 2026. U.S. Securities and Exchange Commission, 2026. URL https://www.sec.gov/Archives/edgar/ data/1158463/000115846326000075/jblu-20260630.htm . Filed 2026. Virginie Lurkin, Laurie A. Garrow, Matthew J. Higgins, Jeffrey P. Newman, and Michael Schyns. Continuous departure time of day preferences for continental u.s. airline markets segmented by distance, direction of travel, number of time zones, day of week and itinerary type. Working paper, SSRN, 2016. URL https://ssrn.com/abstract=2721974 .S. G. Mallat and Z. Zhang. Matching pursuits with time-frequency dictionaries. IEEE Transactions on Signal Processing , 41(12):3397–3415, 1993. Alejandro M Manelli and Daniel R Vincent. Bundling as an optimal selling mechanism for a multiple-good monopolist. Journal of Economic Theory , 127(1):1–35, 2006. Roger B. Myerson. Optimal auction design. Mathematics of Operations Research , 6(1):58–73, 1981. ISSN 0364765X, 15265471. URL http://www.jstor.org/stable/3689266 .Roger B Myerson and Mark A Satterthwaite. Efficient mechanisms for bilateral trading. Journal of economic theory , 29(2):265–281, 1983. S. J. Rassenti, V. L. Smith, and R. L. Bulfin. A combinatorial auction mechanism for airport time slot allocation. The Bell Journal of Economics , 13(2):402–417, 1982. ISSN 0361915X. URL 
+
+http://www.jstor.org/stable/3003463 .Michael H. Rothkopf, Aleksandar Pekeˇ c, and Ronald M. Harstad. Computationally manageable combinational auctions. Management Science , 44(8):1131–1147, 1998. Tuomas Sandholm. Algorithm for optimal winner determination in combinatorial auctions. Artificial Intelligence , 135(1–2):1–54, February 2002. ISSN 0004-3702. doi: 10.1016/s0004-3702(01) 00159-x. URL http://dx.doi.org/10.1016/s0004-3702(01)00159-x .Tuomas Sandholm. Automated mechanism design: A new application area for search algorithms. In Francesca Rossi, editor, Principles and Practice of Constraint Programming – CP 2003 , pages 19–36, Berlin, Heidelberg, 2003. Springer Berlin Heidelberg. ISBN 978-3-540-45193-8. 20 Tuomas Sandholm and Anton Likhodedov. Automated design of revenue-maximizing combinatorial auctions. Operations Research , 63(5):1000–1025, October 2015. ISSN 1526-5463. doi: 10.1287/ opre.2015.1398. URL http://dx.doi.org/10.1287/opre.2015.1398 .William M. Swan and Nicole Adler. Aircraft trip cost parameters: A function of stage length and seat capacity. Transportation Research Part E: Logistics and Transportation Review , 42(2):105–115, 2006. doi: 10.1016/j.tre.2005.09.004. U.S. Department of Justice. Justice department requires us airways and delta air lines to transfer slots to low-cost carriers in order to proceed with slot swap transaction. Press Release, August 2011. U.S. Department of Transportation. DOT Proposes to Grant Delta/US Airways Slot Waiver with Conditions, 2011. Press release describing proposed conditions for the DCA–LGA slot swap, including divestitures to reduce competitive harms and provide opportunities for new entrants. Vikrant Vaze and Cynthia Barnhart. Airline frequency competition in airport congestion pricing. 
+
+Transportation research record , 2266(1):69–77, 2012. Petar Veliˇ ckovi´ c, Guillem Cucurull, Arantxa Casanova, Adriana Romero, Pietro Lio, and Yoshua Bengio. Graph attention networks. International Conference on Learning Representations , 2018. URL https://openreview.net/forum?id=rJXMpikCZ .William Vickrey. Counterspeculation, auctions, and competitive sealed tenders. The Journal of Finance , 16(1):8–37, 1961. ISSN 00221082, 15406261. URL http://www.jstor.org/stable/ 2977633 .Konstantinos G. Zografos and Yu Jiang. A bi-objective efficiency-fairness model for scheduling slots at congested airports. Transportation Research Part C: Emerging Technologies , 102:336– 350, 2019. ISSN 0968-090X. doi: https://doi.org/10.1016/j.trc.2019.01.023. URL https: //www.sciencedirect.com/science/article/pii/S0968090X18309343 .21 Algorithm 1 Adam-Style Update for an Adaptive Penalty Weight  
+
+> 1:
+
+Initialize moment states m0 ← 0, s0 ← 0 and weight w0 ≥ 0 
+
+> 2:
+
+for update t = 1 , 2, . . . do  
+
+> 3:
+
+Compute a signed violation signal gt relative to the target  
+
+> 4:
+
+mt ← β1mt−1 + (1 − β1)gt 
+
+> 5:
+
+st ← β2st−1 + (1 − β2)g2 
+
+> t
+> 6:
+
+bmt ← mt/(1 − βt
+
+> 1
+
+), bst ← st/(1 − βt
+
+> 2
+
+) 
+
+> 7:
+
+∆t ← ηw bmt/(√bst + ϵ) 
+
+> 8:
+
+wt ← clip( wt−1 + ∆ t, w min , w max ) 
+
+> 9:
+
+end for  
+
+> 10:
+
+return wt
+
+# A Notation Summary 
+
+> Table 8: Comprehensive Notation Summary
+
+Symbol Definition 
+
+n, m, k Number of bidders, items, and candidate bundles 
+
+N, M, K Sets of bidders, items, and candidate bundles 
+
+vi, b i True valuation and reported bid of agent iv, b Profiles of valuations and bids for all agents 
+
+Vi, F i Support and distribution of valuations for agent ig(·), p (·) Allocation and payment rules of the mechanism 
+
+ui(vi; b) Quasi-linear utility under report profile b
+
+rgt i Empirical ex-post regret for bidder izi,S Probability that agent i receives bundle SZ Fractional allocation matrix (output of neural net) 
+
+Dt Feasible deterministic schedule selected at iteration t
+
+Ωt Positive entries selected by schedule Dt
+
+γt Nonnegative raw extraction weight 
+
+Rt Raw extraction residual, with R0 = ZAT Raw sparse approximation P 
+
+> t<T
+
+γtDt
+
+cT Normalizer max {1, P 
+
+> t<T
+
+γt}
+
+πt Lottery weight γt/c T
+
+bZT Expected allocation of the implemented lottery 
+
+ET Implementation residual Z − bZT
+
+vmax Common upper bound on bundle valuations 
+
+Jain( u) Jain’s fairness index of utilities 
+
+Rev Total auction revenue P 
+
+> i∈N
+
+pi(v)
+
+wrgt , w fair Adaptive regret and fairness weights 
+
+# B Algorithms C Training Procedure and Loss Function 
+
+This appendix describes the full training procedure for learning a fair, approximately-truthful deep auction mechanism. The mechanism consists of an allocation network and a payment network, denoted jointly by Mθ, which map reported valuations x ∈ RA×M and context c to allocations 
+
+αθ (x, c ) and payments pθ (x, c ).Training balances three goals: (i) efficiency, (ii) incentive alignment via low regret, and (iii) fairness of realized utilities. 22 Algorithm 2 Adaptive Weight Training Algorithm  
+
+> 1:
+
+Initialize: Networks parameters θ, adaptive weights wrgt , w f air , targets.  
+
+> 2:
+
+for iteration t = 1 to T do  
+
+> 3:
+
+Sample batch of valuations v ∼ F . 
+
+> 4:
+
+Compute misreports v′ using gradient ascent on u(v′, v −i). 
+
+> 5:
+
+Forward pass: Compute allocation g(v), payments p(v). 
+
+> 6:
+
+Compute Objectives: Revenue, Welfare O. 
+
+> 7:
+
+Compute Violations: Regret Grgt , Fairness Gf air . 
+
+> 8:
+
+Compute Loss: L = − log(1 + O) + wrgt Grgt + wf air Gf air . 
+
+> 9:
+
+Update network parameters θ ← θ − η∇θ L. 
+
+> 10:
+
+Update Adaptive Weights:  
+
+> 11:
+
+grgt ← log( Grgt ) − log( target rgt ) 
+
+> 12:
+
+wrgt ← AdamUpdate (wrgt , g rgt ) 
+
+> 13:
+
+Decentralize target: target rgt ← decay (target rgt ). 
+
+> 14:
+
+end for C.1 Warm-Start via VCG Imitation 
+
+For initialization, the mechanism is trained to imitate the VCG outcome. Given (x, c ) we compute 
+
+(αVCG , p VCG ) ← VCG( x, c ). (22) The warm-start loss is 
+
+Lwarm (θ) = Lα(θ) + Lp(θ), where (23) 
+
+Lα(θ) = ∥αθ (x, c ) − αVCG ∥22, and (24) 
+
+Lp(θ) = ∥pθ (x, c ) − pVCG ∥22. (25) 
+
+C.2 Adversarial Misreport Search 
+
+Misreports are parameterized as 
+
+˜x = fadv (x; ϕ), (26) where ϕ is an adversarial tensor optimized by gradient descent. Truthful and misreport utilities use true valuations: 
+
+ui(x) = αθ,i (x, c ), x i − pθ,i (x, c ). (27) The adversarial objective (one step of inner maximization) is 
+
+Ladv (ϕ) = −
+
+> A
+
+X
+
+> i=1
+
+ui(˜ xi; x). (28) 
+
+C.3 Regret Computation 
+
+Ex-post regret is 
+
+Regret( x; θ) = 1
+
+A
+
+> A
+
+X
+
+> i=1
+
+h
+
+max 
+
+> ˜xi
+
+ ui(˜ xi; x) − ui(xi; x)i
+
+> +
+
+. (29) The inner maximization is approximated numerically by optimizing initialized candidate reports while holding the other bidders’ reports fixed. Consequently, the reported quantity is empirical regret: additional starts or optimization steps can reveal a larger profitable deviation. 23 C.4 Payment Parameterization and Truthful IR 
+
+The payment head outputs a fraction qi(b) ∈ [0 , 1] and sets 
+
+pi(b) = qi(b) X
+
+> S∈K
+
+giS (b)biS . (30) At a truthful report bi = vi, the fractional mechanism therefore satisfies 
+
+ui(vi; v) =  1 − qi(v) X 
+
+> S∈K
+
+giS (v)viS ≥ 0. (31) This is pointwise truthful-profile IR for the fractional expected outcome (that is, before the lottery is realized). The separate conditional payment rule used after discrete resolution is described in Section H; incentive and IR claims for that transformed mechanism must be assessed at the post-resolution level. 
+
+C.5 Fairness Metrics 
+
+Truthful expected utilities are 
+
+ui = E[( αθ,i (x, c ) · xi) − pθ,i (x, c )] . (32) We monitor several fairness indices for evaluation: 
+
+Jain( u) = (P 
+
+> i
+
+ui)2
+
+A P 
+
+> i
+
+u2
+
+> i
+
+, (33) 
+
+Gini( u) = 
+
+P
+
+> i
+
+P 
+
+> j
+
+|ui − uj |
+
+2A P 
+
+> i
+
+ui
+
+, (34) 
+
+CV( u) = σ(u)¯u , (35) 
+
+SoftMin( u) = − log X
+
+> i
+
+e−ui
+
+!
+
+. (36) For a selected fairness target J0, training uses the soft target penalty 
+
+Lfair (θ) =  Jain( u) − J0
+
+2. (37) This is an equality-style regularizer, not a hard lower-bound constraint. The other indices are evaluation diagnostics. 
+
+C.6 Economic Objective 
+
+Let Obj( θ) denote a mixture of revenue and welfare: 
+
+Obj( θ) = 
+
+
+
+Revenue , “revenue” ,
+
+Welfare , “welfare” ,
+
+0.5 Rev + 0 .5 Wel , “50-50” ,
+
+other mixtures .
+
+(38) For stability, we optimize the log-transformed loss 
+
+Lecon (θ) = − log(1 + Obj( θ)) . (39) This only rescales the objective and the gradients, not affecting the non-convexity property. 24 C.7 Optional Revenue-Range Regularization 
+
+When a training configuration includes a desired revenue range [Rmin , R max ], it applies the soft penalty 
+
+δmin = ( Rmin − R)+, δmax = ( R − Rmax )+, (40) 
+
+Lrevbd = log  1 + γR(δ2min + δ2max ) . (41) The bounds are configuration parameters and may be expressed in the same normalized or monetary units as the training objective. This term is a regularizer, not a hard feasibility constraint, and no fixed revenue-to-welfare percentages are assumed here. 
+
+C.8 Adaptive Weights for Regret and Fairness 
+
+We maintain two adaptive multipliers: 
+
+wrgt and wfair ,
+
+updated via an Adam-style rule. Define the regret signal in log-space: 
+
+g(rgt)  
+
+> t
+
+= log 
+
+ Regret 
+
+rgt_ratio · Obj + 1 
+
+
+
+− log( rgt_target ).
+
+For fairness, let εfair = 1 − J0. The signed update signal is 
+
+g(fair)  
+
+> t
+
+=  1 − Jain( u) − εfair ,
+
+while the mechanism loss uses the square of this gap. Each weight is updated via: 
+
+mt = 0 .9mt−1 + 0 .1gt,vt = 0 .999 vt−1 + 0 .001 g2 
+
+> t
+
+,wt = clip 
+
+
+
+wt−1 + η mt
+
+√vt + 10 −8 , 0.1, 5.0
+
+
+
+.
+
+C.9 Full Training Loss 
+
+The complete loss for updating the mechanism parameters θ is: 
+
+L(θ) = Lecon + wrgt · Regret + wfair · Lfair + Lrevbd .
+
+C.10 Interpretation of High-Revenue Solutions 
+
+In some runs, the learned payment rule produces revenue close to allocated welfare. This is an empirical training outcome, not a consequence of a general VCG payment-minimality theorem. The allocation and payment networks are jointly optimized under finite-sample regret penalties and soft regularization, so a high-revenue solution can reflect the selected economic objective, the payment parameterization, approximation error in the inner misreport search, and the strength of the penalty weights. We therefore interpret revenue, regret, and IR together on held-out data rather than labeling such a solution DSIC from its revenue level alone. 
+
+Notation. Let θ denote the parameters of the mechanism Mθ . Given reports x ∈ RA×M and context 
+
+c, the mechanism outputs allocations αθ (x, c ) and payments pθ (x, c ). For agent i, ui(x, c ; θ) = 
+
+αθ,i (x, c ) · xi − pθ,i (x, c ) is the utility. Welfare and revenue are defined as: 
+
+W (θ) = E(x,c )∼D 
+
+" AX
+
+> i=1
+
+αθ,i (x, c ) · xi
+
+#
+
+(42) 
+
+R(θ) = E(x,c )∼D 
+
+" AX
+
+> i=1
+
+pθ,i (x, c )
+
+#
+
+(43) 25 The regret at (x, c ) is: Regret (x, c ; θ) = 1
+
+A
+
+> A
+
+X
+
+> i=1
+
+max 
+
+> ˜xi
+
+ui(˜ xi, x −i, c ; θ)
+
+− ui(xi, x −i, c ; θ) 
+
+> +
+
+(44) and its expectation is Reg (θ) = E(x,c )∼D [Regret (x, c ; θ)] .Let ¯ui(θ) = E(x,c )∼D [ui(x, c ; θ)] and u(θ) = (¯ u1(θ), . . . , ¯uA(θ)) . The Jain index of u(θ) is: Jain (u(θ)) = 
+
+PAi=1 ¯ui(θ)
+
+2
+
+A PAi=1 ¯ui(θ)2 (45) 
+
+Economic objective. For a specified mixture parameter λ ∈ [0 , 1] , the objective is: Obj λ(θ) = λRev (θ) + (1 − λ)Wel (θ) (46) 
+
+Soft-penalty implementation. The training code does not solve a hard constrained program. Instead, it maximizes Obj λ through the log-transformed economic loss and uses adaptive penalties to target low regret and the selected Jain index. When enabled, the revenue-range term in (41) is also soft. Thus, reported target levels should be interpreted as optimization targets whose attainment is checked empirically, not as feasibility guarantees. Primary airport economic outcomes are reported in the main empirical tables so that a single set of point estimates is authoritative. The appendix reports methodological detail and the regret audit derived from those same reported configurations, rather than an earlier validation snapshot. This section provides the formal mathematical derivations for the structural guarantees and imple-mentation theorems presented in the main text. 
+
+# D Proof of Theorem 1 and Implementation Details 
+
+Let K be the set of feasible bundles and let k := |K|. Our layer outputs two nonnegative matrices: 
+
+p ∈ [0 , 1] k (“bundle availability”) 
+
+q ∈ [0 , 1] n×k (“bundle-to-agent assignment”) .
+
+They are produced as follows. For each item j ∈ M , the masked normalization over bundle logits yields nonnegative per-item probabilities ˜pj,S satisfying P 
+
+> S∈K:S∋j
+
+˜pj,S ≤ 1. Equality holds when the normalization is restricted exactly to bundles containing j. We set 
+
+pS = min  
+
+> j∈S
+
+˜pj,S 
+
+⇒ ∀j ∈ M : X
+
+> S∈K:S∋j
+
+pS ≤ X
+
+> S∈K:S∋j
+
+˜pj,S ≤ 1.
+
+For the assignment, we compute q as the elementwise minimum of two softmax normalizations: 
+
+q = min  softmax agents (A), softmax bundles (A′) .
+
+Hence q is doubly sub-stochastic :
+
+∀S ∈ K :
+
+> n
+
+X
+
+> i=1
+
+qi,S ≤ 1, ∀i ∈ N : X
+
+> S∈K
+
+qi,S ≤ 1.
+
+The final allocation is 
+
+zi,S = pS qi,S ∈ [0 , 1] .
+
+It satisfies bidder feasibility because X
+
+> S∈K
+
+zi,S ≤ X
+
+> S∈K
+
+qi,S ≤ 1.
+
+For any item j, bundle feasibility gives 
+
+X
+
+> i∈N
+
+X
+
+> S∈K:S∋j
+
+zi,S = X
+
+> S∈K:S∋j
+
+pS
+
+X
+
+> i∈N
+
+qi,S ≤ X
+
+> S∈K:S∋j
+
+pS ≤ 1.
+
+Thus the layer satisfies both fractional feasibility constraints claimed in Theorem 1. 26 E Revenue–Welfare Weighting 
+
+For a fixed mixture parameter λ ∈ [0 , 1] , define the batch economic objective 
+
+Obj λ(θ) = λ Rev θ +(1 − λ) Wel θ . (47) The implemented economic loss is 
+
+Lecon = − log(1 + Obj λ(θ)) . (48) Ignoring the penalty terms, the logarithm is monotone and therefore has the same batchwise optimizer as maximizing Obj λ, while rescaling its gradient. Thus, λ controls the empirical trade-off between revenue extraction and allocative efficiency. In single-item regular environments, revenue maximiza-tion admits a virtual-value characterization. We use this classical result only as an analogy for the allocation distortions observed in the learned mechanisms. We do not claim that the trained combi-natorial mechanism admits a closed-form virtual-value representation or performs exact Myerson ironing. 
+
+# F Implementability and Decomposition Proofs 
+
+F.1 Implementability Limitation 
+
+Let B denote the set of deterministic feasible schedules. Each B ∈ B is a binary matrix satisfying the item-wise and bidder-wise feasibility constraints. A fractional allocation Z is exactly implementable as a lottery over feasible deterministic schedules if and only if 
+
+Z ∈ conv( B).
+
+Equivalently, there exist weights {πB }B∈B such that 
+
+Z = X
+
+> B∈B
+
+πB B, (49) 
+
+X
+
+> B∈B
+
+πB = 1 , πB ≥ 0. (50) For simple assignment problems, the Birkhoff–von Neumann theorem guarantees this property be-cause the relevant fractional polytope is integral. However, combinatorial bundle constraints generally produce set-packing polytopes whose linear relaxations are not integral. The bihierarchy characteri-zation of Budish et al. [2013] gives a structural condition under which universal implementation is possible for canonical two-sided constraint systems. When the constraint structure is not a bihierarchy, universal implementation fails: there exist feasible fractional allocations that cannot be expressed as lotteries over deterministic feasible allocations. Airport slot bundles can induce precisely this failure. A bundle may contain multiple physical or temporal resources, and two bundles conflict whenever they share at least one resource. Such overlaps can create cycles in the conflict structure, violating the nested or disjoint structure required by a bihierarchy. Therefore, feasibility of Z under the fractional constraints does not by itself imply 
+
+Z ∈ conv( B). This proves Proposition 4. 
+
+Minimal conflict-cycle example. Consider three resources a, b, c and three bundles 
+
+S1 = {a, b }, S2 = {b, c }, S3 = {a, c }.
+
+Each pair of bundles overlaps, so at most one bundle can be selected in any deterministic schedule. The fractional point 
+
+zS1 = zS2 = zS3 = 1 /2
+
+satisfies the per-resource constraints because each resource has total load one. However, the total bundle mass is 3/2, whereas any deterministic feasible schedule selects at most one bundle. Hence this fractional point cannot be represented as a convex combination of deterministic feasible schedules. This illustrates why fractional feasibility is weaker than lottery implementability in overlapping-bundle environments. 27 F.2 Proof of Proposition 5 
+
+By construction, γt = min (i,S )∈Ωt Rt,iS . For entries with Dt,iS = 0 ,
+
+Rt+1 ,iS = Rt,iS ≥ 0.
+
+For entries with Dt,iS = 1 , the definition of γt implies 
+
+0 ≤ γt ≤ Rt,iS ,
+
+and therefore 
+
+Rt+1 ,iS = Rt,iS − γt ≥ 0.
+
+Thus Rt+1 ≥ 0. Moreover, 
+
+∥Rt+1 ∥1 = X
+
+> i,S
+
+Rt+1 ,iS 
+
+= X
+
+> i,S
+
+Rt,iS − γt
+
+X
+
+> i,S
+
+Dt,iS 
+
+= ∥Rt∥1 − γt∥Dt∥1. (51) Since γt ≥ 0 and ∥Dt∥1 ≥ 0, it follows that ∥Rt+1 ∥1 ≤ ∥ Rt∥1. The inequality is strict whenever 
+
+γt > 0 and Ωt̸ = ∅.
+
+F.3 Economic Discretization Gap 
+
+The extraction procedure first produces the nonnegative sparse approximation 
+
+AT = 
+
+> T−1
+
+X
+
+> t=0
+
+γtDt, RT = Z − AT .
+
+The raw extraction weights need not sum to at most one. Accordingly, define 
+
+cT = max 
+
+(
+
+1, 
+
+> T−1
+
+X
+
+> t=0
+
+γt
+
+)
+
+, πt = γt
+
+cT
+
+,
+
+and assign probability π∅ = 1 − PT −1 
+
+> t=0
+
+πt to the null schedule. These probabilities are nonnegative and sum to one. The expected implemented allocation and its implementation residual are therefore 
+
+bZT = 
+
+> T−1
+
+X
+
+> t=0
+
+πtDt = AT
+
+cT
+
+, ET = Z − bZT .
+
+For any valuation profile v satisfying 0 ≤ viS ≤ vmax ,
+
+⟨v, Z ⟩ − ⟨ v, bZT ⟩ = |⟨ v, E T ⟩| ≤ ∥ v∥∞∥ET ∥1
+
+≤ vmax ∥ET ∥1. (52) Therefore, 
+
+⟨v, Z ⟩ − ⟨ v, bZT ⟩ ≤ vmax ∥Z − bZT ∥1.
+
+Notice that RT certifies how much nonnegative mass remains after the raw greedy extraction, whereas 
+
+ET measures the error of the normalized lottery that is actually implementable. They coincide only when cT = 1 .
+
+# G Case Study Details 
+
+G.1 Airport Valuation Construction with Gurobi 
+
+The airport valuations are model-based estimates of the maximum operating profit that a carrier can obtain from a candidate slot bundle. The construction uses the DB1B Ticket and Coupon 28 tables. Coupon records are ordered by ITIN_ID ; the first origin and final destination are joined to the corresponding ticket record to recover each itinerary’s endpoints. For the reported experiment, itineraries are retained when either endpoint is Ronald Reagan Washington National Airport (DCA; BTS airport ID 11278). Each retained flight is marked as a departure if DCA is its origin and as an arrival if DCA is its destination. The resulting route, fare, distance, capacity, and direction fields are used to construct the flight–slot profit coefficients Vi(f, t ) described in Section 6.1. The candidate times are 08:00, 10:00, 17:00, and 22:00. Candidate bundles contain an even number of these times, yielding the six two-slot combinations and the single four-slot combination, for seven bundles in total. For a flight f , write Ff , Sf , and Df for its ITIN_FARE , SEAT_CAP , and DISTANCE .For each generated valuation profile, the reported training artifact fixes the per-mile operating-cost coefficient at cmile = 0 .019 and computes 
+
+Revenue f = 0 .7Ff Sf , (53) 
+
+Cost f = cmile (Df + 722)( Sf + 104) , (54) 
+
+Profit f = Revenue f − Cost f . (55) The load factor and cmile are fixed in the reported training artifact. Time-of-day multipliers start from 0.50, 1.00, 0.85, 0.95, 0.85, and 0.75 for the six bins 00:00–06:00, 06:00–09:00, 09:00–15:00, 15:00–18:00, 18:00–21:00, and 21:00–00:00, respectively. For each generated profile, each bin value is perturbed independently by a uniform draw on [−0.5, 0.5] and truncated below at zero. The coefficient used by Gurobi is 
+
+Vi(f, t ) = Profit f τt,
+
+where τt is the sampled multiplier for the bin containing slot t.For every generated profile, carrier i, and candidate bundle S, we solve a binary assignment model in Gurobi. Let Fi be the carrier’s candidate flights and let T (S) be the slots contained in bundle S. The implementation creates binary variables zf t , equal to one when flight f is assigned to slot t, and wf ,equal to one when flight f is not operated. It then solves 
+
+vi(S) = max 
+
+> z,w
+
+X 
+
+> f∈Fi
+
+X 
+
+> t∈T(S)
+
+Vi(f, t )zf t (56) s.t. X 
+
+> f∈Fi
+
+zf t ≤ 1, ∀t ∈ T (S), (57) 
+
+X 
+
+> t∈T(S)
+
+zf t + wf = 1 , ∀f ∈ Fi, (58) 
+
+X 
+
+> f∈Fi
+
+X 
+
+> t∈T(S)
+
+dir( f )zf t = 0 , (59) 
+
+zf t , w f ∈ { 0, 1}. (60) Here dir( f ) = +1 for a departure and −1 for an arrival. Constraint (57) prevents two flights from occupying the same slot, constraint (58) assigns each candidate flight to at most one slot or cancels it, and constraint (59) enforces arrival–departure flow balance. In the implementation, the model is created with gurobipy.Model , both variable families use GRB.BINARY , and the objective uses 
+
+GRB.MAXIMIZE . After optimize() , the objective value ObjVal is recorded as vi(S) only when the solver returns GRB.OPTIMAL .Solving this model separately for every carrier–bundle pair produces one four-carrier, seven-bundle valuation profile. Repeating the construction under the sampled time-preference multipliers produces the fixed 100,000-profile valuation artifact used in the experiments; profiles 1–80,000 form the training set and profiles 80,001–100,000 form the held-out test set. The same configuration applies after filtering the source itineraries to DCA; the LGA variant was a later experiment and is not the source of the reported DCA data. The sensitivity analysis in Section 6.8 uses the checked-in parameter-regenerated valuation files. Eleven levels from 0.75 to 1.25 are evaluated for each parameter, with 100 independently regenerated profiles per level. In the cost experiment, the coefficient is set to cmile = 0 .019 s. In the time-preference experiment, the six calibrated bin means are multiplied by s before applying the generator’s independent ±5% relative jitter. Route, fare, capacity, load-factor, and bundle-optimization inputs are otherwise unchanged. 29 The fixed target-J = 0 .25 checkpoint is evaluated at every level. All scenarios use the minimum and maximum from the training valuation artifact rather than being normalized separately. The payment head’s normalized output is converted to dollars bidder by bidder: its implied fraction of allocated normalized value is applied to that bidder’s allocated dollar value and then summed. Allocation columns are matched to the corresponding slot sets before welfare and dollar payments are calculated because the valuation files and the product-based incident matrix enumerate the six pair bundles in opposite orders. Outcomes are indexed to the parameter-specific s = 1 mean. The shaded bands in Figure 7 are percentile intervals from 2,000 nonparametric bootstrap resamples; numerator and baseline profiles are resampled independently because each parameter level contains an independently regenerated Monte Carlo sample. Local elasticities use the centered s = 0 .95 and 
+
+s = 1 .05 evaluations.                              
+
+> Table 9: Recomputed one-at-a-time sensitivity results. Outcomes are indexed to the corresponding parameter-specific baseline mean. Local elasticities use the centered 0.95–1.05 evaluations; brackets give 95% bootstrap intervals. Parameter Outcome 75% level Baseline 125% level Local elasticity [95% interval] Operating cost Welfare 103.60 100.00 96.70 −0.132 [ −0.746 ,0.466]
+> Operating cost Revenue 103.23 100.00 97.16 −0.124 [ −1.038 ,0.827]
+> Time preference Welfare 75.11 100.00 124.60 0.975 [0 .400 ,1.569]
+> Time preference Revenue 80.90 100.00 120.97 0.806 [ −0.129 ,1.720]
+
+G.1.1 Slot Allocation at U.S. Coordinated Airports: Practice and Precedent 
+
+In the United States, a small number of high-demand airports—including John F. Kennedy Interna-tional (JFK), LaGuardia (LGA), and Ronald Reagan Washington National (DCA)—are designated as Level 3 coordinated airports under IATA’s Worldwide Slot Guidelines (WSG). Slot allocation at these airports is managed by the Federal Aviation Administration (FAA) through a hybrid system based on regulatory oversight and historical usage rights. 
+
+Historical Priority and the 80% Rule The cornerstone of current U.S. slot allocation is the “grandfather rights” system, whereby carriers retain priority to operate a slot in future seasons if they use it at least 80% of the time during the current season. This “use-it-or-lose-it” rule is intended to deter slot hoarding and promote efficient utilization of limited runway capacity. Slots that are underutilized below this threshold are returned to a common pool for reallocation. 
+
+Reallocation Mechanisms Slots may become available through several channels: voluntary sur-render, underutilization (per the 80% rule), or involuntary divestiture—particularly in the context of antitrust enforcement or airline mergers. For example, during the 2011 Delta–US Airways slot exchange, the DOT required the divestiture of 24 slot pairs at LGA and DCA to preserve market competitiveness. These divested slots were bundled and auctioned to eligible new entrants or limited incumbents, marking a rare instance of competitive slot auction in the U.S. When slots return to the pool, the FAA typically uses a randomized lottery to determine the order of selection by eligible carriers. This mechanism resembles a Random Serial Dictatorship (RSD): carriers sequentially select individual slots from the available pool without submitting bids or revealing valuations. These procedures are formalized in 14 CFR §93.225, which governs slot lotteries at constrained airports. Historically, slot lotteries have been employed under the FAA’s High Density Rule (HDR), particularly during the 1980s and early 2000s. For example, the FAA issued a Federal Register notice in 2003 clarifying the lottery process at DCA, including eligibility conditions for new entrants and limited incumbents (link). Additionally, the 2015 Slot Management and Transparency Rule reiterated the FAA’s use of randomized procedures to allocate new or temporarily available slots, often with priority given to new entrants (link). While auctions remain rare in U.S. slot allocation, these precedents illustrate that both randomized and market-based mechanisms are feasible within the current regulatory framework. Our case study builds on these insights by evaluating combinatorial allocation approaches under realistic, small-scale scenarios, such as divestiture or reallocation events involving limited bidders and bundles. 30 G.1.2 Comparison to Lottery and Serial Dictatorship Mechanisms 
+
+While our mechanism builds on a learned, data-driven allocation and payment rule, it is instructive to compare it with simpler mechanisms commonly used or considered in practice, such as pure lotteries and serial dictatorship. These mechanisms have intuitive appeal but lack important economic guarantees that our approach approximates. 
+
+Pure Lottery. In the stylized pure-lottery benchmark used in the main text, bidders receive equal allocation shares without regard to their valuations. This provides procedural symmetry but can be inefficient and yields no revenue. Because the benchmark solicits no reports, report-based incentive compatibility is vacuous; its equal shares should not be interpreted as equal utility. 
+
+Serial Dictatorship. In this mechanism, bidders are ordered (randomly or by priority), and each in turn selects from the remaining options. Serial dictatorship is strategy-proof under its standard model, in which each agent directly chooses its most preferred available alternative. An item-by-item adaptation is not equivalent when bidders have complementarities over slot bundles, because a sequence of individual picks need not represent preferences over complete bundles. The administrative FAA priority lottery is also not a direct-revelation auction and should not be assigned the same incentive properties without specifying its choice protocol. 
+
+Our Mechanism (Learned Auction). Our approach uses a neural mechanism that outputs a fractional allocation rule over structured bundles and an expected payment target. The allocation is resolved into a lottery using Section H, and realized payments use the conditional rule described there. The mechanism is trained for low empirical regret and to optimize a chosen revenue–welfare objective; these are approximate empirical properties rather than exact guarantees.                 
+
+> Mechanism Efficiency Incentive Compatible Fairness Revenue Support
+> Pure Lottery No (in general) Vacuous Procedural only No Serial Dictatorship No (in general) Standard model only Not guaranteed No (unless extended)
+> Our Mechanism Optimized Low empirical regret Soft target Yes Table 10: Comparison of mechanism properties.
+
+Interpretation. The learned mechanism can represent rich bundle preferences while optimizing revenue, welfare, and a soft fairness target. Its fractional output is not itself a deployable schedule. We therefore use the normalized discrete approximation and conditional proportional pricing in Section H. This implementation preserves feasibility and reported-value ex-post IR, but it can change expected outcomes and incentive properties; the resolved mechanism should consequently be evaluated on its own revenue, welfare, fairness, and regret metrics. 
+
+G.1.3 The 2011 Slot Auction 
+
+While slot auctions have been proposed repeatedly — notably by the FAA in 2008–2009 — such proposals have met resistance from incumbent airlines and legal challenges, and have not been implemented. An instance of an actual slot auction at U.S. airports occurred in 2011, as a result of a DOT-imposed condition on the Delta–US Airways slot exchange at LGA and DCA. To preserve competition, the DOT required the divestiture of: 16 slot pairs at LGA, and 8 slot pairs at DCA. These were auctioned off via a sealed-bid, one-round auction, with eligibility restricted to carriers holding less than 5% of the slots at the respective airport. The slots were sold in predefined bundles: Two bundles of 8 slot pairs at LGA, One bundle of 8 slot pairs at DCA. Winning bids were determined solely by price, and payments went directly to the divesting airlines. JetBlue and WestJet were the winning bidders. According to the GAO, JetBlue paid $32 million for LGA slots and $40 million for DCA slots, while WestJet paid $17.6 million for the second LGA bundle. The 2011 auction thus serves as a rare but valuable precedent. It confirms that sealed-bid, small-scale slot auctions are legally and operationally feasible under the right regulatory framework. This makes it a compelling test case for mechanism design approaches, particularly when applied to limited, high-value slot reallocations involving a small number of bidders and bundles. 31 H Greedy Discrete Approximation and Proportional Pricing 
+
+The neural mechanism produces a fractional allocation matrix Z ∈ [0 , 1] n×| K| satisfying the relaxed combinatorial feasibility constraints. In the airport slot-allocation setting, however, the implemented outcome must be a deterministic feasible schedule. This appendix describes the resolution procedure used to map the fractional allocation to a lottery over deterministic schedules, and the associated ex-post payment rule. A key distinction is important. In simple assignment problems, fractional feasibility can imply exact implementability as a lottery over deterministic assignments. In the combinatorial setting considered here, overlapping bundles can induce non-bihierarchical constraint structures, so fractional feasibility alone does not guarantee that Z ∈ conv( B), where B denotes the set of feasible deterministic schedules. Accordingly, the procedure below should be interpreted as a greedy discrete approximation rather than a guaranteed exact convex decomposition. 
+
+H.1 Greedy Discrete Approximation 
+
+Let B be the set of all feasible deterministic allocation matrices that satisfy the bidder-capacity and item-conflict constraints. Each D ∈ B is binary, with DiS = 1 if bidder i receives bundle S, and 
+
+DiS = 0 otherwise. We seek a sparse lottery over feasible schedules whose expected allocation approximates the fractional allocation Z.Finding the best sparse approximation over B is computationally difficult, so we use a greedy iterative extraction procedure inspired by Matching Pursuit [Mallat and Zhang, 1993]. The algorithm repeatedly selects the feasible deterministic schedule most aligned with the current residual and extracts the largest nonnegative weight that preserves residual nonnegativity. 1. Initialize. Set the residual matrix R0 = Z, the iteration counter t = 0 , and the extracted lottery support Λ = ∅.2. Iterative extraction. While ∥Rt∥1 > ϵ and t < T max :(a) Select a feasible schedule. Choose the feasible deterministic matrix with maximum inner product against the current residual: 
+
+Dt ∈ arg max 
+
+> D∈B
+
+⟨Rt, D ⟩.
+
+This step identifies the feasible schedule that explains the largest remaining mass in the fractional allocation. Feasibility is downward closed, so any selected pair with zero residual can be deleted without changing the objective or violating feasibility. We use this reduced maximizer; if it is empty, the procedure terminates. (b) Extract the maximum admissible weight. Let 
+
+Ωt = {(i, S ) : Dt,iS = 1 }.
+
+Set 
+
+γt = min 
+
+> (i,S )∈Ωt
+
+Rt,iS .
+
+This is the largest value such that Rt − γtDt ≥ 0 elementwise. If γt ≤ ϵ, terminate; this prevents a zero-weight selection from stalling the procedure. (c) Update the residual. Set 
+
+Rt+1 = Rt − γtDt,
+
+record the pair (Dt, γ t) in Λ, and increment t.3. Construct the discrete approximation. After T iterations, define 
+
+AT = 
+
+> T−1
+
+X
+
+> t=0
+
+γtDt, RT = Z − AT .
+
+The lottery support consists of the extracted feasible schedules {Dt}T −1 
+
+> t=0
+
+with extraction weights {γt}T −1 
+
+> t=0
+
+.32 The procedure guarantees residual nonnegativity and monotone residual reduction. Because γt is chosen as the minimum residual over the selected support, we have Rt+1 ≥ 0 elementwise. Moreover, 
+
+∥Rt+1 ∥1 = ∥Rt∥1 − γt∥Dt∥1 ≤ ∥ Rt∥1,
+
+with strict decrease whenever γt > 0 and Dt contains at least one assigned bidder-bundle pair. The extraction is exact as an implementation only if it exhausts the residual and its weights form a subprobability distribution (the null schedule receives any remaining mass). In general, including when the fractional point lies outside conv( B), the raw extraction gives 
+
+Z = AT + RT = 
+
+> T−1
+
+X
+
+> t=0
+
+γtDt + RT .
+
+The raw extraction weights need not sum to one. To obtain a valid lottery, define 
+
+cT = max 
+
+(
+
+1, 
+
+> T−1
+
+X
+
+> t=0
+
+γt
+
+)
+
+, πt = γt
+
+cT
+
+, π∅ = 1 − 
+
+> T−1
+
+X
+
+> t=0
+
+πt.
+
+The null schedule D∅ = 0 receives probability π∅. Hence the expected implemented allocation is 
+
+bZT = 
+
+> T−1
+
+X
+
+> t=0
+
+πtDt + π∅D∅ = AT
+
+cT
+
+.
+
+Let ET = Z − bZT . For any valuation profile satisfying 0 ≤ viS ≤ vmax , Hölder’s inequality gives 
+
+⟨v, Z ⟩ − ⟨ v, bZT ⟩ = |⟨ v, E T ⟩| ≤ vmax ∥ET ∥1.
+
+Thus RT measures the remaining mass after raw extraction, while ET measures the economic error of the normalized implementable lottery. When P 
+
+> t
+
+γt ≤ 1, normalization leaves the extracted weights unchanged and ET = RT .
+
+H.2 Empirical Decomposition Audit 
+
+We audit the preceding approximation on all 20,000 held-out airport profiles using an independently retrained seed-0 CAGraph checkpoint. The rerun uses the checked-in valuation file and airport configuration, reserves profiles 80,000–99,999 for evaluation, enumerates all 65 feasible schedules (including the null schedule) in the selection oracle, sets ϵ = 10 −10 , and permits at most 10,000 extraction iterations. This checkpoint is used only for the structural decomposition audit; the economic estimates in the main airport tables remain the authoritative reported results.                               
+
+> Metric Mean Median 95th pct. Maximum
+> P
+> tγt0.6883 0.6916 1.0000 1.0000 Support size 15.5 15.5 28 28
+> ∥ET∥13.81 ×10 −15 2.60 ×10 −15 9.18 ×10 −15 1.25 ×10 −14
+> vmax ∥ET∥1(dollars) 4.56 ×10 −93.11 ×10 −91.10 ×10 −81.50 ×10 −8
+> Table 11: Discrete-decomposition audit on 20,000 held-out airport profiles. The normalization factor was cT= 1
+> for every profile; hence ET=RTand the reported errors are at numerical precision.
+
+No profile had P 
+
+> t
+
+γt > 1, so normalization changed neither the extracted weights nor the expected allocation. The maximum absolute realized welfare difference |⟨ v, E T ⟩| was 1.34 × 10 −8 dollars, below its corresponding Hölder certificate. All extracted columns satisfied the bidder and item-capacity constraints. This audit establishes numerical implementability for the evaluated allocations, not universal implementability for arbitrary fractional points. It also does not constitute a post-resolution incentive audit, which would require aligned truthful and optimized-misreport outputs passed through the complete resolution and conditional-pricing pipeline. 33 H.3 Proportional Ex-Post Pricing 
+
+The payment network outputs an expected payment pi for each bidder. Charging pi as a non-refundable entrance fee would be inappropriate in a lottery implementation, because a bidder could lose the lottery and still be charged. This would violate ex-post individual rationality. We therefore use a conditional proportional pricing rule. Let bZT denote the expected allocation of the normalized lottery and let biS be bidder i’s reported value for bundle S. Define the expected reported value delivered to bidder i as bBi = X
+
+> S∈K
+
+bZT,iS biS .
+
+For bidders with bBi > 0, define the proportional charge rate 
+
+αi = min 
+
+
+
+1, pi
+
+bBi
+
+
+
+.
+
+For bidders with bBi = 0 , set αi = 0 .After a deterministic schedule is sampled, bidder i is charged only if it receives a bundle. If bidder i
+
+receives bundle S, its ex-post payment is 
+
+pexpost  
+
+> i
+
+(S) = αibiS .
+
+If bidder i receives no bundle, then 
+
+pexpost  
+
+> i
+
+(∅) = 0 .
+
+This rule guarantees ex-post individual rationality relative to the submitted values because αi ≤ 1, so a winning bidder never pays more than its reported value: 
+
+biS − pexpost  
+
+> i
+
+(S) = (1 − αi)biS ≥ 0.
+
+Losers pay zero. Under truthful reporting, this is also ex-post individual rationality with respect to true value. The rule is deployable because it uses reported bids rather than unobserved true valuations. When pi ≤ bBi, the expected ex-post payment exactly matches the network’s target payment: 
+
+E pexpost 
+
+> i
+
+ = X
+
+> S∈K
+
+bZT,iS αibiS = αi bBi = pi.
+
+When pi > bBi, the cap αi ≤ 1 binds, and expected revenue is limited by the bidder’s expected reported value. This case identifies a discrepancy between the payment target and the implementable ex-post lottery, and is included in the empirical discretization audit. The decomposition and conditional payment transformation change the outcome rule optimized during neural training. Consequently, a regret guarantee for the fractional mechanism does not automatically transfer to the resolved mechanism; post-resolution regret must be evaluated separately whenever incentive claims are made for the deployed lottery. 
+
+Numerical example. Consider a truthfully reporting airline with a 50% chance of winning a slot pair valued at $40 ,000 . Its expected realized value is 
+
+0.5 × $40 ,000 = $20 ,000 .
+
+If the payment network targets an expected payment of $10 ,000 , the proportional charge rate is 
+
+α = 10 ,000 20 ,000 = 0 .5.
+
+If the airline wins the slot pair, it pays 
+
+0.5 × $40 ,000 = $20 ,000 .
+
+If it loses, it pays $0 . The expected payment is therefore 
+
+0.5 × $20 ,000 + 0 .5 × $0 = $10 ,000 ,
+
+which recovers the target expected payment without charging any upfront entrance fee and while preserving ex-post individual rationality. 34 H.4 Optional Full-Assignment Variant 
+
+The normalized lottery above may assign positive probability π∅ to the null schedule. If an application requires a non-null schedule whenever at least one is available, one may condition on the event that the sampled schedule is non-null. The conditional probabilities are 
+
+π+ 
+
+> t
+
+= πt
+
+1 − π∅
+
+, t = 0 , . . . , T − 1,
+
+provided π∅ < 1. Every realized schedule remains feasible, and the proportional payment cap continues to give reported-value ex-post IR. However, conditioning changes the expected allocation and generally changes expected revenue, welfare, and regret. It therefore does not preserve the fractional mechanism or its incentive properties and must be reported and audited as a separate implementation variant. 
+
+# I Computational Complexity 
+
+Let n denote the number of bidders, m the number of items, and k = |K| the number of candidate bundles (equal to 2m − 1 when every nonempty bundle is enumerated). In the fully expressive combinatorial representation, each bidder can submit a value for each bundle, so the bid tensor contains O(nk ) entries. This exponential growth in k is the dominant scalability bottleneck of any fully enumerative combinatorial auction method, including ours. For CANet, the input valuation vector is flattened and passed through L fully connected layers of hidden dimension H. Ignoring batch size, the forward-pass complexity is 
+
+O(nkH + LH 2),
+
+where the first term corresponds to the input and output projections and the second term corresponds to the hidden layers. For CAFormer, the complexity depends on the number of tokens used to represent bidders, items, and bundles. With O(n + k) tokens and hidden dimension H, each self-attention layer has worst-case complexity 
+
+O(( n + k)2H + ( n + k)H2).
+
+Thus, CAFormer can be expressive but becomes increasingly expensive as the number of feasible bundles grows. For CAGraph, we construct a conflict graph whose nodes correspond to bidder-bundle pairs. Hence, the graph has 
+
+|V | = O(nk )
+
+nodes. Edges connect mutually incompatible allocations, including allocations involving overlapping bundles or the same bidder. A graph attention layer has complexity 
+
+O(|E|H),
+
+where |E| is the number of conflict edges. In the worst case, |E| = O(n2k2), but in practical slot-allocation instances the graph is substantially sparser because edges are induced only by actual bundle conflicts. Moreover, the airport application uses a filtered set of operationally valid bundles rather than all 2m − 1 possible bundles. The Capacity Normalization layer adds only polynomial overhead relative to the enumerated bundle set. Its operations consist primarily of normalization and masking over bidder-bundle and item-bundle tensors, which scale as 
+
+O(nk + mk ).
+
+Therefore, the constraint layer does not change the fundamental exponential dependence on m; rather, it ensures that the network output satisfies the combinatorial feasibility constraints by construction. For the Matching Pursuit-inspired discrete decomposition, let T denote the number of decomposition iterations and let B denote the set of deterministic feasible allocations considered by the oracle. At each iteration, the algorithm selects 
+
+D∗ = arg max 
+
+> D∈B
+
+⟨R, D ⟩,
+
+35 computes the largest feasible extraction weight γ, and updates the residual. If the selection step is solved by explicit enumeration over B, each iteration requires 
+
+O(|B| · nk )
+
+operations to evaluate the inner products, yielding total complexity 
+
+O(T |B| nk ).
+
+However, explicit enumeration is generally impractical because |B| can be exponential in the number of items and bidders. The selection step can be formulated as a weighted winner-determination prob-lem over the conflict graph, where node weights are the current residual entries. For the small airport instance, explicit enumeration of the feasible schedules is also tractable. In either implementation, the worst-case complexity remains exponential, as winner determination in combinatorial auctions is NP-hard, but the practical cost is controlled by the number of valid bundles retained after operational filtering. The residual update and extraction step are inexpensive relative to the selection oracle. Given 
+
+D∗, computing γ and updating R require O(nk ) operations. Therefore, the dominant cost of the decomposition is the repeated solution of the deterministic allocation oracle, not the residual update itself. In the airport-slot case study, this step is tractable because the number of feasible bundles is small after filtering, and the decomposition is applied only after the neural mechanism has been trained. Overall, the dominant computational bottlenecks are the exponential growth of the bundle set and, for discrete implementation, the repeated winner-determination oracle used in the Matching Pursuit decomposition. The neural feasibility layer itself adds only polynomial overhead in the number of enumerated bidder-bundle variables. The proposed framework is therefore most appropriate for targeted combinatorial allocation problems with a moderate number of valid bundles, such as regulatory slot divestitures, spectrum packages, or infrastructure-capacity assignments. 
+
+# J Empirical Regret Audit 
+
+The audit reports the best deviation found by the configured gradient-based misreport search on held-out profiles. It is a lower bound on true ex-post regret and should not be read as a proof of DSIC. The dollar column applies the same inverse normalization used to return airport valuations and payments to monetary units. Because the fairness term is implemented as a soft target, the labels below refer to target Jain indices rather than certified lower bounds. Revenue gains use the rounded $139,000 VCG benchmark reported in the main frontier table. 
+
+Table 12: Empirical regret audit for the revenue–welfare frontier. Revenue gains are measured relative to VCG. Mechanism Revenue gain vs. VCG ($) Normalized mean regret Dollar mean regret ($) Regret / revenue gain                          
+
+> λ= 0 11,204 0.0033037 19.6025 0.001750
+> λ= 0 .25 229,957 0.0000695 0.4121 0.000002
+> λ= 0 .5237,201 0.0000175 0.1040 0.000000
+> λ= 0 .75 237,870 0.0002827 1.6774 0.000007
+> λ= 1 252,409 0.0000000 0.0000 0.000000
+
+Table 13: Empirical regret audit for the welfare–fairness frontier. Revenue gains are measured relative to VCG. Mechanism Revenue gain vs. VCG ($) Normalized mean regret Dollar mean regret ($) Regret / revenue gain Target J = 0 .25 11,366 0.0093867 55.6966 0.004900 Target J = 0 .50 252,639 0.0014449 8.5734 0.000034 Target J = 0 .75 235,420 0.0011410 6.7703 0.000029 Target J = 0 .875 249,067 0.0001966 1.1665 0.000005 
+
+# K Scaling to Real-World Problems 
+
+To transition from stylized divestitures to national-scale airport auctions, we identify three architec-tural requirements for a production-ready system. 36 Table 14: Empirical regret audit for the revenue–fairness frontier. Revenue gains are measured relative to VCG. Mechanism Revenue gain vs. VCG ($) Normalized mean regret Dollar mean regret ($) Regret / revenue gain Target J = 0 .25 257,103 0.0000007 0.0041 0.000000 Target J = 0 .50 243,778 0.0000015 0.0088 0.000000 Target J = 0 .75 241,961 0.0023313 13.8328 0.000057 Target J = 0 .875 240,054 0.0000121 0.0720 0.000000 
+
+K.1 Non-Homogeneous Resource Capacity 
+
+In practice, airport slots are organized into temporal blocks B1, . . . , B K with varying throughput capacities Ck (e.g., lower capacity during noise-abatement or maintenance windows). We propose extending CAGraph by defining a resource-weighted conflict graph where edges represent the marginal consumption of a block’s total capacity. The allocation z must satisfy: 
+
+X
+
+> i∈N
+
+X
+
+> s∈S
+
+zi,s · ωs,k ≤ Ck, ∀k ∈ { 1, . . . , K } (61) where ωs,k ∈ { 0, 1} denotes if bundle s utilizes a slot in block k. This allows for arbitrary capacities (e.g., 2 slots in one block, 4 in another). Additionally, we suggest changing the standard Softmax that forces the sum of item to exact 1, to a normalization layer that caps the sum at Ck.
+
+K.2 Hierarchical Decomposition for N Bidders 
+
+As the number of bidders N and blocks K increase, the global winner determination problem faces combinatorial explosion. We propose a hierarchical structure: • Spectral Partitioning: Use graph clustering to decompose the global schedule into K
+
+nearly-independent sub-problems. • Parallel Neural Clearing: Deploy independent CAGraph instances to clear sub-blocks in parallel. The resulting runtime and approximation quality would require empirical evaluation; no linear-time or millisecond guarantee is claimed. • Global Coordination: A high-level transformer layer manages coupling constraints, such as ensuring a carrier’s arrival in an early block has a corresponding feasible departure in a subsequent block. 
+
+K.3 Scalable Candidate Generation 
+
+To handle high-dimensional bidder sets, future work could use a candidate-generation submodule. Such a layer would identify a reduced active set of bundles for each bidder and pass it to the neural mechanism, avoiding enumeration of the full power set. Because report-dependent candidate generation can alter allocation monotonicity and profitable deviations, incentive compatibility would need to be re-audited for the combined system rather than assumed to be preserved. 37

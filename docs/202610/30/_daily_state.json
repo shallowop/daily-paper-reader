@@ -1,0 +1,201 @@
+{
+  "date": "20261030",
+  "date_label": "",
+  "generated_at": "2026-10-30 23:39:59 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.33750v1",
+      "route": "202610/30/2610.33750v1-when-protection-hurts-a-cytokine-storm-theory-of-supply-chain-overreaction",
+      "title": "When Protection Hurts: A Cytokine Storm Theory of Supply Chain Overreaction",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "中断下供应链过度反应的决策理论模型",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.36350v1",
+      "route": "202610/30/2610.36350v1-hidden-convexity-in-multi-retailer-cold-chain-allocation-a-cholesky-spectral-second-order-cone-programming-approach",
+      "title": "Hidden Convexity in Multi-Retailer Cold-Chain Allocation: A Cholesky-Spectral Second-Order Cone Programming Approach",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "共享风险预算下的多零售商冷链产品分配优化",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.36980v1",
+      "route": "202610/30/2610.36980v1-autovend-benchmarking-llm-agents-on-long-horizon-autonomous-vending-operations",
+      "title": "AutoVend: Benchmarking LLM Agents on Long-Horizon Autonomous Vending Operations",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向长程库存、采购与补货规划的LLM智能体基准",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.30917v1",
+      "route": "202610/30/2610.30917v1-harnessing-language-models-as-optimization-modeling-agents",
+      "title": "Harnessing Language Models as Optimization Modeling Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "大模型将自然语言优化问题转化为求解器程序",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.31048v1",
+      "route": "202610/30/2610.31048v1-directing-to-diversify-multi-directional-search-for-automatic-heuristic-design",
+      "title": "Directing to Diversify: Multi-Directional Search for Automatic Heuristic Design",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "大模型驱动的组合优化启发式自动设计",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.31119v1",
+      "route": "202610/30/2610.31119v1-constraint-reasoning-and-large-language-models-join-forces-providing-contrastive-explanations-for-real-world-optimisation-based-applications",
+      "title": "Constraint Reasoning and Large Language Models Join Forces: Providing Contrastive Explanations for Real-World Optimisation-Based Applications",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "大模型结合约束推理为优化决策提供解释",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.31977v1",
+      "route": "202610/30/2610.31977v1-differentiable-combinatorial-auction-design-optimizing-revenue-welfare-fairness-frontiers-with-graph-attention-networks",
+      "title": "Differentiable Combinatorial Auction Design: Optimizing Revenue-Welfare-Fairness Frontiers With Graph Attention Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "图注意力网络用于组合拍卖资源分配设计",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.33515v1",
+      "route": "202610/30/2610.33515v1-collective-collaboration-of-recursive-autonomous-agents",
+      "title": "Collective Collaboration of Recursive Autonomous Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "递归自主智能体协同多层级生产任务",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.33930v1",
+      "route": "202610/30/2610.33930v1-energnn-learning-optimization-compatible-energy-functions-for-exact-constrained-combinatorial-inference",
+      "title": "EnerGNN: Learning Optimization-Compatible Energy Functions for Exact Constrained Combinatorial Inference",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "图神经网络编码器结合优化兼容能量读出用于约束组合推断",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.34467v1",
+      "route": "202610/30/2610.34467v1-dynaflow-learning-free-form-multi-agent-orchestration",
+      "title": "DynaFlow: Learning Free-Form Multi-Agent Orchestration",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "自由形式多智能体编排与协同框架",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.34797v1",
+      "route": "202610/30/2610.34797v1-timeworld-towards-action-conditioned-multimodal-world-models-for-time-series-forecasting",
+      "title": "TimeWorld: Towards Action-Conditioned Multimodal World Models for Time Series Forecasting",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "以文本干预为条件的动作条件化多模态世界模型用于决策支持预测",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    },
+    {
+      "paper_id": "2610.37242v1",
+      "route": "202610/30/2610.37242v1-grounding-llm-agents-in-business-processes-process-aware-knowledge-graphs-for-reliable-multi-step-service-invocation",
+      "title": "Grounding LLM Agents in Business Processes: Process-Aware Knowledge Graphs for Reliable Multi-Step Service Invocation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "基于流程感知知识图谱的LLM智能体",
+      "first_seen_at": "2026-10-30 23:39:59 UTC",
+      "updated_at": "2026-10-30 23:39:59 UTC"
+    }
+  ]
+}

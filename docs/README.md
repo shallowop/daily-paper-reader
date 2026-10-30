@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-01 ~ 2026-10-30</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-30</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 11 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 12 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
-    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>2 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>1</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-30 12:36:55 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-30 23:39:59 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>本期速读11篇论文，重点聚焦供应链风险与优化决策。最值得看的是两篇9.0分方向：AutoMARS用多智能体大模型做可扩展供应链风险评估，另一篇讨论关税与地缘政治不确定性下的全球供应链重构。建议普通读者先读这两篇的摘要与结论，再按需了解8.0分的Benders分解加速方法。</p>
+<p>今天共筛出 12 篇论文，精读 1 篇、速读 11 篇，核心关注供应链过度反应、冷链优化建模与 LLM 智能体落地三类议题。</p>
+<p>最值得看的是 9.0 分的《When Protection Hurts》，它提出供应链过度反应背后的“细胞因子风暴”理论，并用这一理论解释保护性举措反而可能加剧风险；其次是 Cholesky-谱二阶锥方法在冷链分配中的隐藏凸性，以及 AutoVend 对 LLM 长程自主运营的评测。</p>
+<p>普通读者可先读精读论文的“机制—后果”链条，再挑一篇自己业务相关的速读摘要对照，重点留意模型假设与真实场景之间的差距。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +80,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">0 篇</strong>
+    <strong class="dpr-home-dashboard-count">1 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="When Protection Hurts: A Cytokine Storm Theory of Supply Chain Overreaction">When Protection Hurts: A Cytokine Storm Theory of Supply Chain Overreaction</span></li></ul>
   </div>
-
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>1</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -94,7 +96,7 @@
     <strong class="dpr-home-dashboard-count">11 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="AutoMARS: Automatic and Scalable Multi-Agent Large Language Model Framework for Supply Chain Risk Assessment">AutoMARS: Automatic and Scalable Multi-Agent Large Language Model Framework for Supply Chain Risk Assessment</span></li><li><span class="dpr-home-dashboard-paper-title" title="Robust global supply chain reconfiguration under tariff and geopolitical uncertainty">Robust global supply chain reconfiguration under tariff and geopolitical uncertainty</span></li><li><span class="dpr-home-dashboard-paper-title" title="Accelerated Benders decomposition for bi-objective mixed integer programming">Accelerated Benders decomposition for bi-objective mixed integer programming</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Hidden Convexity in Multi-Retailer Cold-Chain Allocation: A Cholesky-Spectral Second-Order Cone Programming Approach">Hidden Convexity in Multi-Retailer Cold-Chain Allocation: A Cholesky-Spectral Second-Order Cone Programming Approach</span></li><li><span class="dpr-home-dashboard-paper-title" title="AutoVend: Benchmarking LLM Agents on Long-Horizon Autonomous Vending Operations">AutoVend: Benchmarking LLM Agents on Long-Horizon Autonomous Vending Operations</span></li><li><span class="dpr-home-dashboard-paper-title" title="Harnessing Language Models as Optimization Modeling Agents">Harnessing Language Models as Optimization Modeling Agents</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>11</strong></span></div>
 </section>
