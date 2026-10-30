@@ -1,0 +1,2182 @@
+Robust global supply chain reconfiguration under
+tariff and geopolitical uncertainty
+Ashish Chandra1*
+1*College of Business, Illinois State University, Normal, 61761, IL, USA.
+Corresponding author(s). E-mail(s): achand6@ilstu.edu;
+Abstract
+Global supply chains are increasingly exposed to trade policy shocks and phys-
+ical disruptions arising from common geopolitical events. We develop a robust
+optimization framework with two decision stages for strategic supply chain recon-
+figuration. Supplier qualification and transportation arc activation decisions are
+made before uncertainty is realized, while operational flows adapt afterward.
+Geopolitical uncertainty is represented through country level shocks that can
+jointly trigger tariff escalation, policy induced restrictions on cross border capac-
+ity, facility disruptions, and physical transportation failures. The resulting min
+max min problem is reformulated by dualizing the operational recourse problem,
+yielding a nonconvex mixed integer bilinear adversarial problem solved within
+a column and constraint generation procedure. Comparison with complete enu-
+meration verifies the implementation on small instances, while experiments on
+60 synthetic supply chain networks of varying sizes assess computational perfor-
+mance. The results show that omitting geopolitical transmission channels during
+strategic design can lead to substantial deterioration in cost and service under full
+geopolitical stress. Broader protection is achieved primarily through changes in
+transportation network configuration rather than increased supplier qualification.
+Robust performance also depends on the severity and composition of geopolitical
+consequences, with restrictions on cross border capacity exerting a stronger effect
+than comparable proportional changes in tariff severity over the tested ranges. A
+geographically grounded case analysis further shows that the value of individual
+uncertainty channels depends on network structure and geographic exposure.
+Keywords: robust optimization; supply chain resilience; geopolitical risk; trade policy
+uncertainty; network reconfiguration; column and constraint generation
+1
+arXiv:2610.36977v1  [math.OC]  27 Oct 2026
+
+
+1 Introduction
+Global supply chains are increasingly exposed to shifts in international trade pol-
+icy that can alter sourcing costs, manufacturing footprints, transportation routes,
+and market access. Tariff escalation, retaliatory measures, sanctions, export controls,
+and border restrictions can require firms to reconsider strategic sourcing and logistics
+decisions made under substantially different trade conditions. At the same time, the
+geopolitical events underlying such policy changes may also disrupt facilities or trans-
+portation connections. Consequently, strategic supply chain reconfiguration requires
+consideration not only of changes in the cost of cross border trade, but also of the mul-
+tiple operational consequences through which the same geopolitical event may affect
+the network.
+Supply chain network design under uncertainty has received extensive attention
+in the operations research literature. Existing studies employ stochastic, robust, and
+related optimization approaches to account for uncertain demand, supply, capacity,
+and disruption risk [1, 2]. Robust optimization has also been applied to integrated
+network configuration and operational decisions, including facility location, inventory
+management, and transportation routing [3, 4]. Within the resilience literature, facility
+failures, supply and demand interruptions, and investments in protection or redun-
+dancy have been incorporated into strategic network design models [5–7]. Lotfi et
+al. [8] develop a bilevel supply chain network design model incorporating risk, robust-
+ness, and resilience strategies. Yildiz et al. [9] examine the tradeoff between network
+cost and reliability, while Liu et al. [10] investigate supply chain resilience strategies
+under budget constraints. More recently, Yildiz et al. [11] examine the efficiency of
+combining multiple risk mitigation strategies under complex disruption patterns. Dol-
+gui et al. [12] emphasize the role of supply chain stress testing in assessing resilience
+and viability under disruptions. Together, these studies highlight the importance of
+network configuration, operational flexibility, and systematic evaluation of resilience
+strategies under adverse conditions.
+A related literature examines international sourcing decisions and the effects of
+trade policy interventions on global supply chains. Kandil et al. [13] review analytical
+models for sourcing and location decisions in the context of globalization and changing
+international trade conditions. Dong and Kouvelis [14] discuss the implications of tar-
+iffs for global supply chain network configuration, while Grossman et al. [15] examine
+how unexpected tariffs affect supplier relationships and sourcing decisions. Nagurney
+et al. [16] analyze tariff rate quotas in competitive global supply chain networks, while
+Feng et al. [17] investigate the effects of trade policies on supply chain network equilib-
+rium. Nagurney and Samadi [18] extend the equilibrium perspective by incorporating
+ad valorem tariffs and labor constraints.
+Recent research also emphasizes the broader consequences of tariff uncertainty and
+geopolitical disruptions. Ivanov and Dolgui [19] discuss the ripple effects and deep
+uncertainty associated with tariff shocks, while Ivanov [20] develops a decision support
+framework for responding to tariff induced uncertainty and disruptions. Cruz [21]
+examines tariff uncertainty and risk aversion in a multiperiod supply chain equilibrium
+model. Particularly related to the present study, Ahmadi Digehsara et al. [22] develop
+a robust optimization framework with two decision stages for geopolitical disruptions
+2
+
+
+in which strategic alliances influence exposure to tariff increases and quota based trade
+restrictions.
+These streams provide sophisticated treatments of physical disruption risk and
+trade policy interventions, but an important modeling issue arises when different con-
+sequences originate from a common geopolitical event. Changes in trade costs or
+capacity and disruptions to facilities or transportation need not constitute independent
+sources of uncertainty. They may instead represent alternative or simultaneous conse-
+quences of the same country level shock. Treating these consequences as independent
+can admit combinations that do not reflect their geographic origin, whereas represent-
+ing only one consequence channel can omit other ways in which the same geopolitical
+event affects the network. This motivates an uncertainty architecture that separates
+the geographic origin of geopolitical uncertainty from its consequences for the supply
+chain and explicitly controls which combinations of consequences may occur jointly.
+To address this issue, we develop a robust optimization model with two decision
+stages for strategic global supply chain reconfiguration under geopolitical uncertainty
+with multiple consequence channels. Before uncertainty is realized, the firm qualifies
+suppliers and activates transportation arcs, thereby determining the sourcing and rout-
+ing alternatives available to the network. After the geopolitical realization is observed,
+operational flows adapt over the resulting network. Country level shocks determine
+the geographic exposure of network components, while separate consequence chan-
+nels represent their effects on trade conditions, facility availability, and transportation
+connectivity. Budgets for individual channels regulate the extent of each type of
+consequence, while a joint budget controls their simultaneous occurrence.
+The paper makes three main contributions. First, we develop an uncertainty archi-
+tecture in which geopolitical shocks originate at the country level and may propagate
+through multiple trade policy and physical disruption channels. Restricted versions of
+the uncertainty set are obtained by selectively excluding consequence channels. This
+common structure allows us to compare strategic designs that consider only tariff esca-
+lation, tariff escalation together with restrictions on cross border capacity, or physical
+disruptions to facilities and transportation with designs that consider all four conse-
+quence channels. It therefore provides a systematic basis for assessing the implications
+of omitting particular transmission channels from strategic network design. Second, we
+integrate supplier qualification and transportation arc activation with adaptive oper-
+ational recourse in a unified robust model for supply chain reconfiguration. Supplier
+qualification creates alternative sourcing options, while transportation arc activation
+determines the routing alternatives available after uncertainty is realized. The model
+therefore captures two complementary mechanisms for strategic resilience and their
+interaction with adaptive operational decisions.
+Third, we develop a column and constraint generation solution approach for the
+resulting robust optimization problem and conduct a systematic computational evalu-
+ation of the proposed framework. Comparison with complete enumeration verifies the
+implementation on small instances. We then compare strategic configurations devel-
+oped under different uncertainty assumptions by exposing each configuration to the
+same full range of geopolitical consequences. This analysis quantifies the implications
+3
+
+
+of omitting particular transmission channels during strategic design. Additional exper-
+iments examine how the results vary with the structure and severity of geopolitical
+uncertainty and with the geographic characteristics of the network.
+The remainder of the paper is organized as follows. Section 2 describes the deci-
+sion setting and develops the structure of geopolitical uncertainty. Section 3 presents
+the robust optimization model and defines the restricted uncertainty environments.
+Section 4 develops the reformulation and solution procedure. Section 5 presents the
+computational study and discusses the resulting insights. Section 6 concludes the
+paper.
+2 Problem setting and geopolitical uncertainty
+We consider a firm that strategically configures a global supply chain in the presence
+of geopolitical uncertainty. The supply chain consists of four echelons: suppliers, man-
+ufacturing plants, warehouses, and retailers located across multiple countries. Material
+flows sequentially from suppliers to plants, from plants to warehouses, and from ware-
+houses to retailers. Because facilities and transportation connections span national
+boundaries, the network is exposed to changes in trade conditions as well as physical
+disruptions associated with geopolitical events.
+The firm selects its strategic network configuration before geopolitical uncertainty
+is realized, incurring costs for supplier qualification and transportation arc activa-
+tion. Once geopolitical conditions are observed, material flows are adjusted within the
+available network capacities. Demand that cannot be served because of capacity lim-
+itations, trade restrictions, or physical disruptions is represented as unmet demand
+and incurs a penalty cost. The objective is to determine a strategic configuration that
+minimizes the sum of the initial reconfiguration cost and the worst case operating cost
+under admissible geopolitical realizations.
+The defining feature of the uncertainty structure is the distinction between the
+geographic origin of a geopolitical event and its consequences for the supply chain. A
+country level shock represents an adverse geopolitical event, such as a trade dispute,
+economic sanction, political instability, or regional conflict, associated with a particular
+country. Such a shock creates exposure for facilities located in that country and for
+transportation arcs connected to it. It does not require every exposed component
+to experience an adverse consequence. Instead, the country shock establishes which
+network components are eligible to be affected, while separate consequence variables
+and uncertainty budgets determine which adverse effects are realized.
+Four consequence channels are considered. The trade cost channel represents tariff
+escalation on international transportation arcs. The trade capacity channel represents
+reductions in usable international transportation capacity resulting from measures
+such as quotas, sanctions, export controls, or border restrictions. The facility channel
+represents disruptions to suppliers, manufacturing plants, and warehouses. The trans-
+portation channel represents physical failures of transportation arcs. These channels
+distinguish changes in the economic and regulatory conditions of international trade
+from losses in the physical availability of facilities and transportation connections.
+4
+
+
+Dependence among these consequences arises from their common geographic expo-
+sure. A facility consequence can occur only when the country hosting that facility
+is shocked, while a consequence affecting a transportation arc can occur only when
+at least one of its endpoint countries is shocked. Budgets for individual consequence
+channels limit the extent of each type of disruption or trade intervention. A joint
+budget additionally limits the composition of consequences that may occur simulta-
+neously across channels. The resulting construction retains the flexibility of budgeted
+robust optimization while preventing consequences from being assigned to network
+components that have no exposure to a selected country shock.
+First stage strategic network configuration
+Supplier qualification and transportation-arc activation
+Country-level geopolitical shocks
+Trade disputes, sanctions, political instability, and regional conflict
+Multi-channel geopolitical consequences
+Trade-cost
+channel
+Tariff escalation
+Trade-capacity
+channel
+Quotas, sanctions,
+export controls, and
+border restrictions
+Facility
+channel
+Supplier, plant,
+and warehouse
+disruptions
+Transportation
+channel
+Physical
+transportation-
+arc failures
+Second-stage adaptive operations
+Sourcing, production, transporta-
+tion, distribution, and unmet demand
+Fig. 1 Decision sequence & propagation of geopolitical uncertainty in supply chain reconfiguration.
+Figure 1 summarizes the decision sequence and the propagation of geopolitical
+uncertainty. The firm first selects its strategic network configuration. An admissible
+geopolitical realization then determines the affected countries and the consequences
+that occur across the four channels, subject to the geographic coupling conditions and
+uncertainty budgets. After observing the realization, the firm adapts its operational
+flows over the resulting network. Section 3 formalizes this decision structure and the
+associated uncertainty set.
+3 Robust optimization model
+This section formalizes the decision framework introduced in Section 2. We first
+define the network, model parameters, and decision variables. We then formulate
+5
+
+
+the geopolitical uncertainty set and the operational recourse problem before present-
+ing the complete robust optimization model. Finally, we define restricted uncertainty
+environments that isolate selected consequence channels.
+3.1 Network structure, parameters, and decisions
+The supply chain is represented by a directed network G = (N, E) with four echelons.
+The node set is N = S∪P ∪W ∪R, where S, P, W, and R denote the sets of suppliers,
+manufacturing plants, warehouses, and retailers, respectively. Material flows between
+adjacent echelons, so E = ESP ∪EP W ∪EW R, where ESP ⊆S×P, EP W ⊆P ×W, and
+EW R ⊆W × R contain the arcs connecting suppliers to plants, plants to warehouses,
+and warehouses to retailers, respectively. Let C denote the set of countries represented
+in the network, and let κ(i) ∈C identify the country in which node i ∈N is located.
+Transportation arcs are classified according to the countries of their endpoints:
+EI = {(i, j) ∈E : κ(i)̸ = κ(j)},
+ED = {(i, j) ∈E : κ(i) = κ(j)} = E \ EI.
+(1)
+The sets EI and ED contain the international and domestic transportation arcs,
+respectively. Tariff escalation and restrictions on usable cross border capacity apply
+only to arcs in EI, whereas physical transportation disruptions may affect arcs in
+either set. Supplier s ∈S, manufacturing plant p ∈P, and warehouse w ∈W have
+nominal capacities Us, Up, and Uw, respectively. Each transportation arc (i, j) ∈E
+has nominal capacity uij and unit operating cost cij, excluding tariff payments. Each
+retailer r ∈R has demand Dr, and each unit of unmet demand at retailer r incurs
+penalty cost πr. For each international arc (i, j) ∈EI, let τ ij denote the tariff rate
+under normal trade conditions and let τ ij denote the elevated tariff rate under tariff
+escalation. Both are ad valorem rates expressed as proportions of the customs value
+of the goods shipped. Define the tariff increment as
+∆τij = τ ij −τ ij,
+(i, j) ∈EI.
+(2)
+Let Vij denote the customs value per unit shipped on international arc (i, j) ∈EI.
+The tariff payment per unit shipped on an international arc is therefore the realized
+tariff rate multiplied by Vij. Restrictions on usable international transportation capac-
+ity are parameterized by δij ∈[0, 1] for (i, j) ∈EI, where δij denotes the fraction of
+nominal capacity lost when the corresponding trade capacity restriction occurs. Thus,
+δij = 0 represents no capacity loss, δij = 1 represents complete loss of usable capac-
+ity through this channel, and values strictly between zero and one represent partial
+capacity reductions. Finally, Fs denotes the cost of qualifying supplier s ∈S, and Kij
+denotes the cost of activating transportation arc (i, j) ∈E. The principal sets and
+parameters are summarized in Table 1.
+The strategic network configuration is selected before geopolitical uncertainty is
+realized. For each supplier s ∈S, let ys ∈{0, 1} equal one if supplier s is qualified and
+zero otherwise. For each transportation arc (i, j) ∈E, let vij ∈{0, 1} equal one if the
+6
+
+
+Table 1 Principal sets and model parameters.
+Notation
+Description
+Sets and indices:
+S, P, W, R
+Sets of suppliers, plants, warehouses, and retailers, respectively
+C
+Set of countries represented in the supply chain
+N
+Set of supply chain nodes, N = S ∪P ∪W ∪R
+ESP , EP W , EW R
+Sets of arcs connecting S →P, P →W, and W →R respectively
+E
+Set of all transportation arcs, E = ESP ∪EP W ∪EW R
+EI, ED
+Sets of international & domestic transportation arcs, respectively
+κ(i)
+Country in which node i ∈N is located
+Network and demand parameters:
+Us, Up, Uw
+Nominal capacities of s ∈S, p ∈P, and w ∈W, respectively
+uij
+Nominal capacity of transportation arc (i, j) ∈E
+cij
+Unit operating cost on arc (i, j) ∈E, excluding tariff payments
+Dr
+Demand at retailer r ∈R
+πr
+Penalty cost per unit of unmet demand at retailer r ∈R
+Trade policy parameters:
+τij, τij
+Baseline and elevated tariff rates on international arc (i, j) ∈EI
+∆τij
+Tariff-rate increment, ∆τij = τij −τij
+Vij
+Customs value per unit shipped on international arc (i, j) ∈EI
+δij
+Fraction of nominal capacity lost under a trade capacity restric-
+tion on international arc (i, j) ∈EI
+Strategic cost parameters:
+Fs
+Cost of qualifying supplier s ∈S
+Kij
+Cost of activating transportation arc (i, j) ∈E
+All capacities, demands, operating costs, qualification costs, activation costs, and unmet demand
+penalties are assumed to be nonnegative. Tariff rates and customs values are also nonnegative,
+with τ ij ≥τ ij for every (i, j) ∈EI.
+arc is activated and zero otherwise. Define the feasible set of strategic decisions as
+Y =
+
+
+(y, v) :
+ys ∈{0, 1},
+s ∈S,
+vij ∈{0, 1},
+(i, j) ∈E,
+vsp ≤ys,
+(s, p) ∈ESP
+
+
+,
+(3)
+where vsp ≤ys ensures that an arc connecting supplier s to plant p can be acti-
+vated only when supplier s is qualified. Thus, (y, v) ∈Y determines the suppliers and
+transportation arcs available for subsequent operations. The corresponding strategic
+reconfiguration cost is
+CR(y, v) =
+X
+s∈S
+Fsys +
+X
+(i,j)∈E
+Kijvij.
+(4)
+7
+
+
+After geopolitical uncertainty is realized, operational flows adapt to the resulting
+facility availability, transportation availability, and trade conditions. For each arc
+(i, j) ∈E, let xij ≥0 denote the quantity shipped on that arc after the uncertainty
+realization is observed. For each retailer r ∈R, let ℓr ≥0 denote unmet demand. The
+variables (y, v) are therefore strategic decisions made before uncertainty is observed,
+whereas (x, ℓ) are adaptive operational decisions determined after the geopolitical
+realization. The uncertainty variables governing that realization are defined next.
+3.2 Multi-channel geopolitical uncertainty set
+The multi-channel geopolitical uncertainty described in Section 2 is formalized through
+a country-aware uncertainty set. For each country c ∈C, define the binary country-
+shock variable gc ∈{0, 1}, such that gc = 1, if country c is affected by a geopolitical
+shock and zero otherwise. A geopolitical shock represents an adverse country-level
+event capable of altering trade conditions or disrupting supply chain operations asso-
+ciated with that country. The set of simultaneously affected countries is restricted
+by
+X
+c∈C
+gc ≤ΓG,
+(5)
+where ΓG denotes the maximum number of countries that may be affected in an
+admissible uncertainty realization. The consequences of the country-level shocks are
+represented by six families of binary uncertainty variables. For suppliers, manufac-
+turing plants, and warehouses, respectively, we define the binary facility-disruption
+variables as:
+as =
+(
+1,
+if s disrupts,
+0,
+otherwise,
+bp =
+(
+1,
+if p disrupts,
+0,
+otherwise,
+dw =
+(
+1,
+if w disrupts,
+0,
+otherwise,
+(6)
+for s ∈S, p ∈P, and w ∈W. For transportation and trade-policy consequences,
+let zij ∈{0, 1}, (i, j) ∈E, denote the physical-disruption indicator, with zij = 1 if
+transportation arc (i, j) is physically unavailable and zij = 0 otherwise. For each inter-
+national arc (i, j) ∈EI, let qij, hij ∈{0, 1}. The variable qij identifies the applicable
+tariff regime, with qij = 0 corresponding to the baseline tariff rate τ ij and qij = 1 to
+the elevated tariff rate τ ij. The variable hij indicates whether a policy-induced cross-
+border capacity restriction is active, with hij = 1 when the restriction applies and
+hij = 0 otherwise. The variables zij and hij represent distinct disruption mechanisms.
+While zij = 1 renders transportation arc (i, j) physically unavailable, hij = 1 acti-
+vates the fractional cross-border capacity reduction δij defined in Section 3.1. Thus,
+hij may reduce the usable capacity of an international arc without physically disabling
+the underlying transportation connection.
+The network-level consequences are linked to the country-shock variables through
+the location mapping κ(·) defined in Section 3.1. Facility disruptions are restricted by
+as ≤gκ(s) ∀s ∈S;
+bp ≤gκ(p) ∀p ∈P;
+dw ≤gκ(w) ∀w ∈W,
+(7)
+8
+
+
+while physical transportation failures and trade-policy consequences satisfy
+zij ≤gκ(i) + gκ(j),
+(i, j) ∈E,
+(8)
+qij ≤gκ(i) + gκ(j),
+(i, j) ∈EI,
+(9)
+hij ≤gκ(i) + gκ(j),
+(i, j) ∈EI.
+(10)
+Constraint (7) models the geographical dependence of facility disruptions by per-
+mitting a supplier, plant, or warehouse to be disrupted only when its host country
+experiences a geopolitical shock. Constraint (8) extends this dependence to the trans-
+portation network: physical failure of arc (i, j) is admissible only when at least one
+of its endpoint countries is affected. Constraints (9) and (10) impose the correspond-
+ing geographical conditions on the two trade-policy channels, so that tariff escalation
+or a policy-induced capacity restriction on an international arc can occur only when
+its origin or destination country is affected. These implications are intentionally one-
+directional. In particular, gc = 1 identifies the facilities and arcs exposed to a shock in
+country c but does not require every exposed component to experience an adverse con-
+sequence. The formulation therefore permits heterogeneous network-level consequences
+conditional on the same country-level shock realization. Different consequence chan-
+nels may also affect the same international transportation arc simultaneously, provided
+that the geographic coupling constraints and uncertainty budgets are satisfied. The
+extent of the admissible consequences is further controlled through channel-specific
+uncertainty budgets. Facility and physical transportation disruptions satisfy
+X
+s∈S
+as ≤ΓS,
+X
+p∈P
+bp ≤ΓP ,
+X
+w∈W
+dw ≤ΓW ,
+(11)
+X
+(s,p)∈ESP
+zsp ≤ΓSP ,
+X
+(p,w)∈EP W
+zpw ≤ΓP W ,
+X
+(w,r)∈EW R
+zwr ≤ΓW R,
+(12)
+and the trade-policy channels satisfy
+X
+(i,j)∈EI
+qij ≤ΓT ,
+X
+(i,j)∈EI
+hij ≤ΓH.
+(13)
+Constraint (11) bounds the numbers of simultaneously disrupted suppliers, plants,
+and warehouses by ΓS, ΓP , and ΓW , respectively. Constraint (12) limits physical
+transportation failures separately within the supplier–plant, plant–warehouse, and
+warehouse–retailer echelons through ΓSP , ΓP W , and ΓW R, respectively. This echelon-
+specific structure allows the uncertainty set to represent different levels of physical
+disruption exposure across the three transportation layers. Constraint (13) bounds
+the numbers of international arcs simultaneously subject to tariff escalation and
+policy-induced capacity restrictions by ΓT and ΓH respectively.
+The preceding constraints regulate the extent of each consequence type separately.
+To additionally limit their simultaneous occurrence across channels, we impose the
+9
+
+
+aggregate uncertainty budget:
+ωF
+X
+s∈S
+as+
+X
+p∈P
+bp+
+X
+w∈W
+dw +
+X
+(i,j)∈E
+zij
+
++ωT
+X
+(i,j)∈EI
+qij +ωH
+X
+(i,j)∈EI
+hij ≤ΓJ. (14)
+The parameters ωF , ωT , and ωH specify the amount of the aggregate uncertainty bud-
+get consumed by a physical disruption, tariff escalation, and trade capacity restriction,
+respectively. Constraint (14) therefore limits the combinations of adverse consequences
+that may occur simultaneously across the different channels. Let ξ = (g, a, b, d, z, q, h)
+denote a complete uncertainty realization. The full country-aware multi-channel
+uncertainty set is obtained as:
+UF =
+(
+ξ : gc, as, bp, dw, zij, qij, hij ∈{0, 1},
+(5), (7) −(14) are satisfied
+)
+,
+(15)
+where c ∈C, s ∈S, p ∈P, w ∈W, and (i, j) ∈E for zij, while (i, j) ∈EI for qij and
+hij. The uncertainty set (15) distinguishes the geographic origin of geopolitical uncer-
+tainty, represented by g, from its consequences for the supply chain, represented by
+(a, b, d, z, q, h). For a fixed realization ξ ∈UF , the corresponding operational recourse
+problem is formulated in Section 3.3.
+3.3 Operational recourse model
+For a given uncertainty realization ξ ∈UF , we define the total second-stage operating
+cost associated with recourse decisions (x, ℓ) as:
+CO(x, ℓ; ξ) =
+X
+(i,j)∈E
+cijxij +
+X
+(i,j)∈EI
+ τ ij + ∆τijqij
+
+Vijxij +
+X
+r∈R
+πrℓr.
+(16)
+For fixed first-stage decisions (y, v) and an uncertainty realization ξ ∈UF , the firm
+determines the recourse decisions (x, ℓ) that minimize (16) subject to the realized
+facility, transportation, and trade-policy conditions. The resulting operational recourse
+problem is
+Q(y, v, ξ) = min
+x,ℓ
+CO(x, ℓ; ξ)
+(17)
+s.t.
+X
+p:(s,p)∈ESP
+xsp ≤Usys(1 −as),
+s ∈S,
+(18)
+X
+s:(s,p)∈ESP
+xsp =
+X
+w:(p,w)∈EP W
+xpw,
+p ∈P,
+(19)
+X
+w:(p,w)∈EP W
+xpw ≤Up(1 −bp),
+p ∈P,
+(20)
+X
+p:(p,w)∈EP W
+xpw =
+X
+r:(w,r)∈EW R
+xwr,
+w ∈W,
+(21)
+10
+
+
+X
+r:(w,r)∈EW R
+xwr ≤Uw(1 −dw),
+w ∈W,
+(22)
+X
+w:(w,r)∈EW R
+xwr + ℓr = Dr,
+r ∈R,
+(23)
+xij ≤uijvij(1 −zij),
+(i, j) ∈E,
+(24)
+xij ≤uijvij (1 −δijhij) ,
+(i, j) ∈EI,
+(25)
+xij ≥0,
+(i, j) ∈E,
+(26)
+ℓr ≥0,
+r ∈R.
+(27)
+The objective function in (17) consists of three cost components. The first term,
+P
+(i,j)∈E cijxij, is the operating cost associated with shipments over the transporta-
+tion network, where cij is the unit operating cost on arc (i, j). The second term,
+P
+(i,j)∈EI
+ τ ij + ∆τijqij
+
+Vijxij, is the tariff cost incurred on international shipments.
+For each (i, j) ∈EI, the realized tariff rate is τ ij + ∆τijqij, which, by Equation (2),
+equals the baseline rate τ ij when qij = 0 and the elevated rate τ ij when qij = 1. Thus,
+ τ ij + ∆τijqij
+
+Vij represents the tariff payment per unit shipped on international arc
+(i, j), and multiplication by xij yields the total tariff payment associated with ship-
+ments on that arc. The third term, P
+r∈R πrℓr, is the shortage-penalty cost, where πr
+is the unit penalty applied to unmet demand ℓr at retailer r. Accordingly, Q(y, v, ξ)
+minimizes the total second-stage cost of operating the network under realization ξ.
+Constraint (18) limits the total outbound shipment from supplier s to its realized
+available capacity. The product ys(1 −as) captures the joint effect of the first-stage
+qualification decision and the realized disruption state: positive supply is possible only
+when supplier s has been qualified (ys = 1) and remains operational (as = 0). Con-
+straint (19) enforces flow conservation at each manufacturing plant by equating total
+inbound shipments from suppliers with total outbound shipments to warehouses, while
+Constraint (20) limits the latter by the plant’s realized processing capacity Up(1−bp).
+Similarly, Constraint (21) equates total inbound shipments to each warehouse with its
+outbound shipments to retailers, and Constraint (22) limits total outbound flow by the
+realized warehouse capacity Uw(1 −dw). Finally, Constraint (23) requires the demand
+Dr at each retailer r to be accounted for by incoming shipments and unmet demand
+ℓr. Thus, any demand that cannot be served through the realized network is explicitly
+represented by ℓr and incurs the penalty specified in the objective function (17).
+Constraint (24) restricts flow on arc (i, j) to its realized physical capacity, condi-
+tional on the first-stage activation decision. Specifically, vij = 0 prevents flow on an arc
+that was not activated, while zij = 1 reduces the available capacity of an activated arc
+to zero. For each international arc (i, j) ∈EI, Constraint (25) imposes an additional
+capacity bound associated with policy-induced trade restrictions. When hij = 0, this
+bound equals the nominal activated capacity uijvij; when hij = 1, the usable cross-
+border capacity is reduced to (1 −δij)uijvij. Consequently, an international arc must
+simultaneously satisfy the physical-capacity and trade-capacity constraints. A physi-
+cal disruption (zij = 1) renders the arc unavailable regardless of its trade-restriction
+11
+
+
+status, whereas a policy-induced restriction (hij = 1) reduces capacity by the frac-
+tion δij when the arc remains physically available. This formulation preserves the
+distinction between the physical-transportation and trade-capacity channels defined
+in Section 3.2. Finally, Constraints (26) and (27) specify the domains of the recourse
+variables. Because unmet demand is permitted up to Dr at every retailer, the recourse
+problem is feasible for every first-stage configuration and every ξ ∈UF .
+3.4 Two-stage robust formulation & nested uncertainty models
+Combining the first-stage reconfiguration cost in (4), the multi-channel uncertainty
+set UF in (15), and the operational recourse function Q(y, v, ξ) in (17)–(27) yields the
+two-stage robust optimization problem:
+ZF =
+min
+(y,v)∈Y
+
+CR(y, v) + max
+ξ∈UF Q(y, v, ξ)
+
+,
+(28)
+where Y denotes the feasible domain of the first-stage strategic decisions. Equivalently,
+using the definition of the recourse function, Equation (28) has the following min–
+max–min representation:
+ZF =
+min
+(y,v)∈Y
+
+CR(y, v) + max
+ξ∈UF
+min
+(x,ℓ)∈F(y,v,ξ) CO(x, ℓ; ξ)
+
+,
+(29)
+where F(y, v, ξ) denotes the feasible region defined by Constraints (18)–(27), and
+CO(x, ℓ; ξ) denotes the second-stage objective function defined in (16) and used
+in (17). The outer minimization selects the strategic network configuration before
+uncertainty is observed; the maximization identifies the most adverse realization in
+UF for that configuration; and the inner minimization determines the optimal opera-
+tional response after the realization is observed. An important structural property of
+the proposed formulation is that restricted uncertainty environments can be obtained
+directly from the full multi-channel uncertainty set UF by suppressing selected con-
+sequence channels, while preserving the underlying supply chain network, first-stage
+decision structure, and operational recourse model. The resulting formulations there-
+fore differ only in the channels through which country-level geopolitical shocks are
+permitted to affect the network. This provides a common modeling basis for isolat-
+ing the strategic implications of individual uncertainty channels and, subsequently,
+for assessing the consequences of omitting selected channels from the robust design
+problem. We consider three such restrictions: tariff-only, trade-policy, and physical-
+disruption uncertainty. Let UT denote the tariff-only uncertainty set obtained from
+UF by imposing:
+UT =
+
+ξ ∈UF : a = b = d = z = h = 0
+	
+.
+(30)
+Under UT , country-level shocks may propagate to the network only through tariff
+escalation q; facility disruptions, physical transportation failures, and policy-induced
+cross-border capacity restrictions are excluded. The trade-policy uncertainty set is
+defined as:
+UT P =
+
+ξ ∈UF : a = b = d = z = 0
+	
+,
+(31)
+12
+
+
+which retains both trade-policy channels, q and h. Thus, geopolitical shocks may alter
+the tariff cost and usable cross-border capacity of international arcs, while facility
+availability and physical transportation connectivity remain unaffected. Finally, the
+physical-disruption uncertainty set is:
+UD =
+
+ξ ∈UF : q = h = 0
+	
+,
+(32)
+under which geopolitical shocks may propagate through facility disruptions (a, b, d)
+and physical transportation failures z, while the trade-policy channels are suppressed.
+In each restricted uncertainty set, the applicable country-coupling and uncertainty-
+budget constraints are inherited from UF . These restrictions induce the following
+nesting relationship among the uncertainty sets.
+Proposition 1. The tariff-only, trade-policy, and physical-disruption uncertainty sets
+defined in (30)–(32) satisfy
+UT ⊆UT P ⊆UF ,
+UD ⊆UF .
+(33)
+Proof. The set UT P is obtained from UF by imposing a = b = d = z = 0, and UT
+is obtained from UT P by additionally imposing h = 0. Hence, UT ⊆UT P ⊆UF .
+Similarly, imposing q = h = 0 on UF yields UD, and therefore UD ⊆UF .
+Proposition 1 establishes that the restricted uncertainty environments are embed-
+ded within the full multi-channel uncertainty architecture while preserving the
+underlying network and decision structure. This nesting permits strategic con-
+figurations obtained under different uncertainty environments to be compared
+within a common modeling framework and subsequently evaluated under the full
+multi-channel uncertainty set. For any fixed strategic configuration (y, v), Proposi-
+tion 1 implies maxξ∈UT Q(y, v, ξ) ≤maxξ∈UT P Q(y, v, ξ) ≤maxξ∈UF Q(y, v, ξ), and
+maxξ∈UD Q(y, v, ξ) ≤maxξ∈UF Q(y, v, ξ). Because the feasible set of strategic deci-
+sions and the reconfiguration cost remain unchanged across uncertainty environments,
+these relationships also imply ZT ≤ZT P ≤ZF , and ZD ≤ZF , where ZT , ZT P , and
+ZD denote the optimal robust objective values under their respective uncertainty sets.
+These inequalities follow directly from the nesting relationships. However, the ordering
+of the optimal robust objective values does not imply that the corresponding strategic
+configurations are nested or that their reconfiguration costs increase as the uncertainty
+set expands. Equation (29) captures the sequential interaction between the firm and
+nature. The resulting formulation constitutes a mixed-integer two-stage robust opti-
+mization problem with adaptive recourse. Owing to the embedded max–min structure,
+directly solving (29) is computationally challenging. The following section uses strong
+duality to eliminate the inner recourse minimization for fixed first-stage decisions and
+develops the adversarial subproblem used within a column-and-constraint generation
+procedure.
+13
+
+
+4 Reformulation and solution method
+The robust formulation (28) requires evaluation of the worst-case recourse cost over UF
+for a given first-stage configuration. Explicit incorporation of all admissible uncertainty
+realizations becomes computationally impractical as the dimensions of the network and
+uncertainty set increase. We therefore employ the column and constraint generation
+(CCG) method (see for instance [23]), which iteratively augments a restricted master
+problem (RMP) with uncertainty realizations identified by an adversarial subproblem.
+For fixed first-stage decisions, the adversarial subproblem is obtained by dualizing the
+linear operational recourse problem defined in Section 3.3.
+4.1 Recourse dualization and adversarial problem
+For a fixed first-stage configuration (¯y, ¯v) ∈Y, define the corresponding worst-case
+recourse value as
+Q(¯y, ¯v) = max
+ξ∈UF Q(¯y, ¯v, ξ).
+(34)
+For any fixed (¯y, ¯v) ∈Y and ξ ∈UF , the first-stage decisions and all components of
+the uncertainty realization are fixed parameters in the recourse problem defined in
+Section 3.3. Consequently, Q(¯y, ¯v, ξ) is a linear program in the shipment variables xij,
+(i, j) ∈E, and unmet-demand variables ℓr, r ∈R. For every (¯y, ¯v) ∈Y and ξ ∈UF ,
+the recourse problem is feasible. To establish this, consider the recourse solution:
+xij = 0, ∀(i, j) ∈E and ℓr = Dr, ∀r ∈R, for which Q(¯y, ¯v, ξ) is feasible for every
+(¯y, ¯v) ∈Y and every ξ ∈UF . The recourse feasible region is also bounded. For every
+(i, j) ∈E, Constraint (24) gives 0 ≤xij ≤uij¯vij(1 −zij), and the right-hand side
+is finite. For an international arc (i, j) ∈EI, Constraint (25) additionally imposes
+xij ≤uij¯vij (1 −δijhij). Furthermore, Constraint (23), together with xwr ≥0 and
+ℓr ≥0, implies 0 ≤ℓr ≤Dr, for every r ∈R. Thus, all recourse variables are bounded
+over the feasible region. Since the coefficients of the recourse objective (17) are finite,
+Q(¯y, ¯v, ξ) has a finite optimal value for every (¯y, ¯v) ∈Y and ξ ∈UF . Strong duality
+therefore applies to the recourse problem for every such pair.
+To construct the recourse dual, we associate nonnegative dual variables {ϕs}s∈S,
+{γp}p∈P , and {θw}w∈W , with Constraints (18), (20), and (22), respectively. Let
+{αij}(i,j)∈E ≥0, be the dual variables associated with the Constraints in (24), and
+let {βij}(i,j)∈EI ≥0, be the dual variable associated with the Constraints in (25).
+The equality Constraints in (19), (21), and (23) are assigned dual variables {ρp}p∈P ,
+{ψw}w∈W , and {λr}r∈R, respectively, each unrestricted in sign.
+For each fixed (¯y, ¯v) ∈Y and ξ ∈UF , strong duality permits Q(¯y, ¯v, ξ) in (34)
+to be replaced by the optimal value of its dual. The dual objective is obtained from
+the right-hand sides of the capacity and demand-balance constraints (18), (20), (22),
+(23), (24), and (25). Maximizing this dual representation jointly over the admissible
+uncertainty realization and the recourse-dual variables gives:
+Q(¯y, ¯v) =
+max
+ξ∈UF ,
+ϕ,γ,θ,α,β,ρ,ψ,λ
+X
+r∈R
+Drλr −
+X
+s∈S
+Us¯ys(1 −as)ϕs −
+X
+p∈P
+Up(1 −bp)γp
+14
+
+
+−
+X
+w∈W
+Uw(1 −dw)θw −
+X
+(i,j)∈E
+uij¯vij(1 −zij)αij
+−
+X
+(i,j)∈EI
+uij¯vij (1 −δijhij) βij.
+(35)
+The dual-feasibility constraints are obtained by collecting the coefficients of each non-
+negative shipment variable in the recourse Lagrangian. Because the trade-policy terms
+in the recourse objective apply only to international arcs, the resulting constraints are
+distinguished according to the arc partition (ED, EI) defined in (1). For notational
+compactness, we define the realized unit cost on arc (i, j) ∈E as:
+ecij(ξ) =
+(
+cij,
+(i, j) ∈ED,
+cij +
+ τ ij + ∆τijqij
+
+Vij,
+(i, j) ∈EI.
+(36)
+For notational convenience, extend β to all (i, j) ∈E by defining βij = 0 for every
+domestic arc (i, j) ∈ED. Using (36) and the convention βij = 0 for (i, j) ∈ED,
+the dual-feasibility conditions for the three transportation echelons can be written
+compactly as (37), (38), and (39):
+−ϕs + ρp −αsp −βsp ≤ecsp(ξ),
+(s, p) ∈ESP ,
+(37)
+−γp −ρp + ψw −αpw −βpw ≤ecpw(ξ),
+(p, w) ∈EP W ,
+(38)
+−θw −ψw + λr −αwr −βwr ≤ecwr(ξ),
+(w, r) ∈EW R,
+(39)
+Constraints (37)–(39) correspond to the shipment variables on the supplier–plant,
+plant–warehouse, and warehouse–retailer echelons, respectively. For a domestic arc,
+βij = 0 and ecij(ξ) = cij. For an international arc, the corresponding dual constraint
+additionally contains the cross-border capacity multiplier βij, while ecij(ξ) includes the
+realized tariff component defined in (36). Finally, the coefficient of ℓr in the recourse
+Lagrangian is πr −λr. Since ℓr ≥0, finiteness of the Lagrangian infimum requires
+λr ≤πr,
+r ∈R.
+(40)
+Thus, the adversarial problem (AP) associated with the fixed first-stage configuration
+(¯y, ¯v) can be written compactly as
+Q(¯y, ¯v) =
+max
+ξ, ϕ,γ,θ,α,β,ρ,ψ,λ
+
+
+
+
+
+
+
+F(ξ, ϕ, γ, θ, α, β, ρ, ψ, λ)
+
+ξ ∈UF , (37) −(40)
+ϕ, γ, θ, α ≥0
+{βij}(i,j)∈EI ≥0
+{βij}(i,j)∈ED = 0
+
+
+
+
+
+
+
+,
+(41)
+where F(·) denotes the objective function in (35). The adversarial problem (41) is
+a mixed-integer bilinear optimization problem because its objective contains prod-
+ucts between binary uncertainty variables and continuous dual variables, including
+15
+
+
+asϕs, bpγp, dwθw, zijαij, and hijβij. We retain the bilinear structure and solve the
+adversarial problem directly using a global nonconvex optimization method.
+4.2 Column-and-constraint generation
+The adversarial problem (41) evaluates the worst-case recourse cost associated with
+a fixed first-stage configuration. To solve the two-stage robust problem (28) without
+explicitly incorporating all realizations in UF , we employ a column-and-constraint
+generation (CCG) procedure. The method iterates between a restricted master prob-
+lem (RMP), which optimizes the first-stage decisions over a finite set of previously
+generated uncertainty realizations, and the adversarial problem, which identifies a
+worst-case realization for the resulting first-stage configuration. A CCG iteration con-
+sists of solving the RMP for the current set of generated uncertainty realizations,
+followed by solving the adversarial problem for the resulting first-stage configuration.
+We index the iterations by k = 1, 2, . . .. At each nonterminating iteration, the worst-
+case realization identified by the adversarial problem is incorporated into the RMP,
+together with a scenario-specific copy of the recourse variables and the corresponding
+recourse constraints.
+Restricted master problem.
+Let
+bU k = {ξ1, . . . , ξk} ⊆UF
+(42)
+denote the set of uncertainty realizations included in the restricted master problem
+at iteration k. For each ξn ∈bU k, let (xn, ℓn) denote a scenario-specific copy of the
+recourse variables, and let η be an epigraph variable for the largest recourse cost among
+the generated realizations. The restricted master problem is then obtained as follows:
+Zk
+RMP =
+min
+y,v,η,{xn,ℓn}k
+n=1
+CR(y, v) + η
+(43)
+s.t.
+(y, v) ∈Y,
+(44)
+(xn, ℓn) ∈F(y, v, ξn),
+n = 1, . . . , k,
+(45)
+η ≥CO(xn, ℓn; ξn),
+n = 1, . . . , k.
+(46)
+Here, (y, v) ∈Y in (44) denotes the feasible domain of the first-stage strategic decisions
+as defined in (3); F(y, v, ξn) denotes the operational feasible region defined by Con-
+straints (18)– (27), evaluated at the fixed realization ξn, and CO(·) is the second-stage
+operational cost defined in (16). Constraint (45) enforces a feasible recourse response
+to each realization in bU k, while Constraint (46) requires η to dominate the corre-
+sponding recourse costs. Since η is minimized through (43), its optimal value equals
+the largest recourse cost among the realizations currently included in the restricted
+master problem. Because bU k ⊆UF , the restricted master problem optimizes against
+a subset of the uncertainty realizations considered in (28). Consequently,
+LBk = Zk
+RMP ≤ZF ,
+(47)
+16
+
+
+so Zk
+RMP provides a valid lower bound on the optimal value of the full robust problem.
+Let (¯yk, ¯vk) denote an optimal first-stage configuration obtained from the restricted
+master problem at iteration k.
+Adversarial subproblem, scenario generation, and bound update.
+Let ¯η k denote the optimal value of the epigraph variable η obtained from the
+RMP at iteration k. By Constraints (45)–(46), ¯η k represents the largest optimal
+recourse cost over the realizations currently contained in bU k; equivalently, ¯η k =
+maxξ∈b
+U k Q(¯yk, ¯vk, ξ). The restricted master problem, however, does not account for
+realizations in UF \ bU k. The candidate configuration (¯yk, ¯vk) is therefore evalu-
+ated against the complete uncertainty set by solving the adversarial problem (41).
+Using the worst-case recourse function defined in (34), this yields Q(¯yk, ¯vk) =
+maxξ∈UF Q(¯yk, ¯vk, ξ). Let ¯ξ k ∈UF denote a realization attaining this maximum, so
+that Q(¯yk, ¯vk) = Q(¯yk, ¯vk, ¯ξ k), where the value on the right-hand side is obtained
+through the dual adversarial formulation developed in Section 4.1. The full robust
+objective evaluated at the current first-stage configuration is therefore
+bZk = CR(¯yk, ¯vk) + Q(¯yk, ¯vk).
+(48)
+By (28), ZF is the minimum of this robust objective over all feasible first-stage config-
+urations in Y. Since (¯yk, ¯vk) ∈Y is one such feasible configuration, ZF ≤bZk. Hence,
+bZk is a valid upper bound on the optimal robust objective. Maintaining the best such
+value obtained through iteration k gives the incumbent upper bound
+UBk = min
+n
+UBk−1, bZk
+o
+,
+UB0 = +∞.
+(49)
+Together with the restricted-master lower bound LBk = Zk
+RMP established in (47), the
+CCG bounds satisfy LBk ≤ZF ≤UBk. The comparison between the adversarial value
+and the restricted-master epigraph value determines whether the current RMP omits
+an uncertainty realization that increases the worst-case recourse cost of its current
+first-stage configuration. From the preceding definitions,
+¯η k = max
+ξ∈b
+U k Q(¯yk, ¯vk, ξ) ≤max
+ξ∈UF Q(¯yk, ¯vk, ξ) = Q(¯yk, ¯vk),
+(50)
+where the inequality follows from bU k ⊆UF . If the inequality in (50) is strict, the
+restricted master problem underestimates the worst-case recourse cost of (¯yk, ¯vk).
+The realization ¯ξ k responsible for the larger recourse value is therefore added to the
+generated scenario set:
+bU k+1 = bU k ∪{¯ξ k}.
+(51)
+A scenario-specific copy of the recourse variables and the corresponding instances of
+Constraints (45) and (46) associated with ¯ξ k are added to the RMP. The enlarged
+master problem is then reoptimized, allowing the first-stage configuration to adapt to
+the newly identified worst-case realization.
+17
+
+
+In exact arithmetic, the absence of a violated realization is characterized by
+Q(¯yk, ¯vk) = ¯η k. In this case, the restricted master problem already captures the worst-
+case recourse value of its current first-stage solution over the complete uncertainty set.
+Indeed, using LBk = CR(¯yk, ¯vk) + ¯η k and (48), this equality implies LBk = bZk. Since
+bZk is the full robust objective value of the feasible first-stage configuration (¯yk, ¯vk), we
+have ZF ≤bZk. Consequently, LBk ≤ZF ≤bZk = LBk, and hence ZF = LBk = bZk.
+Therefore, (¯yk, ¯vk) is optimal for (28) in the exact-solution case. For numerical imple-
+mentation, termination is based on the lower and incumbent upper bounds rather
+than exact equality. At iteration k, the relative CCG optimality gap is defined as
+Gapk =
+UBk −LBk
+max{1, |UBk|},
+(52)
+where the denominator normalizes the absolute bound difference by the magnitude of
+the incumbent upper bound while preventing division by zero when UBk is zero or
+close to zero. The procedure terminates when Gapk ≤ε, where ε > 0 is the prescribed
+CCG optimality tolerance. Otherwise, the newly identified realization is incorporated
+through (51), and the next CCG iteration is performed. The complete procedure
+is summarized in Algorithm 1. The CCG procedure is initialized with the nominal
+realization ξ1 = 0 ∈UF , for which g = a = b = d = z = q = h = 0. This corresponds
+to the absence of country-level geopolitical shocks and all associated network-level
+consequences. The finite cardinality of UF yields the following convergence result.
+Theorem 2. Suppose that the restricted master problem and the adversarial problem
+are solved to global optimality at every iteration. Since UF is finite, the CCG procedure
+terminates after finitely many iterations. In exact arithmetic and with zero termination
+tolerance, the resulting first-stage configuration is optimal for (28).
+Proof. All uncertainty variables defining UF are binary; hence, UF contains finitely
+many admissible realizations. At any nonterminating iteration, if the worst-case real-
+ization ¯ξ k identified by the adversarial problem is not contained in bU k, it is added
+according to Step 18 of Algorithm 1. Since UF is finite, the generated scenario set can
+be enlarged only finitely many times. If instead ¯ξ k ∈bU k, then Constraint (46) implies
+¯η k ≥Q(¯yk, ¯vk, ¯ξ k) = Q(¯yk, ¯vk). Together with (50), which gives ¯η k ≤Q(¯yk, ¯vk),
+it follows that ¯η k = Q(¯yk, ¯vk). Consequently, LBk = CR(¯yk, ¯vk) + ¯η k = bZk. Since
+LBk ≤ZF ≤bZk, we obtain LBk = ZF = bZk. Thus, either a previously unrepresented
+realization is added to the RMP or the current first-stage configuration is optimal.
+Because only finitely many realizations can be added, the CCG procedure termi-
+nates after finitely many iterations, and under exact arithmetic with zero termination
+tolerance the returned first-stage configuration is optimal for (28).
+Theorem 2 establishes finite convergence under exact solution of the RMP and
+adversarial problem. In the computational implementation, both problems are solved
+subject to the solver tolerances specified in Section 5, and the CCG procedure is
+terminated when the relative bound gap in (52) satisfies the prescribed tolerance ε.
+18
+
+
+Algorithm 1 Column-and-constraint generation (CCG) procedure
+1: Input: CCG tolerance ε > 0
+2: Initialize: k ←1, ξ1 ←0, bU 1 ←{ξ1}, UB0 ←+∞
+3: Output: Incumbent first-stage configuration (y∗, v∗), bounds LBk ≤ZF ≤UBk
+on the optimal objective value of (28), and relative optimality gap Gapk
+4: procedure CCG
+5:
+while true do
+6:
+ Zk
+RMP, (¯yk, ¯vk, ¯η k)
+
+←Solve RMP for bU k using (43)–(46)
+7:
+LBk ←Zk
+RMP
+8:
+(Q(¯yk, ¯vk), ¯ξ k) ←Solve adversarial problem (AP) for (¯yk, ¯vk) using (41)
+9:
+bZk ←CR(¯yk, ¯vk) + Q(¯yk, ¯vk) as in (48)
+10:
+if bZk < UBk−1 then
+11:
+UBk ←bZk
+12:
+(y∗, v∗) ←(¯yk, ¯vk)
+13:
+else
+14:
+UBk ←UBk−1
+15:
+Gapk ←(UBk −LBk)/ max{1, |UBk|}
+16:
+if Gapk ≤ε then
+17:
+Return (y∗, v∗), LBk, UBk, Gapk
+18:
+bU k+1 ←bU k ∪{¯ξ k}
+19:
+k ←k + 1
+5 Computational study and model evaluation
+This section evaluates the proposed robust optimization framework and the CCG solu-
+tion procedure developed in Section 4. The computational study has four objectives.
+First, we assess the computational performance and scalability of the CCG procedure
+over a collection of synthetically generated four-echelon supply chain networks. Second,
+we examine the value of explicitly accounting for multiple geopolitical transmission
+channels by comparing strategic configurations obtained under the full uncertainty
+set UF and the restricted uncertainty environments defined in Section 3.4. Third, we
+investigate the sensitivity of the resulting strategic configurations and worst-case oper-
+ating performance to the severity and composition of geopolitical uncertainty. Finally,
+a case-based analysis evaluates the framework on a supply chain network constructed
+from real-world data.
+5.1 Experimental design and implementation
+The synthetic experiments preserve the four-echelon network structure and country-
+aware uncertainty architecture introduced in Sections 3.1 and 3.2, while systematically
+varying network size across the test bed. Six network configurations are considered,
+as reported in Table 2. Each network contains suppliers, manufacturing plants, ware-
+houses, and retailers distributed across four countries. The number of countries is
+held fixed across the six configurations so that changes in computational performance
+19
+
+
+primarily reflect changes in the underlying supply chain network rather than simul-
+taneous changes in the dimension of the country-level uncertainty structure. For each
+configuration, ten independently generated instances are considered, yielding 60 base-
+line instances in total. Random seeds 2001–2010 are used for the ten replications of
+each configuration.
+Table 2 Synthetic supply chain network configurations.
+Class
+Size group
+|C|
+(|S|, |P|, |W|, |R|)
+Class
+Size group
+|C|
+(|S|, |P|, |W|, |R|)
+S1
+Small
+4
+(6, 3, 4, 8)
+M2
+Medium
+4
+(9, 4, 6, 13)
+S2
+Small
+4
+(7, 4, 5, 10)
+L1
+Large
+4
+(9, 5, 7, 14)
+M1
+Medium
+4
+(8, 4, 6, 12)
+L2
+Large
+4
+(10, 5, 7, 15)
+Network generation: Nodes within each echelon are assigned approximately
+evenly across the four countries. The resulting country assignments determine the
+partition of transportation arcs into the international and domestic sets EI and ED
+defined in (1). Transportation arcs between consecutive echelons are generated with
+probabilities 0.40, 0.45, and 0.35 for ESP , EP W , and EW R, respectively. The genera-
+tion procedure additionally ensures that every upstream node has at least one outgoing
+arc and every downstream node has at least one incoming arc. To maintain compa-
+rable demand and capacity conditions as network size increases, demand and facility
+capacities are generated relative to aggregate network demand. Let Dtot = P
+r∈R Dr.
+Total demand is set to Dtot = 75|R|. For each retailer r ∈R, an independent weight
+eDr ∼U[0.75, 1.25] is generated, and retailer demand is obtained by normalization:
+Dr = Dtot
+e
+Dr
+P
+r′∈R e
+Dr′ . Thus, average demand per retailer remains constant across net-
+work sizes while heterogeneity in retailer demand is preserved. Facility capacities
+are generated analogously. Independent weights drawn from U[0.75, 1.25] are normal-
+ized within each echelon such that P
+s∈S Us = 1.50Dtot, P
+p∈P Up = 1.35Dtot, and
+P
+w∈W Uw = 1.35Dtot. Accordingly, aggregate capacity-to-demand ratios are held
+fixed across the six network configurations, while individual facility capacities remain
+heterogeneous. Transportation-arc capacities are generated relative to the capacities
+or demands associated with their incident nodes. For (s, p) ∈ESP and (p, w) ∈EP W ,
+usp = ϑsp min{Us, Up}, upw = ϑpw min{Up, Uw}, where ϑsp, ϑpw ∼U[0.50, 1.00]. For
+(w, r) ∈EW R, uwr = ϑwrDr, ϑwr ∼U[1.00, 1.50]. Because aggregate echelon capac-
+ity alone does not ensure that a randomly generated sparse network can route all
+retailer demand, each generated instance is subjected to a nominal serviceability test
+before being admitted to the test bed. Specifically, all suppliers are qualified, all gener-
+ated transportation arcs are activated, and the nominal uncertainty realization ξ = 0
+is imposed. A linear program minimizing aggregate unmet demand is then solved
+over the resulting network. An instance is retained only when zero unmet demand
+can be achieved within a tolerance of 10−6; otherwise, the network topology and
+transportation-arc capacities are regenerated. This screening step ensures that service
+losses observed in the robust experiments are not caused by an intrinsically incapable
+nominal network.
+20
+
+
+Cost and trade-policy parameters: The parameter-generation rules used in
+the baseline experiments are reported in Table 3. The notation follows Section 3.1.
+Parameters are independently sampled from the specified uniform distributions after
+an admissible network has been generated. For each international arc (i, j) ∈EI, the
+elevated tariff rate is obtained as τ ij = τ ij + ∆τij, consistent with (2).
+Table 3 Baseline parameter-generation scheme.
+Parameter
+Interpretation
+Generation rule
+πr
+Unit unmet-demand penalty
+U[40, 70]
+cij
+Unit transportation cost
+U[2, 10]
+Fs
+Supplier qualification cost
+U[100, 200]
+Kij
+Transportation-arc activation cost
+U[20, 60]
+Vij
+Customs value per unit, (i, j) ∈EI
+U[15, 40]
+τ ij
+Baseline tariff rate
+U[0.02, 0.10]
+∆τij
+Tariff-rate increment
+U[0.05, 0.20]
+δij
+Cross-border capacity-reduction fraction
+U[0.20, 0.60]
+Baseline uncertainty specification: The baseline experiments use the full
+multi-channel uncertainty set UF defined in (15). The country-level budget is set to
+ΓG = 1. The channel-specific budgets in (11)–(13) are set to ΓS = ΓP = ΓW = ΓSP =
+ΓP W = ΓW R = ΓT = ΓH = 1. For the aggregate uncertainty budget in (14), the
+baseline specification is ωF = 2, ωT = 1, ωH = 1, ΓJ = 3. Under this specification,
+a physical facility or transportation-arc disruption consumes two units of the joint
+uncertainty budget, whereas a tariff escalation or policy-induced cross-border capac-
+ity restriction consumes one unit. Together with the channel-specific budgets, the
+joint budget controls both the composition and aggregate severity of the network-level
+consequences induced by a country-level geopolitical shock. The baseline specifica-
+tion is used as a controlled stress environment rather than as an empirical estimate
+of geopolitical-event probabilities. Alternative specifications of the aggregate uncer-
+tainty budget are examined subsequently to assess the sensitivity of the results to the
+assumed composition and severity of admissible geopolitical realizations.
+Implementation and performance measures: The CCG procedure in Algo-
+rithm 1 is initialized with the nominal realization ξ1 = 0 and terminated when
+the relative optimality gap in (52) satisfies Gapk ≤10−5. The Gurobi relative MIP
+optimality gap is set to 10−6, while the feasibility, integer-feasibility, and optimality
+tolerances are set to 10−7. All optimization problems are solved using a single com-
+putational thread. The AP in (41) is solved directly in its binary–continuous bilinear
+form using Gurobi’s global nonconvex optimization capability. At each CCG iteration,
+the AP objective value is independently checked against the value obtained by solving
+the primal recourse problem for the uncertainty realization returned by the AP.
+For each instance, we record the final lower and upper bounds LBk and UBk,
+the absolute and relative optimality gaps, the number of CCG iterations and gener-
+ated scenarios, the cumulative RMP and AP solution times, and the total solution
+time. We additionally record the first-stage reconfiguration cost CR(y, v), worst-case
+21
+
+
+recourse cost, numbers and proportions of qualified suppliers and activated trans-
+portation arcs, the composition of the worst-case uncertainty realization, aggregate
+worst-case unmet demand, and the corresponding service rate, 1−
+P
+r∈R ℓr
+P
+r∈R Dr . These mea-
+sures are used in the subsequent analyses to assess computational scalability, strategic
+network configuration, and operational performance under multi-channel geopolitical
+uncertainty.
+5.2 Computational performance of the CCG procedure
+Validation against complete enumeration: Before examining computational scal-
+ability, we independently validate the CCG procedure against complete enumeration
+on a collection of small instances. Three validation configurations are considered:
+V 1 = (2, 3, 2, 2, 3), V 2 = (3, 4, 2, 3, 4), V 3 = (3, 4, 3, 3, 5), where each tuple reports
+the numbers of countries, suppliers, plants, warehouses, and retailers, respectively.
+Three independently generated instances are considered for each configuration, using
+random seeds 3001–3003. For each validation instance, all admissible network-level
+consequence realizations (a, b, d, z, q, h) under the baseline uncertainty specification
+are enumerated. Different country-shock vectors g that induce the same network-level
+consequence realization are represented only once, since g determines the admis-
+sibility of the consequences through (7)–(10) but does not otherwise enter the
+operational recourse problem. The complete set of unique admissible consequence
+realizations is then incorporated simultaneously into the master formulation, yield-
+ing a deterministic-equivalent robust problem. Let ZEnu denote its optimal objective
+value. The same generated instance is independently solved using Algorithm 1, pro-
+ducing ZCCG. Table 4 reports the comparison. The relative discrepancy is computed
+as ∆rel =
+|ZCCG−ZEnu|
+max{1,|ZEnu|}. The CCG and complete-enumeration objective values agree
+Table 4 Validation of CCG against complete enumeration.
+Class
+S-Enu | S-CCG | ZEnu | ZCCG
+Class
+S-Enu | S-CCG | ZEnu | ZCCG
+V1 (3001)
+270 | 4 | 9840.50 | 9840.50
+V2 (3001)
+551 | 6 | 14436.50 | 14436.50
+V1 (3002)
+178 | 3 | 9720.21 | 9720.21
+V2 (3002)
+554 | 5 | 11467.06 | 11467.06
+V1 (3003)
+234 | 9 | 10971.09 | 10971.09
+V2 (3003)
+271 | 4 | 12712.40 | 12712.40
+V3 (3001)
+668 | 5 | 15461.49 | 15461.49
+V3 (3003)
+839 | 9 | 13795.84 | 13795.84
+V3 (3002)
+651 | 8 | 18315.69 | 18315.69
+to numerical precision for all nine validation instances. The corresponding CCG lower
+and upper bounds also coincide with the complete-enumeration objective values within
+numerical precision. These results provide an independent computational verification
+of the decomposition procedure on instances for which the complete robust problem
+can be explicitly constructed. The comparison also illustrates the scenario-generation
+advantage of CCG. The number of unique admissible consequence realizations ranges
+from 178 to 839 across the validation instances, whereas CCG requires only 3–9 sce-
+narios to establish the robust optimum. In aggregate, the nine validation instances
+contain 4,216 admissible consequence realizations, while CCG uses only 53 generated
+22
+
+
+scenarios, corresponding to approximately 1.26% of the enumerated realizations. Thus,
+the CCG procedure recovers the complete-enumeration optimum without explicitly
+incorporating the large majority of admissible geopolitical realizations.
+Scalability across the synthetic test bed: Having validated the CCG proce-
+dure against complete enumeration, we next evaluate its computational performance
+over the 60 baseline instances defined in Section 5.1. All instances satisfy the prescribed
+CCG stopping criterion in (52). Table 5 summarizes the computational results across
+the six network configurations. Each entry represents an average over ten indepen-
+dently generated instances unless otherwise indicated. The table reports network size,
+CCG iterations, cumulative solution times for the restricted master problem (RMP)
+and adversarial problem (AP), and total solution time. Median and maximum solution
+times are also reported to characterize variation across instances. The results show
+that computational effort generally increases with network size, although the relation-
+ship is not strictly monotonic. This suggests that computational difficulty depends not
+only on network dimensions but also on characteristics of individual instances, includ-
+ing network connectivity and the uncertainty realizations identified during CCG. The
+distribution of computational effort between the RMP and AP also changes with net-
+work size. While the AP accounts for a substantial proportion of solution time in
+smaller networks, the RMP becomes the dominant computational component in larger
+configurations. This is consistent with Algorithm 1, where each additional uncertainty
+realization introduces new recourse variables and constraints into the RMP, increasing
+its size and computational burden. Despite this growth, the number of CCG itera-
+tions remains moderate across the tested configurations. Together with the complete
+enumeration results, these findings indicate that the procedure obtains solutions satis-
+fying the prescribed numerical tolerance without explicitly representing all admissible
+uncertainty realizations. The increasing computational burden of the RMP also sug-
+gests that improving its solution efficiency may be particularly valuable for larger
+networks.
+Table 5 Computational performance of CCG across the synthetic test bed.
+Class
+Avg. |E|
+Avg. iter.
+Avg. RMP
+Avg. AP
+Avg. total
+Median total
+Max total
+(s)
+(s)
+(s)
+(s)
+(s)
+S1
+29.0
+6.6
+0.22
+0.61
+0.83
+0.82
+1.29
+S2
+42.1
+9.4
+1.67
+2.43
+4.10
+3.93
+8.78
+M1
+53.0
+10.5
+5.92
+5.16
+11.08
+7.24
+23.94
+M2
+58.1
+8.6
+3.36
+5.15
+8.51
+7.98
+16.53
+L1
+73.0
+12.1
+92.22
+9.56
+101.79
+35.49
+311.54
+L2
+74.8
+12.5
+66.75
+14.30
+81.05
+47.22
+293.37
+23
+
+
+5.3 Value of multi-channel geopolitical protection
+We next examine the value of incorporating multiple geopolitical transmission channels
+when determining the strategic network configuration. The comparison uses the tariff-
+only, trade-policy, physical-disruption, and full multi-channel uncertainty sets defined
+in (30)–(32) and (15). As established by Proposition 1, these uncertainty environments
+preserve the same network, first-stage decision structure, and operational recourse
+model, but differ in the channels through which country-level shocks may affect the
+network.
+Common full uncertainty stress test: For each of the 60 baseline instances, we
+independently optimize the strategic configuration under the four uncertainty environ-
+ments defined in Section 3.4. Let (ym, vm) denote an optimal configuration obtained
+under environment m ∈{T, TP, D, F}. As established by Proposition 1, the optimal
+robust objective values depend on the uncertainty sets considered during strategic
+design. Comparing these values alone therefore does not establish how the resulting
+configurations perform under the same geopolitical conditions. To make this compar-
+ison, we fix each strategic configuration and evaluate it under the full uncertainty set
+UF . The corresponding total cost is
+Zm
+stress = CR(ym, vm) + max
+ξ∈UF Q(ym, vm, ξ),
+m ∈{T, TP, D, F},
+(53)
+where CR(·) and Q(·) are defined in (4) and (17), respectively. This common evaluation
+isolates the consequences of excluding particular geopolitical transmission channels
+during strategic design. For each restricted environment m ∈{T, TP, D}, the rela-
+tive cost penalty is defined as Penaltym = 100
+
+Zm
+stress−ZF
+stress
+ZF
+stress
+
+. We also measure the
+difference in service rate relative to the configuration designed under UF . Table 6 sum-
+marizes the average results across the 60 paired instances. The design objective reports
+the optimal robust objective under the uncertainty environment used for strategic
+design, while the first stage cost represents the expenditure required to establish the
+corresponding network configuration. The full stress total cost measures the combined
+strategic and worst case operating costs when that configuration is exposed to UF .
+The cost penalty expresses the relative increase in this total cost compared with the
+configuration designed under the full uncertainty set. The service rate measures the
+proportion of demand satisfied under the selected worst case cost realization, while
+service loss reports the corresponding difference from the full model configuration in
+percentage points.
+Table 6 Performance of strategic configurations under common full geopolitical stress.
+Design
+Design
+First stage
+Full stress
+Cost
+Service
+Service loss
+environment
+objective
+cost
+total cost
+penalty (%)
+rate (%)
+(pp)
+UT
+19510.78
+2265.66
+29085.83
+12.06
+66.91
+8.82
+UT P
+20474.17
+2325.87
+28355.76
+9.19
+67.81
+7.91
+UD
+25011.87
+2343.63
+26587.21
+2.29
+72.63
+3.10
+UF
+25982.63
+2368.25
+25982.63
+0.00
+75.73
+0.00
+24
+
+
+The results reveal an important distinction between the cost of designing against
+uncertainty and the cost of operating under geopolitical stress. Restricted uncertainty
+environments produce lower design objectives because fewer adverse consequences are
+considered. However, these apparent cost advantages do not persist when the resulting
+configurations are evaluated under the full uncertainty set. Although the configuration
+designed under UF has the highest design objective, it achieves the lowest total cost
+under common geopolitical stress. This distinction demonstrates why strategic configu-
+rations developed under different uncertainty assumptions should be evaluated against
+a common uncertainty environment. The comparison also reveals substantial differ-
+ences in the protection provided by individual uncertainty channels. Configurations
+designed only against tariff escalation exhibit the greatest cost deterioration. Incor-
+porating restrictions on international transportation capacity improves performance,
+indicating that accounting for changes in trade costs alone provides limited protection
+when geopolitical events also restrict physical flows. Configurations designed against
+facility and transportation disruptions perform considerably closer to those obtained
+under the full uncertainty set. This suggests that accounting for physical disruptions
+provides broader protection against omitted geopolitical consequences than accounting
+for trade policy uncertainty alone, although the additional channels remain relevant.
+Cost and service consequences of omitted channels: The differences in total
+cost arise despite relatively small variations in strategic reconfiguration expenditure.
+As shown in Table 6, configurations designed under the full uncertainty set incur
+slightly higher initial costs but achieve substantially lower worst case operating costs
+under the common stress test. The reduction in operating costs more than compen-
+sates for the additional strategic expenditure. This indicates that relatively modest
+investments in network configuration can provide substantial protection against the
+operational consequences of omitted geopolitical uncertainty channels. The service
+results reveal a similar pattern. Configurations designed under restricted uncertainty
+environments exhibit lower average service rates under the common stress test, with
+the greatest deterioration observed for designs considering only tariff escalation. Thus,
+the consequences of omitting uncertainty channels extend beyond additional operat-
+ing costs to reduced demand fulfillment. As defined in Section 5.1, the reported service
+rates correspond to the operational responses under the selected worst case cost real-
+izations. The differences between restricted uncertainty environments also suggest an
+asymmetry in the protection provided by different channels. Configurations designed
+against physical disruptions retain considerably greater protection under full geopo-
+litical stress than those designed only against trade policy consequences. One possible
+explanation is that protection against facility and transportation failures creates alter-
+native network connections that can also accommodate changes in trade costs and
+usable international transportation capacity. Conversely, configurations designed only
+against trade policy uncertainty remain more exposed when geopolitical shocks also
+affect the physical availability of the network. These findings suggest that protec-
+tion against physical disruptions provides partial protection against other geopolitical
+consequences, although explicit consideration of trade policy uncertainty remains valu-
+able. The strategic configurations provide further insight into this pattern. Across the
+60 instances, the average number of activated transportation arcs increases from 32.68
+25
+
+
+under UT to 36.68 under UF , while the corresponding average number of qualified
+suppliers decreases slightly from 6.48 to 6.25. The additional protection associated
+with broader uncertainty environments is therefore accompanied primarily by changes
+in transportation network configuration rather than increased supplier qualification.
+This suggests that transportation redundancy plays an important role in improving
+resilience to multiple geopolitical consequences in the tested networks.
+Consistency across network configurations: Table 7 reports the average cost
+penalties and service losses under the common full uncertainty stress test for each
+of the six network configurations. This comparison examines whether the aggregate
+findings in Table 6 persist across networks of different sizes.
+The results reveal a
+Table 7 Full-stress performance loss of restricted strategic configurations by network class.
+UT
+UT P
+UD
+Class
+Cost penalty
+Service loss
+Cost penalty
+Service loss
+Cost penalty
+Service loss
+(%)
+(pp)
+(%)
+(pp)
+(%)
+(pp)
+S1
+6.65
+2.20
+5.13
+2.50
+1.78
+1.51
+S2
+13.75
+7.61
+9.38
+7.29
+2.03
+4.02
+M1
+12.03
+9.55
+9.44
+9.32
+2.12
+6.19
+M2
+11.87
+9.48
+10.37
+7.94
+2.81
+2.28
+L1
+14.75
+13.78
+10.29
+11.68
+2.30
+1.40
+L2
+13.31
+10.30
+10.51
+8.73
+2.70
+3.19
+consistent ordering of cost penalties across all six network configurations. Designs
+accounting only for tariff escalation experience the greatest cost deterioration, followed
+by those incorporating both trade policy channels. Configurations designed against
+physical disruptions remain closest to the full model in every network class. Although
+the magnitude of these penalties varies, the ordering is preserved across the synthetic
+test bed. Service losses exhibit greater variation and do not always follow the same
+ordering as cost penalties. Nevertheless, all three restricted uncertainty environments
+exhibit positive average service losses across the six network classes. These findings
+indicate that the consequences of omitting geopolitical transmission channels extend
+across the tested network configurations, although their magnitude depends on the
+characteristics of individual networks.
+5.4 Sensitivity to the structure and severity of geopolitical
+uncertainty
+We examine how the robust solution responds to changes in the aggregate uncertainty
+budget, the relative contributions of individual consequence channels, and the severity
+of trade policy consequences. The analysis considers the M1 and M2 network config-
+urations in Table 2, using the same ten random seeds as the baseline experiments.
+Each parameter setting is therefore evaluated on 20 common instances, with all other
+parameters retained at their baseline values unless otherwise specified.
+26
+
+
+Aggregate geopolitical severity: We vary the joint uncertainty budget in (14)
+over ΓJ ∈{1, 2, 3, 4, 5}, retaining the baseline weights (ωF , ωT , ωH) = (2, 1, 1). Table 8
+reports the average robust objective, strategic reconfiguration cost, service rate, and
+number of activated transportation arcs. The final three columns report the average
+numbers of physical disruptions (F), tariff escalations (T), and trade capacity restric-
+tions (H) in the selected worst case realizations. As expected from the expansion of the
+Table 8 Sensitivity to the joint uncertainty budget ΓJ.
+ΓJ
+ZF
+CR
+Service
+Activated
+F
+T
+H
+rate (%)
+arcs
+1
+20923.24
+2319.90
+96.28
+34.35
+0.00
+0.10
+0.90
+2
+26147.52
+2397.51
+80.70
+36.90
+1.00
+0.00
+0.00
+3
+27143.61
+2432.60
+77.28
+37.70
+1.00
+0.10
+0.90
+4
+30450.84
+2293.89
+65.81
+35.35
+2.00
+0.00
+0.00
+5
+31099.97
+2327.35
+63.82
+36.65
+2.00
+0.45
+0.55
+admissible uncertainty set, the robust objective increases with ΓJ. The observed ser-
+vice rate also declines, indicating greater demand fulfillment losses under the selected
+worst case cost realizations. Unlike the robust objective, however, this service pattern
+is an empirical observation rather than a consequence of uncertainty set nesting. The
+composition of the worst case realizations illustrates how the joint uncertainty bud-
+get influences the nature of geopolitical exposure. Under the baseline weights in (14),
+physical disruptions are excluded when ΓJ = 1, but become admissible as the budget
+increases. The selected realizations increasingly involve physical disruptions, some-
+times accompanied by trade policy consequences. Thus, increasing the budget changes
+not only the range of admissible uncertainty but also the composition of the adverse
+scenarios selected by the model. The strategic response is not monotone. Both the
+number of activated transportation arcs and the associated reconfiguration cost fluc-
+tuate as ΓJ increases. These findings indicate that greater geopolitical exposure does
+not necessarily require more extensive network activation or higher strategic expendi-
+ture, as changes in admissible disruption combinations can alter the preferred strategic
+configuration.
+Relative composition of geopolitical consequences: We examine the sen-
+sitivity of the robust solution to the channel weights in (14). Holding ΓJ = 3, we
+consider four specifications: (ωF , ωT , ωH) ∈{(1, 1, 1), (2, 1, 1), (1, 2, 1), (1, 1, 2)}. These
+specifications allow us to examine how the relative budget requirements of physical dis-
+ruptions, tariff escalation, and trade capacity restrictions affect the resulting solutions.
+Table 9 shows that the weight assigned to physical disruptions has a substantial effect
+on the robust solution. When ωF = 1, the selected worst case realizations are domi-
+nated by physical disruptions, and the resulting robust objectives and service rates are
+nearly identical across the three corresponding specifications. Increasing the weights
+assigned to tariff escalation or trade capacity restrictions has little effect in these cases
+because physical disruptions account for most of the selected adverse consequences.
+In contrast, the baseline specification (2, 1, 1) limits the number of physical disrup-
+tions that can occur within the same joint budget. The selected worst case realizations
+27
+
+
+Table 9 Sensitivity to the channel weights in the joint uncertainty budget.
+(ωF , ωT , ωH)
+ZF
+CR
+Service
+Activated
+F
+T
+H
+rate (%)
+arcs
+(1, 1, 1)
+32610.83
+2271.75
+58.92
+35.95
+2.95
+0.05
+0.00
+(2, 1, 1)
+27143.61
+2432.60
+77.28
+37.70
+1.00
+0.10
+0.90
+(1, 2, 1)
+32609.49
+2268.03
+58.92
+35.85
+3.00
+0.00
+0.00
+(1, 1, 2)
+32603.08
+2270.07
+58.92
+35.90
+3.00
+0.00
+0.00
+therefore contain fewer physical disruptions and generally include a trade capacity
+restriction. This produces a substantially lower robust objective and higher service rate
+than the specifications assigning unit weight to physical disruptions. These findings
+demonstrate that the channel weights influence not only the admissible combinations
+of geopolitical consequences but also the resulting strategic and operational perfor-
+mance. Their selection is therefore an important modeling assumption, rather than a
+simple numerical scaling choice. The sensitivity results emphasize the need to inter-
+pret the weights as parameters governing the composition of admissible uncertainty,
+rather than as empirically estimated measures of geopolitical severity.
+Severity of trade policy consequences: Finally, we examine how the magnitude
+of tariff escalation and restrictions on international transportation capacity affects the
+robust solution. Holding the uncertainty budgets and channel weights at their baseline
+values, we independently scale the tariff increments and capacity reduction fractions
+according to ∆τ (κT )
+ij
+= κT ∆τij, and δ(κH)
+ij
+= κHδij, where κT , κH ∈{0.5, 1.0, 1.5}. The
+multiplier 1.0 represents the baseline specification. All resulting capacity reduction
+fractions remain within [0, 1] for the parameter ranges considered. Table 10 reports the
+average robust objective, strategic reconfiguration cost, service rate under the selected
+worst case cost realization, and number of activated transportation arcs across the
+20 common instances. Table 10 reveals a substantial difference in the sensitivity of
+Table 10 Sensitivity to the severity of the trade-policy consequences.
+Channel varied
+Multiplier
+ZF
+CR
+Service rate (%)
+Activated arcs
+Tariff increment
+0.5
+27121.62
+2431.13
+77.39
+37.65
+1.0
+27143.61
+2432.60
+77.28
+37.70
+1.5
+27184.68
+2419.31
+77.56
+37.85
+Capacity reduction
+0.5
+26688.54
+2407.45
+79.37
+37.35
+1.0
+27143.61
+2432.60
+77.28
+37.70
+1.5
+27985.58
+2408.49
+73.35
+37.45
+the robust solution to the two trade policy channels. Changes in tariff increments
+have a relatively small effect on the robust objective and service rate over the tested
+range. In contrast, increasing the severity of capacity restrictions produces consider-
+ably larger increases in the robust objective and reductions in service performance.
+This difference reflects how the two channels affect operational decisions. Tariff esca-
+lation increases the cost of using international transportation arcs without directly
+reducing their capacity, whereas trade capacity restrictions reduce the quantity that
+28
+
+
+can be transported through affected arcs. Consequently, capacity restrictions can limit
+the network’s ability to satisfy demand, in addition to increasing operating costs
+through changes in the available routing alternatives. The results also show that the
+strategic response to changes in trade policy severity is relatively limited under the
+baseline uncertainty specification. Both strategic reconfiguration expenditure and the
+number of activated transportation arcs vary only modestly across the tested multipli-
+ers. This suggests that the observed differences in robust performance arise primarily
+from changes in the operational consequences of the uncertainty channels rather than
+extensive changes in strategic network configuration.
+Overall, the sensitivity analysis demonstrates that the effects of geopolitical uncer-
+tainty depend not only on the number and composition of admissible consequences
+but also on their magnitude. In particular, the stronger response to capacity restric-
+tions in the tested networks highlights the importance of representing trade policy
+interventions through both cost and capacity consequences, rather than through tariff
+escalation alone.
+5.5 Geographically grounded case study
+We conclude the computational study with a case study using geographic and demand
+information from Ahmadi Digehsara et al. [22]. Their study uses one year of inter-
+national shipment records from the Panjiva database and provides market locations,
+demand volumes, and candidate facility locations. Because the underlying shipment
+records and a network representation with four echelons are unavailable, we use this
+information to construct a geographically grounded instance of our framework rather
+than reproduce their original supply chain network.
+Case construction and parameterization: The eleven markets and their
+reported demand values are shown in Table 11. Aggregate demand across these markets
+is 20,693 units. To construct the network defined in Section 3.1, we assign the reported
+Table 11 Market-demand data used in the case-based experiment.
+Market
+Demand
+Market
+Demand
+Market
+Demand
+Australia
+929
+US
+8556
+UK
+2601
+Brazil
+429
+Hong Kong
+1190
+Turkey
+125
+Canada
+1907
+India
+928
+Malaysia
+1005
+Japan
+1068
+Singapore
+1955
+candidate locations to the four echelons. Bangladesh, Cambodia, India, Pakistan, Sri
+Lanka, and Vietnam constitute the supplier set; Hong Kong, Singapore, Turkey, and
+Egypt constitute the plant set; and Mexico, Colombia, and Oman constitute the ware-
+house set. The eleven markets in Table 11 form the retailer set. Separate nodes are used
+when a geographic location performs multiple functions. These functional assignments
+are specific to the present study and do not represent classifications reported in the
+source data. The resulting case contains |S| = 6, |P| = 4, |W| = 3, |R| = 11. Unlike the
+synthetic test bed in Section 5.1, transportation connectivity is constructed using geo-
+graphic proximity rather than random arc generation. Great-circle distances between
+29
+
+
+locations are computed using the haversine formula [24]. Transportation arcs between
+consecutive echelons are then constructed by connecting each upstream facility to
+a prescribed number of its geographically nearest downstream facilities. Specifically,
+each supplier is connected to its three nearest plants, each plant to its three near-
+est warehouses, and each warehouse to its seven nearest retailers. Additional arcs are
+introduced when necessary to ensure that every downstream node has at least one
+incoming transportation connection. This construction yields a sparse geographically
+structured network while preserving the sequence S →P →W →R. Table 12 sum-
+marizes the sources and construction methods for the case study parameters. Facility
+Table 12 Data sources and parameterization of the case study.
+Case component
+Source or construction
+Geographic locations
+Locations reported in [22].
+Market demand
+Demand values for eleven markets from [22].
+Candidate locations
+Facility locations reported in [22].
+Four-echelon functional roles
+Constructed for the present study to map the reported loca-
+tions into the S–P–W–R architecture.
+Transportation network
+Obtained via geographic proximity & nearest location rule.
+Transportation costs
+Derived from geographic distance and normalized to the cost
+range used in the synthetic experiments.
+Facility capacities
+Calibrated via aggregate demand and baseline capacity ratios.
+Transportation capacities
+Calibrated via incident facility capacities or retailer demand.
+Strategic costs
+Midpoints of the baseline ranges in Table 3.
+Unmet demand penalty
+Midpoint of the baseline range in Table 3.
+Trade parameters
+Midpoints of the baseline ranges in Table 3.
+Geopolitical uncertainty
+Full uncertainty set defined in Section 3.2.
+capacities follow the aggregate capacity ratios in Section 5.1, with total capacities equal
+to 1.50Dtot, 1.35Dtot, and 1.35Dtot for suppliers, plants, and warehouses, respectively,
+where Dtot = 20,693. Capacity is distributed equally among facilities within each
+echelon. Transportation capacities are set to 0.75 times the smaller incident facility
+capacity for supplier to plant and plant to warehouse arcs, and to 1.25Dr for ware-
+house to retailer arcs. For parameters unavailable from the source study, we use the
+midpoint values of the corresponding baseline ranges in Table 3. Specifically, πr = 55,
+Fs = 150, and Kij = 40. For international arcs, Vij = 27.5, τ ij = 0.06, ∆τij = 0.125,
+and δij = 0.40. The elevated tariff rate therefore satisfies τ ij = 0.185 according to (2).
+Transportation costs preserve the geographic ordering of the network by linearly nor-
+malizing great-circle distance to the [2, 10] interval used in the synthetic experiments.
+The uncertainty budgets and channel weights retain the baseline specification from
+Section 5.1.
+Multi-channel design comparison: We apply the common-stress evaluation in
+Section 5.3 to the geographically grounded network. Strategic configurations are opti-
+mized separately under the four uncertainty environments and subsequently evaluated
+under the full uncertainty set UF , according to (53). Table 13 reports the resulting
+design objectives, full-stress costs, cost penalties, and service performance.
+30
+
+
+Table 13 Case-based comparison under common full multi-channel stress.
+Design
+Design
+Full-stress
+Cost penalty
+Service
+Service loss
+environment
+objective
+total cost
+(%)
+rate (%)
+(pp)
+UT
+355740.34
+702000.10
+22.69
+57.13
+18.33
+UT P
+374647.56
+611000.49
+6.79
+69.70
+5.77
+UD
+572177.15
+572177.15
+0.00
+75.46
+0.00
+UF
+572177.15
+572177.15
+0.00
+75.46
+0.00
+The results are consistent with the general findings in Section 5.3. The config-
+uration designed under UT exhibits the greatest deterioration in cost and service
+performance when evaluated under the full uncertainty set. Incorporating both trade
+policy channels through UT P substantially reduces these losses, highlighting the impor-
+tance of accounting for restrictions on usable international transportation capacity in
+addition to tariff escalation.
+A distinctive finding of the geographic case study is that the configurations
+designed under UD and UF attain identical optimal robust objective values and ser-
+vice rates under the common full uncertainty stress test, despite differing in their
+activated transportation arcs. This indicates that, for the present network and param-
+eterization, accounting for physical disruptions alone is sufficient to attain the optimal
+robust objective of the full model. This case-specific outcome complements the syn-
+thetic results in Section 5.3, where configurations designed under UD incur a positive
+average cost penalty under full geopolitical stress. Together, these findings indicate
+that the incremental value of incorporating trade policy consequences alongside phys-
+ical disruptions depends on the geographic and structural characteristics of the supply
+chain network.
+Geographic structure of the robust configurations: The strategic configu-
+rations reveal differences in supplier qualification and transportation network design.
+Configurations developed under UT and UT P qualify five suppliers: Bangladesh, Cam-
+bodia, India, Pakistan, and Vietnam. In contrast, configurations developed under
+UD and UF qualify four suppliers: Cambodia, India, Pakistan, and Vietnam. Thus,
+the broader uncertainty environments do not lead to greater supplier qualification
+in this case. Instead, the configurations differ in their activated transportation corri-
+dors, consistent with the strategic patterns observed in Section 5.3. The common full
+uncertainty stress tests identify a geographically concentrated vulnerability. For all
+four strategic configurations, the selected worst case realization involves a geopolitical
+shock in Oman, resulting in the disruption of the Oman warehouse and a restriction
+on an inbound international transportation corridor. The affected corridor is Egypt–
+Oman for configurations developed under UT and UT P , and Hong Kong–Oman for
+those developed under UD and UF . These consequences are consistent with the coun-
+try dependence constraints in (7)–(10), which permit multiple adverse consequences
+to originate from the same country level shock. The results identify the Oman ware-
+house as a critical location under the selected worst case realizations, while the affected
+inbound transportation corridor depends on the strategic configuration. This illus-
+trates how country level geopolitical shocks can propagate through different network
+components and how strategic decisions influence the resulting geographic exposure.
+31
+
+
+6 Conclusions
+This study develops a robust optimization framework for strategic supply chain recon-
+figuration that captures the dependence among multiple geopolitical consequences
+arising from common country level shocks. The proposed uncertainty structure inte-
+grates physical disruptions and trade policy interventions through channel specific and
+joint uncertainty budgets, while its nested restricted sets permit systematic evaluation
+of individual transmission channels. The resulting two stage robust optimization prob-
+lem is addressed through recourse dualization and a column and constraint generation
+procedure. The computational results show that omitting geopolitical consequence
+channels during strategic design can lead to substantial increases in cost and reduc-
+tions in service under common full uncertainty stress. Configurations designed against
+physical disruptions generally provide greater protection against omitted channels
+than those considering only trade policy uncertainty. Broader protection is associated
+primarily with changes in transportation network configuration rather than increased
+supplier qualification. The sensitivity experiments demonstrate that both the com-
+position and severity of geopolitical consequences influence robust performance, with
+restrictions on international transportation capacity having a stronger effect than
+comparable proportional changes in tariff increments over the tested ranges. The geo-
+graphically grounded case study further shows that the incremental value of individual
+channels depends on network characteristics.
+From a managerial perspective, the findings highlight the importance of evaluat-
+ing strategic configurations against the combined consequences of geopolitical shocks.
+In particular, alternative transportation connections can provide operational flexi-
+bility without necessarily requiring additional supplier qualification. The framework
+also enables decision makers to identify vulnerabilities that may be overlooked when
+geopolitical exposure is evaluated through isolated trade policy or physical disruption
+scenarios. The analysis considers binary geopolitical consequences with exogenously
+specified uncertainty budgets and channel weights, fixed demand, and linear operat-
+ing costs. Future research could develop empirical calibration methods for geopolitical
+uncertainty, incorporate continuous or multiple disruption states, and extend the
+framework to multistage settings with evolving geopolitical conditions and strategic
+reconfiguration decisions.
+Declarations
+Conflict of interest: The author declares no conflicts of interest relevant to the
+content of this article.
+Funding: No external funding was received for this research.
+Data availability: Computational data supporting the reported results are available
+from the corresponding author upon reasonable request.
+References
+[1] Govindan, K., Fattahi, M., Keyvanshokooh, E.: Supply chain network design
+32
+
+
+under uncertainty: A comprehensive review and future research directions. Euro-
+pean Journal of Operational Research 263(1), 108–141 (2017) https://doi.org/
+10.1016/j.ejor.2017.04.009
+[2] Aldrighetti, R., Battini, D., Ivanov, D., Zennaro, I.: Costs of resilience and dis-
+ruptions in supply chain network design models: A review and future research
+directions. International Journal of Production Economics 235, 108103 (2021)
+https://doi.org/10.1016/j.ijpe.2021.108103
+[3] Shang, X., Zhang, G., Jia, B., Almanaseer, M.: The healthcare supply location-
+inventory-routing problem: A robust approach. Transportation Research Part
+E: Logistics and Transportation Review 158, 102588 (2022) https://doi.org/10.
+1016/j.tre.2021.102588
+[4] Goli, A., Babaee Tirkolaee, E., Golmohammadi, A.-M., Atan, Z., Weber, G.-W.,
+Ali, S.S.: A robust optimization model to design an iot-based sustainable supply
+chain network with flexibility. Central European Journal of Operations Research
+33(3), 1025–1046 (2023) https://doi.org/10.1007/s10100-023-00870-4
+[5] Jabbarzadeh, A., Fahimnia, B., Sheu, J.-B., Moghadam, H.S.: Designing a supply
+chain resilient to major disruptions and supply/demand interruptions. Trans-
+portation Research Part B: Methodological 94, 121–149 (2016) https://doi.org/
+10.1016/j.trb.2016.09.004
+[6] Hu, H., Tang, J., Tian, T.: Robust facility location and protection under facil-
+ity disruptions with decision-dependent uncertainty. International Journal of
+Production Economics 282, 109558 (2025) https://doi.org/10.1016/j.ijpe.2025.
+109558
+[7] Luo, L., Li, X., Zhao, Y.: A two-stage stochastic-robust model for supply chain
+network design problem under disruptions and endogenous demand uncertainty.
+Transportation Research Part E: Logistics and Transportation Review 196,
+104013 (2025) https://doi.org/10.1016/j.tre.2025.104013
+[8] Lotfi, R., Shoushtari, F., Ali, S.S., Davoodi, S.M.R., Afshar, M., Sharifi Nevisi,
+M.M.: A viable and bi-level supply chain network design by applying risk,
+robustness and considering environmental requirements. Central European Jour-
+nal of Operations Research 33(4), 1473–1501 (2024) https://doi.org/10.1007/
+s10100-024-00929-w
+[9] Yildiz, H., Yoon, J., Talluri, S., Ho, W.: Reliable supply chain network design.
+Decision Sciences 47(4), 661–698 (2015) https://doi.org/10.1111/deci.12160
+[10] Liu, J., Xi, Y., Wang, J.: Resilience strategies for sustainable supply chains under
+budget constraints in the post covid-19 era. Frontiers of Engineering Management
+10(1), 143–157 (2023) https://doi.org/10.1007/s42524-022-0236-y
+33
+
+
+[11] Yildiz, H., Yan, T., Hatton, M., Fowler, J., Kull, T.J., Sisk, L.: When complex-
+ity meets complexity: Covid-19-induced supply chain disruptions and strategy
+portfolio efficiency. Journal of Operations Management 71(1), 109–129 (2025)
+https://doi.org/10.1002/joom.1347
+[12] Dolgui, A., Ivanov, D., Simchi-Levi, D.: Stress tests for supply chains: towards
+resilience and viability. International Journal of Production Research 63(9), 3254–
+3258 (2025) https://doi.org/10.1080/00207543.2025.2483113
+[13] Kandil, N., Batta¨ıa, O., Hammami, R.: Globalisation vs. slowbalisation: a
+literature review of analytical models for sourcing decisions in supply chain man-
+agement. Annual Reviews in Control 49, 277–287 (2020) https://doi.org/10.1016/
+j.arcontrol.2020.04.004
+[14] Dong, L., Kouvelis, P.: Impact of tariffs on global supply chain network con-
+figuration: Models, predictions, and future research. Manufacturing & Service
+Operations Management 22(1), 25–35 (2020) https://doi.org/10.1287/msom.
+2019.0802
+[15] Grossman, G.M., Helpman, E., Redding, S.J.: When tariffs disrupt global supply
+chains. American Economic Review 114(4), 988–1029 (2024) https://doi.org/10.
+1257/aer.20211519
+[16] Nagurney, A., Besik, D., Nagurney, L.S.: Global supply chain networks and tar-
+iff rate quotas: Equilibrium analysis with application to agricultural products.
+Journal of Global Optimization 75(2), 439–460 (2019) https://doi.org/10.1007/
+s10898-019-00794-x
+[17] Feng, P., Zhou, X., Zhang, D., Chen, Z., Wang, S.: The impact of trade policy on
+global supply chain network equilibrium: A new perspective of product-market
+chain competition. Omega 109, 102612 (2022) https://doi.org/10.1016/j.omega.
+2022.102612
+[18] Nagurney, A., Samadi, S.: Ad valorem tariffs in global supply chain networks
+and impacts on labor. Journal of the Operational Research Society, 1–28 (2025)
+https://doi.org/10.1080/01605682.2025.2592758
+[19] Ivanov, D., Dolgui, A.: Tariff shocks, ripple effect, and deep uncertainty in
+supply chains: we are entering a turbulence zone, please fasten your seatbelts.
+International Journal of Production Research 63(19), 7305–7317 (2025) https:
+//doi.org/10.1080/00207543.2025.2520598
+[20] Ivanov, D.: A generalized concept of a decision-support system for responses to
+tariff-induced uncertainty and disruptions. Annals of Operations Research (2026)
+https://doi.org/10.1007/s10479-026-07303-w
+34
+
+
+[21] Cruz, J.M.: A multi-period supply chain equilibrium model under tariff uncer-
+tainty and CVaR-based risk aversion. International Journal of Production
+Research (2026) https://doi.org/10.1080/00207543.2026.2728012
+[22] Ahmadi Digehsara, A., Nejati, M., Ardestani-Jaafari, A., Rastani, S., Aflaki, S.:
+Geopolitical disruptions in global supply chains: The role of strategic alliances.
+Transportation Research Part E: Logistics and Transportation Review 204,
+104448 (2025) https://doi.org/10.1016/j.tre.2025.104448
+[23] Zeng, B., Zhao, L.: Solving two-stage robust optimization problems using a
+column-and-constraint generation method. Operations Research Letters 41(5),
+457–461 (2013) https://doi.org/10.1016/j.orl.2013.05.003
+[24] Eason, T., Chuang, W.-C., Sundstrom, S., Cabezas, H.: An information theory-
+based approach to assessing spatial patterns in complex systems. Entropy 21(2),
+182 (2019) https://doi.org/10.3390/e21020182
+35

@@ -1,0 +1,1513 @@
+Estimating Causal Bounds from Observational Data With Neural
+Generative Models
+Max Zhu∗
+Srivathsan Amruth
+Sina Akbari
+Qingyuan Zhao
+Department of Pure Mathematics and Mathematical Statistics
+University of Cambridge
+Abstract
+Identifying causal bounds from discrete observational data is a fundamental problem in causal inference.
+While exact analytical bounds exist for certain graphs, this is not generally the case. In this paper, we
+introduce a framework for estimating such bounds using neural generative models together with a new
+extrapolation procedure to estimate these bounds more accurately. Across multiple causal inference
+settings, it produces bounds that are consistently closer to the true bounds than those obtained with
+existing general neural approaches. We validate the framework on a range of benchmark problems for
+which exact bounds are available.
+1
+Introduction
+Estimating the effects of interventions from observational data is a central problem in causal inference. In
+many applications, however, the available observations and causal assumptions do not uniquely determine
+the causal quantity of interest. Hidden confounding, incomplete measurements, or limited experimental
+access may permit multiple structural causal models to generate the same observational distribution while
+implying different responses to an intervention. In such settings, reporting a single causal estimate can conceal
+uncertainty that persists even with complete knowledge of the observational distribution.
+Partial identification provides a principled alternative to point estimation (Manski, 2003). Rather than
+selecting a single observationally compatible model, partial identification characterises the range of values
+attained by a causal query over all models satisfying the assumed causal structure and observational constraints.
+For example, the identified interval for an average treatment effect is obtained by minimising and maximising
+the effect over all structural models that reproduce the observed distribution. The resulting interval separates
+uncertainty arising from causal non-identifiability from ordinary uncertainty in parameter estimation.
+For discrete causal models, causal bounds can be derived using linear, multilinear, or polynomial opti-
+misation. Classical results provide sharp bounds in important special cases, such as instrumental-variable
+models (Balke and Pearl, 1997). More general approaches use logical relations between counterfactual events,
+canonical structural causal models, and automated polynomial-programming formulations (Song et al., 2025;
+Sachs et al., 2023; Boushehrian et al., 2026). These approaches offer valuable sharpness or certification
+guarantees, but the size of the resulting optimisation problem can increase rapidly with the number of
+variables, latent-variable configurations, and possible response functions. Furthermore, they have narrow
+applicability to general problems.
+Recently, generative neural network approaches have been applied to this problem (Hu et al., 2021; Tan
+et al., 2024; Balazadeh Meresht et al., 2022). These attempt to find the extremal functions that satisfy the
+bound, providing both the bounds and functions that reach these bounds. While these are applicable to a
+wide range of problems, we find that their accuracy is limited.
+This paper introduces a differentiable approach to causal partial identification for finite discrete structural
+causal models. Each structural mechanism is represented by a neural network whose output defines a
+∗Corresponding author: mz406@cam.ac.uk.
+1
+arXiv:2610.25246v1  [stat.ME]  18 Oct 2026
+
+
+Z
+T
+Y
+U
+Z
+T
+Y
+U
+W
+Z
+T
+M
+Y
+U
+Figure 1: Causal graphs used in the simulation studies. Left: instrumental variable graph (IV). Centre:
+instrumental variable graph with a proxy variable (Proxy). Right: mediated instrumental variable graph
+(Mediated). U is exogenous and the other nodes are endogenous categorical variables.
+conditional categorical distribution. The graph may contain explicit latent variables, which are marginalised
+to obtain the induced distribution over the observed variables.
+We fit a neural network model by minimising the Energy Distance (Szekely, 2003) between the predictive
+model and the observational distribution, with a weighted causal loss. The Energy distance is a measure
+of distributional disagreement, minimised if the predicted and true distributions are identical. A novel
+extrapolation procedure, with theoretical justification, is introduced to estimate the extremal causal effects
+compatible with the observational distribution.
+2
+Related Work
+2.1
+Optimisation-based causal bounds
+Partial identification characterises the range of causal quantities compatible with the observed distribution
+and the assumed causal structure (Manski, 2003). For discrete structural causal models, classical approaches
+represent latent structural mechanisms through deterministic response functions and optimise over their
+distributions. This yields linear programmes in important settings, including the instrumental-variable model
+with binary (Balke and Pearl, 1997) and general categorical variables (Song et al., 2025). Symbolic methods
+extend this construction to broader classes of causal graphs and queries and are implemented in tools such
+as causaloptim (Sachs et al., 2023, 2026). More general discrete problems can be expressed as polynomial
+programs (Zhang et al., 2022). Autobounds automatically constructs such programs and applies spatial branch-
+and-bound to obtain progressively tighter certified bounds (Duarte et al., 2024). Pruning and decomposition
+techniques can improve scalability for particular classes of graphs (Shridharan and Iyengar, 2023). These
+methods offer sharpness or certification guarantees in their supported settings, but their computational cost
+can grow rapidly with the number of variables and categories, and may fail to converge in more complex
+settings.
+2.2
+Neural approaches to partial identification
+Neural causal models (Xia et al., 2021) provide an alternative to explicit response-function enumeration
+by representing structural mechanisms with flexible function approximators. Their connection to structural
+causal models and counterfactual reasoning has been studied theoretically, including representation and
+identifiability properties (Xia et al., 2022). Bounded Counterfactual Causal Effects (BCCE) parametrises
+structural mechanisms and latent variables using implicit generative models (Goodfellow et al., 2014) and
+employs adversarial training to match the observational distribution while optimising the causal effect
+(Hu et al., 2021). Related approaches impose distributional constraints using Wasserstein or Sinkhorn
+discrepancies and optimise them through Lagrangian procedures (Balazadeh Meresht et al., 2022; Tan et al.,
+2024). NeuralPartialID further establishes approximation and consistency results for continuous problems
+under regularity conditions such as Lipschitz continuity (Tan et al., 2024). Stochastic causal programming and
+implicit-generative approaches also address partial identification with continuous or multivariate treatments
+(Balazadeh Meresht et al., 2022; Padh et al., 2023). These methods broaden the range of causal models that
+can be considered.
+2
+
+
+2.3
+Relation to our method
+Our method builds on the neural causal partial-identification approaches. However, there are two key
+differences. Firstly, rather than comparing generated and observed samples through a learnt discriminator
+or an optimal-transport subproblem, we directly compute the probability assigned to every observed state
+and evaluate a closed-form energy distance between the resulting probability vectors. This avoids adversarial
+training and stochastic sampling of categorical model outputs.
+The main distinction is our treatment of the exact-fit limit. Existing neural approaches attempt to
+optimise the causal query subject to, or jointly with, an observational-distribution constraint. In practice,
+this optimisation becomes difficult when the distributional discrepancy is required to be extremely small.
+We instead solve a signed family of stable penalised problems and extrapolate the causal contrast to the
+zero-penalty limit. Our perturbation analysis shows that, within a locally regular regime, the causal contrast
+varies linearly with the penalty parameter while the energy-distance loss varies quadratically. This provides
+both a principled extrapolation rule and a diagnostic for selecting the range over which extrapolation is valid.
+3
+Preliminaries
+We introduce the causal and probabilistic notation used throughout. Random variables are denoted by upper
+case letters (e.g., U, X), their realisations by lower case letters (e.g., u, x), and vectors/sets of variables by
+bold letters (e.g., U, X). For a vector X = (X1, . . . , Xn), where each Xi takes values in the finite set Xi, the
+joint state space is
+S =
+n
+Y
+i=1
+Xi = {s1, . . . , sK},
+(1)
+where K = Qn
+i=1 |Xi|. A probability distribution on S can be represented by an element of the simplex
+∆K−1 =
+(
+p ∈RK
+≥0 :
+K
+X
+k=1
+pk = 1
+)
+.
+3.1
+Structural equation models and causal graphs
+A structural equation model (SEM) (Pearl, 2009) is a tuple
+M = (U, X, F, PU),
+where U = (U1, . . . , Um) is a set of independent exogenous variables, PU is their probability distribution,
+X = (X1, . . . , Xn) is a set of endogenous variables, and F = (f1, . . . , fn) is a set of structural functions. Each
+endogenous variable is generated according to
+Xi = fi
+ PaX(i), PaU(i)
+
+,
+where PaX(i) ⊆X \ {Xi} and PaU(i) ⊆U denote the set of endogenous and exogenous parents of Xi,
+respectively.
+We assume that the directed relations between endogenous variables are acyclic. Consequently, the
+structural assignments can be evaluated in topological order. This induces a distribution on the endogenous
+variables which we denote by PM(X). The SEM can be represented by an acyclic directed graph (DAG) with
+vertices X ∪U, with an edge Xi →Xj whenever Xi ∈PaX(j), and an edge Ui →Xj whenever Ui ∈PaU(j).
+We denote this graph by G.
+Throughout this work, we consider a setting where X consists of discrete variables and U follows an
+unknown distribution that may be continuous or discrete. Sampling U ∼PU and evaluating the structural
+equations in topological order induces an observational distribution on S.
+3
+
+
+3.2
+Causal estimands and partial identification
+A do-intervention on a variable (Xi ∈X), setting it to a value x, is denoted by do(Xi = x). It modifies the
+structural equation model by replacing the structural equation for Xi,
+Xi = fi (PaX(i), PaU(i)) ,
+with the constant assignment
+Xi := x.
+All other structural equations remain unchanged. The intervention removes the causal influence of the original
+parents. This corresponds to removing all incoming edges to Xi in the causal DAG representing the model.
+We denote the resulting interventional distribution as
+PM
+ X \ {X} | do(X = x)
+
+.
+Let a denote a scalar causal estimand, and a(M) denote this estimand evaluated in model M. For instance,
+a(M) can denote the average treatment effect (ATE) of a binary treatment X on an outcome Y :
+ATEX→Y (M) := EM[Y | do(X = 1)] −EM[Y | do(X = 0)],
+which describes the expected causal difference on Y between applying a positive intervention (1) or applying
+a negative intervention (0).
+Given a causal graph G and the observed distribution Pobs of the variables X, the observational equivalence
+class is
+M(G, Pobs) = {M : M is compatible with G and PM(X) = Pobs} ,
+(2)
+that is, the set of SEMs where parent sets agree with G, and the induced distribution over X agrees with
+Pobs. The identified set of a causal estimand a given G and Pobs is then
+Ia(G, Pobs) = {a(M) : M ∈M(G, Pobs)} .
+When this set is a singleton, we say a is point-identified. Otherwise, it is only partially identified, and its
+(sharp) lower and upper bounds are
+a =
+inf
+M∈M(G,Pobs) a(M),
+a =
+sup
+M∈M(G,Pobs)
+a(M).
+(3)
+When the extrema are attained, the infimum and supremum may be replaced by a minimum and maximum.
+These bounds describe uncertainty due to causal non-identifiability even when Pobs is known exactly.
+For the rest of this work, we focus on the ATE, although our method is applicable to arbitrary causal
+estimands.
+3.3
+Energy distance
+Let P and Q be probability distributions on Rd. Let X, X′ iid
+∼P and Y, Y′ iid
+∼Q, with all random variables
+mutually independent. For 0 < β < 2, we use the following convention for the energy distance between P and
+Q (Rizzo and Székely, 2016).
+EDβ(P, Q) = 2 E∥X −Y∥β
+2 −E∥X −X′∥β
+2 −E∥Y −Y′∥β
+2.
+(4)
+The energy distance measures distributional discrepancy through expected pairwise distances and therefore
+does not require a probability density evaluation. Because it can be estimated using only samples and is
+differentiable, it can also serve as a loss function for training generative models without requiring access to
+the model likelihood.
+In the finite discrete case considered in this paper, define the pairwise distance matrix
+Dkℓ= ∥sk −sℓ∥β
+2,
+0 < β < 2.
+4
+
+
+Proposition 1 (Finite-support energy distance). Let p, q ∈∆K−1 be the probability vectors on S. Then
+EDβ(p, q) = 2p⊤Dq −p⊤Dp −q⊤Dq = −(p −q)⊤D(p −q).
+(5)
+The full proof is given in Appendix C. In short, since we have finite support, every pairwise distance can
+be represented as an entry in D, which leads to the simplified weighted probability sum.
+Since p −q has zero sum and D is strictly conditionally negative definite for distinct support points and
+0 < β < 2 (Schoenberg, 1938), this quantity is nonnegative and vanishes only when p = q.
+4
+Method
+We describe our method for estimating causal estimands.
+4.1
+Neural parametrisation of discrete models
+Recall from Section 3 that X = (X1, . . . , Xn) denotes the endogenous variables and that Xi takes values in
+the finite state space Xi. Define ki = |Xi|, and index the elements of Xi by j ∈{0, . . . , ki −1}.
+For each endogenous variable Xi, we introduce a neural network (NN) with parameters θi. Given xPaX(i)
+and uPaU(i), the values of endogenous and exogenous parents of Xi, respectively, the neural network produces
+a categorical probability vector
+πi(xPaX(i), uPaU(i); θi) = softmax
+ gi(xPaX(i), uPaU(i); θi)
+
+∈∆k−1,
+(6)
+where gi(·; θi) is the NN corresponding to Xi parametrised with θi, and a Softmax activation is applied to
+the output layer to ensure that the vector π lies in the probability simplex. We write
+πi,j
+ xPaX(i), uPaU(i); θi
+
+for the probability of Xi taking value j. A separate network is used for each endogenous variable, and we
+collect all parameters as θ = (θ1, . . . , θn).
+Latent variables are modelled as i.i.d uniform random variables,
+Ui ∼U(0, 1).
+This does not restrict our method to Uniform latent variables, since deep NNs can arbitrarily transform the
+latents to approximate the underlying latents (Yarotsky, 2018).
+The parametrised mechanisms together with the exogenous distribution, define a neural SEM Mθ. Under
+this parametrisation, the observational and interventional distributions under Mθ can be computed as follows.
+Observational distribution.
+For a subset V ⊆X of endogenous variables, let sk,V denote the values of
+V in state sk; see Equation (1). Conditional on a realisation u of the exogenous variables, the probability of
+sk under the model Mθ factorises according to
+pθ(sk | u) =
+n
+Y
+i=1
+πi,ski
+ sk,PaX(i), uPaU(i); θi
+
+.
+(7)
+Define the corresponding conditional probability vector
+pθ(u) = (pθ(s1 | u), . . . , pθ(sK | u))⊤∈∆K−1.
+Marginalising the exogenous variables gives the observational distribution induced by Mθ:
+pθ = EU [pθ(U)] = (pθ(s1), . . . , pθ(sK))⊤∈∆K−1.
+(8)
+This formulation gives a differentiable way to train our discrete model since Equation (7) is a product
+of predicted probabilities and for each exogenous realisation u, the complete vector pθ(u) is computed by
+5
+
+
+enumerating the finite endogenous state space. We therefore do not sample categorical endogenous variables
+and do not require a Gumbel-Softmax (Jang et al., 2017) approximation. Furthermore, unlike policy-gradient,
+we do not need to stochastically sample over the categorical predictions.
+The node networks also need not be evaluated separately for every complete state. Conditional indepen-
+dencies make computing the full vector pθ significantly faster. For each node Xi, outputs can be cached
+for each distinct configuration of its parents. Consequently, the number of node-network evaluations per
+exogenous draw is
+n
+X
+i=1
+Y
+j∈PaX(i)
+|Xj|,
+where the product is one for a node without endogenous parents. For the “straight line” graph where nodes
+form a simple chain, the compute complexity is O(nk). Further implementation details are provided in
+Appendix A
+Interventional distribution.
+The same representation permits direct calculation of interventional distri-
+butions. Consider an intervention do(Xt = x). Conditional on U = u, a state sk is assigned zero probability
+unless skt = x, i.e., it is a compatible state. For compatible states, the factor associated with the intervened
+variable is removed:
+pθ (sk | do(Xt = x), u) = 1{skt = x}
+n
+Y
+i=1
+i̸=t
+πi,ski
+ sk,PaX(i), uPaU(i); θi
+
+.
+This is the truncated factorization associated with an intervention, rather than ordinary conditioning on
+Xt = x. Marginal interventional probabilities pθ (sk | do(Xt = x)) are computed similarly to Equation (8). If
+Y = Xr is the outcome variable, then
+Eθ [Y | do(Xt = x)] =
+K
+X
+k=1
+skr pθ (sk | do(Xt = x)) ,
+where Eθ denotes expectation under the model Mθ with slight abuse of notation.
+4.2
+Empirical energy-distance loss
+Here, we explain how the Energy Distance (Equation (5)) is estimated as a loss function for our training
+procedure. Let
+DN =
+n
+x(1), . . . , x(N)o
+be an observational dataset of N independent samples from Pobs, with each x(ℓ) ∈S. We represent its
+empirical distribution by the probability vector
+bq = (ˆq1, . . . , ˆqK)⊤∈∆K−1,
+where
+ˆqk = 1
+N
+N
+X
+ℓ=1
+1
+n
+x(ℓ) = sk
+o
+,
+k = 1, . . . , K.
+(9)
+Thus, q is the empirical analogue of the observational distribution Pobs introduced in Section 3.2. Further, for
+a neural network model Mθ, the expectation in Equation (8) is approximated using B independent exogenous
+draws u(1), . . . , u(B):
+bpθ = 1
+B
+B
+X
+b=1
+pθ
+ u(b)
+.
+6
+
+
+Directly substituting c
+pθ into the quadratic term p⊤Dp in Equation (5) is biased because the same Monte
+Carlo sample then appears in both factors (Gneiting and Raftery, 2007), introducing diagonal self-pair terms.
+We instead use a differentiable U-statistic. An unbiased estimator of p⊤
+θ Dpθ is
+bCθ =
+1
+B(B −1)
+B
+X
+b,b′=1
+b̸=b′
+
+pθ
+ u(b)⊤
+Dpθ
+ u(b′)
+=
+B
+B −1 bp⊤
+θ Dbpθ −
+1
+B(B −1)
+B
+X
+b=1
+
+pθ
+ u(b)⊤
+Dpθ
+ u(b)
+.
+The empirical loss used for optimization is therefore
+bLED(θ; β) := EDβ(bpθ; bq) = 2bp⊤
+θ Dbq −bCθ −bq⊤Dbq.
+(10)
+Conditional on bq, this is an unbiased estimator of d
+EDβ(θ; bq). Unlike the population Energy Distance, a
+finite-sample realization of the U-statistic may be slightly negative. This does not affect its differentiability or
+its use as an optimization objective. We use β = 1 in the rest of the manuscript and suppress the β parameter.
+Every term in Equation (10) is differentiable with respect to θ, because the conditional probability vectors
+pθ(u(b)) are computed directly from products of neural-network outputs. Further details of the estimator and
+its implementation are given in Appendix A.
+4.3
+Penalised optimisation formulation
+Given the causal graph G and the empirical observational distribution bq from Equation (9), the observational
+equivalence class of Equation (2) within the neural network model is
+Θ(G, bq) = {θ ∈ΘG : pθ = bq} = {θ ∈ΘG : LED(θ; bq) = 0}
+by Proposition 1.
+For brevity, we write a(θ) := a(Mθ). The lower and upper causal bounds within the neural model family
+are therefore
+aΘ =
+min
+θ∈Θ(G,bq)
+a(θ),
+aΘ =
+max
+θ∈Θ(G,bq)
+a(θ).
+These are neural-model, finite-sample analogues of the sharp population bounds defined in Equation (3).
+Rather than solving these constrained optimisation problems directly, for a scalar penalty parameter λ ∈R,
+we consider the penalised optimisation problems
+θλ = arg min
+θ
+Jλ(θ),
+(11)
+where
+Jλ(θ) := LED(θ; bq) + λa(θ).
+The sign of λ determines which extremum is favoured. For λ > 0, minimising Equation (11) favours smaller
+values of a(Mθ) and therefore traces the lower-bound. For λ < 0, it favours larger values and traces the
+upper-bound. As |λ| decreases, observational fit receives increasing priority relative to the causal estimand.
+In the ideal case, the one-sided limits λ ↓0 and λ ↑0 approach models attaining aΘ and aΘ, respectively.
+In practice, however, optimisation becomes unreliable when |λ| is extremely small (see Figure 2). We
+therefore do not take the estimate from the smallest available value of |λ|. Instead, we train at a series of
+stable nonzero values of λ and extrapolate the resulting causal estimates to λ = 0, as explained below.
+4.4
+Extrapolation
+Let I+ = (0, ε), and I−= (−ε, 0) for some ε > 0.
+7
+
+
+Assumption 1 (smooth one-sided solution paths). For each s ∈{+, −}, there exists a map
+θs : Is →ΘG
+such that θs(λ) is a local minimiser of Jλ for every λ ∈Is. Moreover, the induced observational distribution
+pθs(λ) and causal estimand a(θs(λ)) admit twice continuously differentiable one-sided extensions to λ = 0,
+with pθs(0) = bq.
+Assumption 1 concerns the distributions and causal estimands represented by the neural networks; it
+does not require the raw parameter vectors θs(λ) to converge. Appendix D provides sufficient local KKT
+conditions under which Assumption 1 holds.
+Theorem 1 (Local extrapolation). Under Assumption 1, for each s ∈{+, −}, there exist constants cs ∈R
+and ds ≥0 such that, as λ →0 within Is,
+a(θs(λ)) = a(θs(0)) + csλ + O(λ2),
+(12)
+LED (θs(λ); bq) = dsλ2 + O(|λ|3).
+(13)
+Proof. Since a(θs(λ)) is twice continuously differentiable at zero, its one-sided Taylor expansion gives
+a(θs(λ)) = a(θs(0)) + a′(θs(0))λ + O(λ2),
+where a′(θs(0)) :=
+d
+dλa(θs(λ))
+
+λ=0. This proves Equation (12) with cs = a′(θs(0)).
+Similarly, let
+vs = d
+dλpθs(λ)
+
+λ=0.
+Using twice differentiability and Assumption 1,
+pθs(λ) −bq = pθs(λ) −pθs(0) = λvs + O(λ2).
+Substitution into the expression in Proposition 1 gives
+LED (θs(λ); bq) = −
+ pθs(λ) −bq
+⊤D
+ pθs(λ) −bq
+
+= −λ2v⊤
+s Dvs + O(|λ|3).
+Because pθs(λ) is a probability vector, 1⊤vs = 0. Conditional negative definiteness of D implies LED is
+nonnegative.
+A more detailed analysis is given in Appendix D.
+Assumption 2. For every sufficiently small λ ∈Is, θs(λ) is a global minimiser of Jλ(θ) = LED(θ; bq)+λa(θ).
+Corollary 1. Under Assumptions 1 and 2,
+a(θ+(0)) = aΘ(bq),
+a(θ−(0)) = aΘ.
+Consequently, the intercepts in Equation (12) for s = + and s = −equal the lower and upper neural causal
+bounds, respectively.
+Proof. Let θ⋆be any parameter such that pθ⋆= bq, so that LED(θ⋆; bq) = 0. For λ > 0, global optimality gives
+LED(θ+(λ); bq) + λa(θ+(λ)) ≤λa(θ⋆).
+Since the energy-distance loss is nonnegative,
+a(θ+(λ)) ≤a(θ⋆).
+Taking λ ↓0 and using pθ+(0) = bq shows that a(θ+(0)) is no larger than the estimand of any exact-fit model
+θ⋆. Hence a(θ+(0)) = aΘ. The argument for λ < 0 is analogous, with the inequality reversed.
+Note that the branch derivatives vs may differ for positive and negative λ. Finally, the Energy Distance is
+well defined throughout the simplex, unlike other (semi-)distances such as the Kullback–Leibler divergence,
+which becomes unbounded at the boundary and exhibits steep gradients and Hessians for small probabilities,
+potentially leading to more poorly conditioned fits.
+8
+
+
+−0.02 −0.01
+0.00
+0.01
+0.02
+λ, ATE weight
+−0.6
+−0.4
+−0.2
+0.0
+0.2
+0.4
+0.6
+ATE
+y = −11.5x + 0.363
+y = −11.8x −0.43
+−0.02 −0.01
+0.00
+0.01
+0.02
+λ, ATE weight
+0.0000
+0.0005
+0.0010
+0.0015
+0.0020
+0.0025
+0.0030
+Energy Distance
+R2 = 0.991
+−0.2
+−0.1
+0.0
+0.1
+0.2
+λ, ATE weight
+−1.5
+−1.0
+−0.5
+0.0
+0.5
+1.0
+1.5
+ATE
+−0.2
+−0.1
+0.0
+0.1
+0.2
+λ, ATE weight
+0.02
+0.04
+0.06
+0.08
+0.10
+Energy Distance
+Figure 2: Model-predicted ATE and Energy Distance as λ varies. Left: values in the extrapolation regime,
+where fitted ATE intercepts recover the predicted bounds and Energy Distance follows a quadratic trend.
+The linear fit and R2 goodness-of-fit values are shown for the plots. Right: values across a wider range of λ
+beyond the linear and quadratic regimes.
+Dataset
+Autobounds
+BCCE
+NeuralPartialID
+Ours
+Upper
+Lower
+Upper
+Lower
+Upper
+Lower
+Upper
+Lower
+IV-Binary
+0
+0
+0.135 ± 0.012 0.087 ± 0.021 0.105 ± 0.026 0.159 ± 0.041 0.020 ± 0.005 0.011 ± 0.004
+IV-Ternary
+0
+0
+0.154 ± 0.043 0.125 ± 0.018 0.191 ± 0.065 0.162 ± 0.047 0.018 ± 0.011 0.010 ± 0.002
+Proxy
+0.033 ± 0.011* 0.020 ± 0.006* 0.093 ± 0.027 0.107 ± 0.029 0.067 ± 0.020 0.077 ± 0.032 0.032 ± 0.012 0.026 ± 0.009
+Mediated
+0.136 ± 0.038* 0.171 ± 0.041* 0.056 ± 0.020 0.037 ± 0.016 0.128 ± 0.053 0.099 ± 0.036 0.020 ± 0.009 0.021 ± 0.010
+Table 1: Absolute error ↓of the predicted upper and lower bounds for the ATE, compared with the true
+bounds. Standard errors are recorded over 10 datasets. (*) Autobounds does not fully converge and gives
+looser bounds than the true bound.
+4.5
+Training and bound estimation
+Motivated by Theorem 1 and Corollary 1, we train models at several positive and negative values of λ and
+extrapolate their causal estimates to λ = 0. In practice, we minimise the objective
+bJλ(θ) = bLED(θ; bq) + λa(θ).
+(14)
+A series of different models with different positive and negative λ values are trained. We then regress the
+causal estimates on the λ values on the positive and negative branches. The intercept of the positive branch
+regression estimates the lower bound, while the one of the negative branch estimates the upper bound. We do
+not solve the KKT conditions, rather we solve Equation (14) using SGD.
+The regression should use penalties within the local regime described by Theorem 1. However, this analysis
+does not consider if the optima can be found, only how the local region around them behaves. Empirically,
+using SGD on NNs we observe that convergence near λ = 0 is poor, but good convergence for small λ. Hence,
+we have a range of valid λ between the convergence and locally linear regime.
+We select the regression points using the studentised-residual procedure given in algorithm 1 in the
+Appendix. The method begins with the largest penalty magnitudes and adds points closer to zero while
+they remain consistent with the fitted linear trend. The accompanying energy-distance values provide an
+additional diagnostic.
+For all our experiments, we used 4 equally spaced points for positive and negative λ, |λ| ∈{0.005, 0.010,
+0.015, 0.020}. We found this range to be a good trade off between accuracy and training time, and is well
+within the linear regime. Further training details are given in Appendix A.
+5
+Simulation Studies
+We evaluate our method against two neural baselines: NeuralPartialID (Tan et al., 2024) and Bounding
+Confounded Causal Effects (BCCE) (Hu et al., 2021), as well as Autobounds (Duarte et al., 2024).
+Synthetic data is generated with four tasks derived from three causal graph structures: binary Instrumental
+Variable (IV), ternary IV, binary IV with a proxy variable (Proxy), and binary IV with a mediator (Mediated),
+9
+
+
+32
+64
+128
+256
+512
+1024
+Width
+10−2
+10−1
+100
+Average absolute error
+Ours
+BCCE
+N.ParialID
+Fixed LR
+muP scaling
+Figure 3: Absolute error between the analytical and predicted ATE bounds for our model, BCCE, and
+NeuralPartialID, averaged over the upper and lower bounds, over different neural network widths. Solid lines
+indicate a constant learning rate, while dashed lines indicate µP scaling.
+shown in Figure 1. For each task, observational datasets are generated by randomly sampling from discrete
+SEMs whose mechanisms are defined by random Fourier functions. Details are given in Appendix F. For the
+IV and Proxy graphs, the ground truths are derived from the CausalOptim package (Sachs et al., 2026).
+However, CausalOptim and Autobounds are not able to handle the Mediated graph. For this type of graph,
+we derive the ground truth bounds in Appendix E.
+This procedure gives a range of datasets that are guaranteed to satisfy the graphical constraints, together
+with corresponding ground-truth ATE bounds, without requiring explicit identification of the extremal
+functions. Each model was evaluated on 10 datasets for each graph type. Performance is measured by the
+absolute error in the estimated lower and upper ATE bounds, averaged across datasets.
+5.1
+Bounding accuracy
+Table 1 gives the average absolute error in the ATE upper and lower bounds. Autobounds gives exact bounds
+for the IV Binary and IV Ternary problems, but does not fully converge for the Proxy graph, where the
+bounds are looser than the analytical bounds. Our method consistently gives much more accurate bounds
+than BCCE and NeuralPartialID on all graph types. On the Proxy graph, our method is comparable to
+Autobounds, while on the Mediated graph, our method significantly outperforms Autobounds.
+5.2
+Runtime
+We measure the wall-clock runtime of the neural methods on a fixed ternary IV dataset, with identical
+hardware (Appendix A.5). Our method takes 330 seconds, while BCCE takes 84 seconds and NeuralPartialID
+takes 399 seconds. Our method is 20% faster than NeuralPartialID, though slower than BCCE. These runtimes
+should be interpreted together with the accuracy results, since the methods optimise different objectives and
+exhibit substantially different errors.
+5.3
+Behaviour of our approach
+In order to visualise our method, on a fixed ternary IV dataset, we plot the ATE and LED for multiple
+values of λ in Figure 2. The shape of both the ATE and Energy Distance curves agrees with our theory. A
+linear extrapolation for the ATE gives the correct bounds, and the Energy Distance is well modelled by a
+quadratic curve. However, the model does not converge to the extremal bounds near λ = 0. Despite extensive
+tuning, this gap remains and necessitates our extrapolation method. The true ATE interval for this example
+is [−0.427, 0.361]. Linear extrapolation gives [−0.430, 0.363], which closely matches the analytical bounds.
+In contrast, using the trained models directly without extrapolation gives approximately [−0.450, 0.388].
+10
+
+
+Thus, the main improvement comes from estimating the zero-penalty intercept rather than taking the causal
+estimand from the model trained at the smallest available penalty. Figure 2 plots the ATE and LED for a
+wider range of λ. The ATE is linear in λ for around 0.005 < |λ| < 0.09. At λ = 0.09, there is an abrupt
+change where both the ATE and energy distance stop following the linear and quadratic trend. Both changes
+are consistent with our theory; this corresponds to when a nodes predicted probability equals 0 or 1. There is
+a wide range of λ within the linear regime, with our selected λ inside it.
+5.4
+Analysis of the baselines
+To investigate why the neural baselines underperform, we test each model using neural networks of varying
+widths. All other parameters are held constant, except for the learning rate, which is either scaled using
+µP scaling (Yang et al., 2022) or kept fixed. µP scaling promotes stable training across different widths by
+ensuring that the magnitudes of parameter updates and gradients remain stable. All models are trained on
+a fixed ternary IV SEM. Figure 3 shows the average absolute error between the predicted and analytical
+bounds.
+Ideally, improving the width and hence representational capacity of the model improves performance.
+However, this is not observed for NeuralPartialID and BCCE, the accuracy decreases for larger NN widths.
+For BCCE, we attribute this to an instability in the GAN training procedure where the critic becomes too
+strong, preventing the generator from learning. Similarly, for NeuralPartialID, this is attributed to unstable
+parameter updates and hyperparameter sensitivity. Further analysis can be seen in Appendix G.
+6
+Conclusion
+We introduced a neural approach to partial identification in finite discrete structural causal models. The
+method represents each structural mechanism by a neural categorical model and computes the induced
+observational and interventional distributions explicitly over the finite state space. Causal bounds are estimated
+by solving a signed family of energy-distance-penalised problems and extrapolating the resulting causal
+estimates to the zero-penalty limit. Our analysis shows that, along a smooth one-sided solution path, the
+causal estimand varies linearly with the penalty parameter to first order, while the energy-distance loss varies
+quadratically. The corresponding intercepts recover the lower and upper bounds within the neural model
+family. Across several simulations, our resulting extrapolated bounds are consistently more accurate than
+those of the evaluated neural baselines and remain competitive with analytical methods.
+The approach is limited to discrete models and requires identifying a locally regular penalty range.
+Extending the approach to continuous variables and further development on the theory behind the validity of
+the linear extrapolation regime would broaden its practical scope. More generally, these results suggest that
+optimisation paths, rather than only their limiting iterates, can provide useful information for estimating
+causal bounds in partially identified models.
+11
+
+
+References
+Vahid Balazadeh Meresht, Vasilis Syrgkanis, and Rahul G Krishnan. Partial identification of treatment effects
+with implicit generative models. Advances in Neural Information Processing Systems, 35:22816–22829,
+2022.
+Alexander Balke and Judea Pearl. Bounds on treatment effects from studies with imperfect compliance.
+Journal of the American statistical Association, 92(439):1171–1176, 1997.
+Arefe Boushehrian, Mohammad Reza Badri, Sina Akbari, and Negar Kiyavash. Fundamental limits and
+optimal methods for sharp analytical causal bounds in instrumental variable models. In Proceedings of the
+42nd Conference on Uncertainty in Artificial Intelligence, volume 337 of Proceedings of Machine Learning
+Research, pages 689–744. PMLR, 2026.
+Marco Cuturi. Sinkhorn distances: lightspeed computation of optimal transport. In Proceedings of the 27th
+International Conference on Neural Information Processing Systems - Volume 2, NIPS’13, 2013.
+Guilherme Duarte, Noam Finkelstein, Dean Knox, Jonathan Mummolo, and Ilya Shpitser. An automated
+approach to causal inference in discrete settings. Journal of the American Statistical Association, 119(547):
+1778–1793, 2024.
+Tilmann Gneiting and Adrian E Raftery. Strictly proper scoring rules, prediction, and estimation. Journal of
+the American Statistical Association, 2007.
+Ian J. Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron
+Courville, and Yoshua Bengio. Generative adversarial networks, 2014.
+Hinton. Rmsprop: Divide the gradient by a running average of its recent magnitude, 2012.
+Yaowei Hu, Yongkai Wu, Lu Zhang, and Xintao Wu. A generative adversarial framework for bounding
+confounded causal effects. In AAAI Conference on Artificial Intelligence, 2021.
+Eric Jang, Shixiang Gu, and Ben Poole. Categorical reparameterization with gumbel-softmax. In International
+Conference on Learning Representations, 2017.
+Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization, 2015.
+Charles F Manski. Partial identification of probability distributions. Springer, 2003.
+Vinod Nair and Geoffrey E. Hinton. Rectified linear units improve restricted boltzmann machines, 2010.
+Kirtan Padh, Jakob Zeitler, David Watson, Matt Kusner, Ricardo Silva, and Niki Kilbertus. Stochastic causal
+programming for bounding treatment effects. In Conference on Causal Learning and Reasoning, pages
+142–176. PMLR, 2023.
+Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen,
+Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Köpf, Edward Yang, Zach
+DeVito, Martin Raison, Alykhan Tejani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and
+Soumith Chintala. Pytorch: An imperative style, high-performance deep learning library, 2019.
+Judea Pearl. Causality. Cambridge University Press, 2009.
+Maria L. Rizzo and Gábor J. Székely. Energy distance. WIREs Computational Statistics, 8(1):27–38, 2016.
+doi: https://doi.org/10.1002/wics.1375.
+Michael C Sachs, Gustav Jonzon, Arvid Sjölander, and Erin E Gabriel. A general method for deriving tight
+symbolic bounds on causal effects. Journal of Computational and Graphical Statistics, 32(2):567–576, 2023.
+Michael C Sachs, Erin E Gabriel, Arvid Sjölander, and Gustav Jonzon. causaloptim: An Interface to Specify
+Causal Graphs and Compute Bounds on Causal Effects, 2026. URL https://sachsmc.github.io/causaloptim/.
+12
+
+
+Tim Salimans, Ian Goodfellow, Wojciech Zaremba, Vicki Cheung, Alec Radford, and Xi Chen. Improved
+techniques for training gans. In Proceedings of the 30th International Conference on Neural Information
+Processing Systems, 2016.
+1. J. Schoenberg. Metric spaces and positive definite functions, 1938.
+Madhumitha Shridharan and Garud Iyengar. Scalable computation of causal bounds. Journal of Machine
+Learning Research, 24(237):1–35, 2023.
+Yilin Song, F. Richard Guo, K. C. Gary Chan, and Thomas S. Richardson. The categorical instrumental
+variable model: Characterization, partial identification, and statistical inference, 2025.
+Gabor J. Szekely. E-statistics: The energy of statistical samples. Bowling Green State University, Department
+of Mathematics and Statistics Technical Report, 2003.
+J. Tan, J. Blanchet, and V. Syrgkanis. Consistency of Neural Causal Partial Identification. In Advances in
+Neural Processing Systems 2024, 2024.
+Kevin Xia, Kai-Zhan Lee, Yoshua Bengio, and Elias Bareinboim. The causal-neural connection: expressiveness,
+learnability, and inference. In Proceedings of the 35th International Conference on Neural Information
+Processing Systems, 2021.
+Kevin Xia, Yushu Pan, and Elias Bareinboim. Neural causal models for counterfactual identification and
+estimation. arXiv preprint arXiv:2210.00035, 2022.
+Greg Yang, Edward J. Hu, Igor Babuschkin, Szymon Sidor, Xiaodong Liu, David Farhi, Nick Ryder, Jakub
+Pachocki, Weizhu Chen, and Jianfeng Gao. Tensor programs v: Tuning large neural networks via zero-shot
+hyperparameter transfer. In Advances in Neural Processing Systems 2021, 2022.
+Dmitry Yarotsky. Optimal approximation of continuous functions by very deep relu networks, 2018.
+Junzhe Zhang, Jin Tian, and Elias Bareinboim. Partial counterfactual identification from observational and
+experimental data. In Proceedings of the 39th International Conference on Machine Learning, 2022.
+13
+
+
+Algorithm 1 Lower (Upper) ATE bound estimation via studentized-residual fit
+Input: Data vectors x, y ∈RL; minimum points kmin; threshold τ
+Output: Intercept estimate ˆβ0
+1: Sort {(xi, yi)}L
+i=1 by xi descending (ascending), yielding (˜x, ˜y).
+2: S ←{0, . . . , kmin −1}
+// initial set
+3: for i = kmin, . . . , L −1 do
+4:
+T ←S ∪{i}
+// tentatively add next point
+5:
+Fit OLS: yT ∼β0 + β1 ˜xT
+6:
+Compute internally studentised residuals r.
+7:
+if |r−1| < τ then
+8:
+S ←T
+// accept
+9:
+else
+10:
+break
+// reject and stop
+11:
+end if
+12: end for
+13: Fit ˜yS ∼β0 + β1 ˜xS on final S.
+14: return ˆβ0
+A
+Implementation Details
+Our model uses the assumed causal DAG to construct a neural structural causal model. As in the data-
+generating process, the nodes are evaluated in topological order. However, the unknown structural mechanisms
+are represented by neural networks rather than fixed random functions.
+Let X1, . . . , Xm denote the discrete endogenous nodes and let U denote the exogenous variables. For
+every node Xi, the model specifies the categorical probabilities
+πi,j
+ PaX(i), PaU(i); θi
+
+,
+j ∈{0, . . . , ki −1},
+where PaX(i) and PaU(i) are the endogenous and exogenous parents of Xi, respectively. The exogenous
+variables are sampled as in the main model, U ∼U(0, 1).
+For a node with ki possible states, the values of its parents are concatenated into the input
+h(0)
+i
+= concat (PaX(i), PaU(i)) .
+This input is passed through a multilayer perceptron,
+h(ℓ)
+i
+= ρ
+
+W (ℓ)
+i
+h(ℓ−1)
+i
++ b(ℓ)
+i
+
+,
+ℓ= 1, . . . , L,
+ai = W (out)
+i
+h(L)
+i
++ b(out)
+i
+,
+where ρ is the ReLU activation function and ai ∈Rki contains the output logits. The conditional probability
+of state j is obtained using a softmax:
+πi,j
+ PaX(i), PaU(i); θi
+
+=
+exp(ai,j)
+Pki−1
+ℓ=0 exp(ai,ℓ)
+.
+A separate neural network with parameters θi is used for each node.
+A.1
+Joint probability calculation
+The model computes probabilities explicitly over all possible joint configurations of the discrete endogenous
+nodes. Let
+S =
+m
+Y
+i=1
+{0, . . . , ki −1}
+14
+
+
+be the Cartesian product of their state spaces. The number of configurations is therefore
+K =
+m
+Y
+i=1
+ki.
+We denote the c-th configuration by sc ∈S.
+For a given realisation u of the exogenous variables, the probability of a configuration factorizes according
+to the DAG:
+pθ (sc | u) =
+m
+Y
+i=1
+πi,sc,i
+ Pasc(i), Pau(i); θi
+
+.
+(15)
+Thus, each network returns a probability vector over the states of its node, and the entry corresponding to
+sc,i is selected for each global configuration. The selected conditional probabilities are then multiplied across
+nodes.
+To avoid unnecessary network evaluations, the model identifies the unique configurations of a node’s
+discrete parents. The node network is evaluated once for each unique parent configuration rather than once
+for every complete configuration in S. Its outputs are then mapped back to the corresponding complete
+configurations. This optimization does not change the probability represented by Equation (15).
+A.2
+Marginal probabilities
+The probabilities in Equation (15) are conditional on a realisation of the exogenous variables. The model
+distribution is obtained by integrating over U:
+pθ(s) = EU [pθ (s | U)] .
+This expectation is approximated by Monte Carlo sampling. Given B independent exogenous realisations,
+bpθ(s) = 1
+B
+B
+X
+b=1
+pθ
+
+s | u(b)
+.
+A.3
+Interventional probabilities
+Interventions are implemented by replacing the model assignment for the intervened node. Under the
+intervention do(Xt = a), configurations for which sc,t̸ = a are assigned probability zero. For compatible
+configurations, the conditional factor associated with Xt is omitted:
+pθ (sc | do(Xt = a), u)
+= 1{sc,t = a}
+Y
+i∈{1,...,m}\{t}
+πi,sc,i
+ Pasc(i), Pau(i); θi
+
+.
+This is the truncated factorization associated with an intervention, rather than ordinary conditioning on
+Xt = a.
+For an outcome node Y , its expected value under treatment a is computed directly from the probabilities
+of the enumerated states:
+Eθ [Y | do(Xt = a)]
+= EU
+" K
+X
+c=1
+sc,Y pθ (sc | do(Xt = a), U)
+#
+.
+The causal contrast used in the main objective is consequently
+a(θ) = Eθ [Y | do(Xt = 1)] −Eθ [Y | do(Xt = 0)] .
+15
+
+
+A.4
+Estimating Energy Distance
+Proposition 1 gives the Energy Distance for a random discrete model. However, when estimating the Energy
+Distance from samples from finite samples, a modified formula is used (Rizzo and Székely, 2016). Specifically,
+the term involving the distance between predictions, E||x −x′|| is modified. The term can be estimated with
+the unbiased U estimator
+E||x −x′|| ≈1
+B2
+X
+i̸=j
+pi⊤
+θ Dpj
+θ
+=
+B
+B −1 ˜pθD˜pθ −
+1
+B(B −1)
+B
+X
+i=1
+pi⊤
+θ Dpiθ
+where ˜p is the mean predicted probability, or the biased V estimator
+E||x −x′|| ≈˜pD˜p.
+Using the V estimator means the Energy Distance is always positive, but biased positively. Alternatively, the
+U estimator gives an unbiased Energy Distance, but possibly negative empirical value. Since our method
+can handle negative distances, we use the U estimator. We note the difference between the two estimators is
+O(B−2) and makes very little difference for large batches.
+A.5
+Hyperparameters
+We use deep neural networks for our model to parametrize Equation (6). The same model hyperparameters are
+used for all experiments. Our models have hidden width 1024 and depth 3. The input and output dimensions
+are determined based on the parent nodes and output categories. The ReLU activation function (Nair and
+Hinton, 2010) is used for the hidden layers, with the Softmax activation on the output to constrain the
+output to valid probabilities. Our model is trained with the Adam optimiser (Kingma and Ba, 2015) with a
+cosine decay schedule and maximum learning rate of 1e-4 and 24 epochs with 256 steps per epoch. The linear
+fit threshold was selected as τ = 1.25. Our hyperparameters were tuned on a single Ternary IV graph, like
+the baselines. The random seed for each run is the same as the one used to generate the datasets, that is
+{0, . . . , 9}.
+Finally, our method is implemented using PyTorch (Paszke et al., 2019) version 2.13. All experiments
+and timings (including baselines) are conducted using Ubuntu Linux 26.04. The hardware is as follows: GPU
+NVIDIA RTX 3090, CPU AMD RYZEN 5800X3D and 32GB DDR4 system memory.
+B
+Baselines and Evaluation Metrics
+For each dataset, we compute the observed distribution q using B = 1000000 samples. The baselines compute
+their predicted bounds using these observed probabilities.
+The baselines are implemented using the official packages / code.
+Autobounds (Duarte et al., 2024) uses the default configuration, used from their Docker container.
+CausalOptim (Sachs et al., 2026) generates analytical bounds given a causal graph, given as a series of
+equations. For each graph type, we generate the analytical equations for the upper and lower bounds.
+NeuralPartialID (Tan et al., 2024) uses the official implementation. We tuned the hyperparameters using
+a sequential grid search to find the best parameters. The range of parameters searched were: Width [16, 32,
+64, 128, 256, 512, 1024], depth [2, 3, 4], learning rate [3e-4, 1e-3, 3e-3], lagrange learning rate [0.1, 0.3, 0.5,
+0.7]. Compared to the original implementation, we settled on increasing the depth of the NNs from 2 to 3,
+increasing the Lagrange learning rate from 0.1 to 0.5 and increasing the width from 32 to 64 with a max
+training length of 500 epochs, which we found gives the best performance on a standard task.
+BCCE (Hu et al., 2021) also uses the official implementation. We used the Nonlinear model class for our
+experiments so the models are general non-linear neural networks. The default hyperparameters were very
+unstable and yielded poor results, so the parameters were manually tuned. For the final hyperparameters,
+the width of both the generator and critic was increased from 16 to 64, and the depth of the generator was
+16
+
+
+increased to 3. The generator’s optimiser was switched from RMSProp (Hinton, 2012) to AdamW, while
+RMSProp was kept for the discriminator. The learning rate was increased from 3e-4 to 5e-2 for both the
+discriminator and generator. Finally, a stepwise learning rate decay schedule was added of 0.5 every 200
+epochs. These changes significantly increased the accuracy. Increasing the training duration from the default
+2000 epochs did not improve performance, but led to training instabilities so the duration was fixed at 500
+epochs.
+The hyperparameters for both BCCE and NeuralPartialID were configured on a Ternary IV graph sample.
+C
+Finite-Support Energy Distance
+This section proves the finite-support representation in Proposition 1. Let p = (p1, . . . , pK)⊤and q =
+(q1, . . . , qK)⊤. Let X, X′ ∼p and Y, Y′ ∼q independently.
+Proof of Proposition 1. Expanding the cross-distribution expectation gives
+E∥X −Y∥β
+2 =
+K
+X
+k,ℓ=1
+P(X = sk)P(Y = sℓ)∥sk −sℓ∥β
+2
+=
+K
+X
+k,ℓ=1
+pkqℓDkℓ= p⊤Dq.
+Likewise,
+E∥X −X′∥β
+2 =
+K
+X
+k,ℓ=1
+pkpℓDkℓ= p⊤Dp,
+and
+E∥Y −Y′∥β
+2 =
+K
+X
+k,ℓ=1
+qkqℓDkℓ= q⊤Dq.
+Substituting these terms into Equation (4) gives
+EDβ(p, q) = 2p⊤Dq −p⊤Dp −q⊤Dq
+= −(p −q)⊤D(p −q),
+where the final equality uses the symmetry of D.
+By Schoenberg’s theorem (Schoenberg, 1938), D is strictly conditionally negative definite for distinct
+support points and 0 < β < 2. Since p −q has zero sum, the quadratic form above is nonnegative and is zero
+if and only if p = q.
+D
+KKT Perturbation Derivation
+The main text uses softmax outputs, so the raw neural parameters θ are unconstrained while the conditional
+probability vectors are constrained to the simplex implicitly. The KKT derivation below is written in ambient
+mechanism coordinates rather than in the raw neural coordinates. This makes the derivation applicable to
+the induced solution path without requiring the raw parameter vectors to converge or be unique.
+D.1
+Constrained mechanism formulation
+Let η denote local coordinates for the conditional mechanism probabilities, and let π(η) collect all corresponding
+probability vectors. For each s ∈{+, −}, we study a local-minimiser branch of the abstract constrained
+problem
+min
+η
+LED(η; bq) + λa(η)
+subject to
+A(η) = 0,
+B(η) ≤0.
+17
+
+
+where the simplex constraints are included in A and B. For example, each conditional mechanism satisfies
+X
+j
+πi,j(η) = 1,
+−πi,j(η) ≤0.
+The neural model in the main text is a smooth feasible map
+η = Φ(θ),
+π(Φ(θ)) = softmax
+ g(θ)
+
+.
+Thus, the explicit constraints are eliminated in the implementation, but the induced observational distribution
+and causal estimand lie in the same feasible mechanism space. At strictly positive probability vectors, the
+softmax map is locally onto the simplex tangent space because its Jacobian has rank k −1. We therefore use
+the constrained coordinates η only for the local sensitivity calculation. The result transfers to the softmax
+model whenever Φ is locally expressive on the feasible tangent space. Softmax does not represent boundary
+probabilities exactly; boundary solutions are understood as limits of the interior analysis.
+D.2
+Local regularity assumptions
+The following assumptions make the constrained KKT system a valid local description of the solution paths
+in Assumption 1. Fix a regular reference point (η0, λ0) with λ0̸ = 0, and let A = {r : Br(η0) = 0} be the
+active inequality set.
+First, LED(η; bq), a(η), A(η), and B(η) are twice continuously differentiable near η0. The active set is
+fixed under the local perturbation, and the rows of
+C0 =
+ ∇ηA(η0)
+∇ηBA(η0)
+
+are linearly independent (LICQ). We assume strict complementarity when needed to ensure that the active
+set remains fixed.
+Finally, the bordered KKT matrix is nonsingular and the second-order sufficient conditions hold on the
+critical cone. The former gives a locally unique differentiable KKT branch by the implicit function theorem,
+while the latter ensures that this branch consists of local minimisers. We perform the calculation at regular
+points with λ0̸ = 0 and then take a one-sided limit as λ0 →0. Nonsingularity is not required at the possibly
+unidentifiable exact-fit problem at λ = 0.
+D.3
+KKT perturbation
+Define the Lagrangian
+L(η, µ, ν; λ) = LED(η; bq) + λa(η) + A(η)⊤µ + B(η)⊤ν.
+At the reference point, the KKT conditions are
+∇ηL(η0, µ0, ν0,A; λ0) = 0,
+A(η0) = 0,
+BA(η0) = 0,
+BAc(η0) < 0,
+ν0,A ≥0,
+ν0,Ac = 0.
+The third and sixth conditions, together with the active-set definition, imply complementary slackness. The
+perturbed point is
+(η1, µ1, ν1,A; λ1) = (η0 + δη, µ0 + δµ, ν0,A + δνA; λ0 + δλ).
+18
+
+
+Since the active set is fixed, its stationarity and feasibility conditions are
+∇ηL(η1, µ1, ν1,A; λ1) = 0,
+A(η1) = 0,
+BA(η1) = 0.
+For compactness, define
+p0 = p(η0),
+a0 = a(η0),
+Aη = ∇ηA(η0),
+Bη = ∇ηBA(η0),
+C0 =
+Aη
+Bη
+
+,
+J0 = ∇ηp(η0),
+H0 = ∇2
+ηL(η0, µ0, ν0,A; λ0)
+= −2J⊤
+0 DJ0
+−2
+K
+X
+k=1
+[D(p0 −bq)]k ∇2
+ηpk(η0)
++ λ0∇2
+ηa(η0) +
+X
+r
+µ0,r∇2
+ηAr(η0)
++
+X
+r∈A
+ν0,r∇2
+ηBr(η0).
+Subtracting the reference-point stationarity condition from the perturbed stationarity condition and expanding
+to first order yields
+0 = H0δη + A⊤
+η δµ + B⊤
+η δνA + ∇ηa(η0)δλ + O(δλ2).
+Similarly, subtracting the reference feasibility conditions from their perturbed counterparts gives
+0 = Aηδη + O(δλ2),
+0 = Bηδη + O(δλ2).
+Writing δξ = (δµ, δνA) and stacking the stationarity and feasibility expansions gives
+
+H0
+C⊤
+0
+C0
+0
+ 
+δη
+δξ
+
+= −δλ
+
+∇ηa(η0)
+0
+
++ O(δλ2).
+Assuming this bordered KKT matrix is nonsingular, define
+wη
+wξ
+
+=
+
+H0
+C⊤
+0
+C0
+0
+−1 ∇ηa(η0)
+0
+
+.
+In particular, the parameter component is
+wη =
+I
+0
+0
+
+
+H0
+A⊤
+η
+B⊤
+η
+Aη
+0
+0
+Bη
+0
+0
+
+
+−1 
+
+∇ηa(η0)
+0
+0
+
+.
+It follows that
+δη = −δλwη + O(δλ2),
+δξ = −δλwξ + O(δλ2).
+19
+
+
+Finally, using the leading-order Taylor expansions for p(η) and a(η1),
+p(η1) = p0 −δλJ0wη + O(δλ2),
+a(η1) = a0 −δλ∇ηa(η0)⊤wη + O(δλ2).
+When p0 = bq,
+LED(η1; bq) = −
+ p(η1) −bq
+⊤D
+ p(η1) −bq
+
+= −δλ2(J0wη)⊤D(J0wη) + O(δλ3).
+There are no constant or O(δλ) terms at p0 = bq. Since D is conditionally negative definite, the quadratic
+leading term is nonnegative.
+For the one-sided branches in the main text, take regular reference points along ηs(λ) and let λ0 →0
+from the corresponding side. Writing Js(λ0) = ∇ηp(ηs(λ0)) and letting wη,s(λ0) denote the KKT response
+for that branch, the KKT calculation gives
+d
+dλa(ηs(λ))
+
+λ=λ0
+= −∇ηa(ηs(λ0))⊤wη,s(λ0),
+and
+d
+dλp(ηs(λ))
+
+λ=λ0
+= −Js(λ0)wη,s(λ0).
+Under the one-sided smoothness assumption in the main text, these induced quantities have one-sided limits
+at zero. Writing
+cs =
+d
+dλa(θs(λ))
+
+λ=0
+,
+vs =
+d
+dλpθs(λ)
+
+λ=0
+,
+the preceding expansions become
+a(θs(λ)) = a(θs(0)) + csλ + O(λ2)
+and
+LED(θs(λ); bq) = −λ2v⊤
+s Dvs + O(|λ|3).
+Since vs has zero sum, conditional negative definiteness of D gives −v⊤
+s Dvs ≥0. This is the local extrapolation
+result used in the main text. The KKT calculation does not by itself establish that the branch is globally
+optimal; the global-minimiser assumption is what is needed for the bound-recovery corollary.
+E
+Analytical Bounds
+In this section, we give analytical bounds for the Mediated graph, Z →T ↔M →Y . Here ↔denotes
+mutual confounding between T and M. All of Z, T, M, Y are binary, there is no restriction on the confounding
+variable. This graph structure is beyond the assumptions required by CausalOptim.
+Let the ATE from intervening on node A with target node B be ATEA→B.
+Theorem 2. Let δY = Pr(Y = 1|M = 1) −Pr(Y = 1|M = 0). Then ATET →Y = δY ATET →M.
+Proof. Because the effect of T on Y is fully mediated by M, and the effect of M on Y is unconfounded, the
+mediation formula gives
+Pr(Y = 1 | do(T = t)) =
+X
+m∈{0,1}
+Pr(Y = 1 | M = m) Pr(M = m | do(T = t)).
+20
+
+
+Taking the difference between t = 1 and t = 0 yields
+ATET →Y = δY
+h
+Pr
+ M = 1 | do(T = 1)
+
+−Pr
+ M = 1 | do(T = 0)
+i
+= δY ATET →M .
+where the final equality follows because M is binary.
+Thus, in order to compute bounds of ATET →Y , we only need the bounds of ATET →M. This is exactly
+the binary IV case which is known (Balke and Pearl, 1997).
+F
+Synthetic Data Generation
+Given a causal directed acyclic graph (DAG), we construct a structural equation model (SEM) and generate
+its nodes in topological order. Let V denote the set of endogenous nodes in the graph and U the set of
+exogenous variables. For each node Xv, v ∈V, we distinguish between its endogenous parents
+paV(v) ⊆V
+and its exogenous parents
+paU(v) ⊆U.
+Endogenous parents correspond to other variables represented explicitly in the causal graph, whereas exogenous
+parents represent latent sources of dependence, such as unobserved confounders.
+The exogenous variables and node-specific noise terms are sampled as
+Uj ∼Uniform(0, 1),
+j ∈U,
+εv ∼Uniform(0, 1),
+v ∈V,
+with the Uj’s and εv’s mutually independent unless the graph explicitly specifies a shared exogenous parent.
+Each endogenous node is then generated according to the structural assignment
+Xv = fv
+ XpaV(v), UpaU(v), εv
+
+,
+v ∈V,
+where XpaV(v) and UpaU(v) denote the collections of endogenous and exogenous parent values, respectively.
+A shared exogenous parent may enter the structural assignments of several nodes, thereby inducing latent
+dependence between them.
+F.1
+Random structural functions
+The nonlinear structural mechanisms are sampled once when a dataset instance is created. They are represented
+by random Fourier functions mapping [0, 1] to (0, 1). For a scalar input x, a function is defined as
+g(x) = b +
+K
+X
+k=1
+
+ak cos
+ 2π(k + 1
+2)x
+
++ ck sin
+ 2π(k + 1
+2)x
+
+,
+r(x) = sigmoid(αg(x)) .
+where we have K = 10 Fourier components and α = 2. The coefficients are independently sampled as
+b ∼N(0, 1),
+ak, ck ∼N
+ 0, k−2δ
+,
+δ = 1.5.
+Thus, the standard deviation of the coefficient at frequency k is k−δ. This decay suppresses high-frequency
+components and produces smooth but nonlinear functions. Half-integer frequencies are used to avoid forcing
+the function to have equal values at the two boundaries of the unit interval.
+21
+
+
+A separate random function is drawn for each relevant configuration of the discrete parents. For example,
+with binary Z, the treatment probability is
+pD(z, u) =
+(
+rD,0(u),
+z = 0,
+rD,1(u),
+z = 1,
+and the binary treatment is generated by inverse-transform sampling,
+D = 1{εD < pD(Z, U)} .
+For a multi-valued parent, such as a ternary instrument, one independent function is constructed for each
+parent state and the function corresponding to the realised state is selected.
+For a categorical node with k > 2 states, the generator constructs k random scores s0, . . . , sk−1. In the
+ternary-outcome experiments, it first obtains a treatment-specific scalar representation,
+h(D, U) =
+(
+rh,0(U),
+D = 0,
+rh,1(U),
+D = 1,
+and evaluates the category scores at this value. The conditional probabilities are
+πj(D, U) =
+exp{sj(h(D, U))}
+Pk−1
+ℓ=0 exp{sℓ(h(D, U))}
+,
+j = 0, . . . , k −1.
+The realized category is then obtained using the cumulative probabilities:
+Y = min
+(
+j : εY ≤
+j
+X
+ℓ=0
+πℓ(D, U)
+)
+.
+The Fourier coefficients determine the structural mechanisms and remain fixed for all observations in one
+dataset. Changing the dataset seed draws a new collection of functions and therefore a new SEM. Conditional
+on these fixed mechanisms, individual observations differ because the root variables and exogenous noise
+variables are resampled.
+F.2
+Observational samples
+An observational dataset of size b is obtained by repeatedly sampling the root and noise variables and then
+evaluating all structural assignments in topological order.
+Since the problem is only partially identified, we do not use the ATE of the SEM used to generate
+the dataset. There are many other SEMs with identical observational distributions. Rather, we use the
+observational distribution to compute bounds on the ATE. This is done by monte-carlo sampling for q over a
+large number of observations, then q is used in the analytic solver for the true bounds.
+F.3
+Graph details
+For each graph, the U node is unobserved, acting as unobserved confounding. In the Binary IV, Proxy and
+Mediated graphs, all observed variables are binary. In the Ternary IV graph, the treatment remains binary
+(so ATE is easily calculated) while node Z and node Y are both ternary. The datasets are generated using a
+random seeds from 0 to 9, with the exception of the Mediated dataset. Many datasets from this graph gave
+nearly 0 ATE. Instead, for this graph, the first 10 datasets to give nontrivial ATE values were used. The final
+seeds were {1, 3, 5, 6, 7, 10, 11, 16, 17}.
+G
+Analysis of the baselines
+In Section 5.4, we found that the baseline methods did not scale with model size. Specifically, the model
+performance degraded as the neural network widths increased, even with µP learning rate scaling. In this
+section, we analyse the cause of this failure.
+22
+
+
+Width Lower error Upper error
+16
+0.008
+0.010
+32
+0.010
+0.011
+64
+0.009
+0.014
+128
+0.062
+0.151
+256
+0.371
+0.399
+512
+0.572
+0.780
+1024
+0.855
+0.931
+Table 2: Error of the GAN generator from BCCE for different NN widths for the upper bound model and
+lower bound model. Lower error indicates better fit. The learning rate follows µP scaling.
+Width
+α
+χmin
+χmax
+16
+0.131 12.48 10.55
+32
+0.132 22.54 24.51
+64
+0.136 14.18 27.61
+128
+0.136
+0.21
+36.56
+256
+0.128
+7.62
+20.97
+512
+0.137
+8.07
+29.98
+1024
+0.135 20.15 18.58
+Table 3: Final parameters of the NeuralPartialID models for different width NNs. χmin, and χmax are the
+final Lagrange multipliers, for the lower and upper bounds and α is the fit quality threshold.
+BCCE is a GAN architecture, where a generator and discriminator are adversarially optimised. As the
+NN widths were scaled up, we found an instability where the discriminator becomes too strong and no useful
+gradient feedback is given to the generator. This can be seen by the high generator error as the with of the
+NNs becomes large, as seen in Table 2 where the model is evaluated on a ternary IV example. The error
+measured is the largest absolute difference in probability between the predicted and true distributions. This
+failure mode is well documented and techniques to enhance their stability have been developed (Salimans
+et al., 2016), but is undesirable for the user. As a result of this issue, BCCE struggles on more complex tasks.
+Similarly, NeuralPartialID’s performance slightly degrades with larger NN widths. This method is based
+on a Lagrange multiplier method, shared with (Balazadeh Meresht et al., 2022) that solves the minimax
+optimisation problem,
+min
+θ
+max
+χ≥0 ATEθ +χ (S (Pθ, P) −α)
+where S (Pθ, P) denotes the Sinkhorn distance (Cuturi, 2013) between the predicted and observed distributions.
+The model parameters θ are updated by gradient descent, while the Lagrange multiplier (χ) is updated
+according to χ ←χ + χLR [S (Pθ, P) −α]. The fit quality threshold α is derived from a pretraining phase
+where the average treatment effect is not optimised.
+In principle, the exact constrained solution is recovered in the limiting case χ →∞and α = 0. In
+practice, however, the update rate of χ must be carefully balanced against the convergence rate of the model
+parameters. If these rates are poorly matched, training may become prohibitively slow or unstable. Moreover,
+the resulting bounds are highly sensitive to the choice of α. In practice, the algorithm converges to α > 0
+and the constraint is relaxed, which tends to produce bounds that are wider than the theoretically optimal
+bounds. Table 3 displays the fitted α and final χ values for different width models, on the same IV ternary
+example, where we see α is always around 0.13 and χ is unstable and fluctuates as NN width is increased.
+The desired scaling of χ →∞does not occur.
+23

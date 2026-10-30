@@ -1,0 +1,1245 @@
+A Semi-Analytical Inference Framework for Structural Causal Models
+Tatiana Boura∗, Robert Peharz
+Graz University of Technology
+Abstract
+Structural Causal Models (SCMs) provide a principled frame-
+work for observational, interventional, and counterfactual rea-
+soning, all of which rely on probabilistic inference. Existing
+frameworks either transform SCMs into alternative tractable
+representations or rely on approximate inference with expres-
+sive generative models. We instead perform inference using a
+message passing scheme directly on the SCM by representing
+structural mechanisms and probability densities in a com-
+mon finite-dimensional function space. Forward propagation
+combines a numerical realization of the Law of the Uncon-
+scious Statistician, while propagated densities are recovered
+by spline projection from LOTUS moments. The same repre-
+sentation naturally yields backward message passing for con-
+ditioning, providing a unified framework for causal inference.
+Using tensor-product B-spline bases, the resulting algorithm
+expresses inference through numerical quadrature and linear
+algebra without explicitly constructing conditional distribu-
+tions. Experiments on randomly generated continuous SCMs
+demonstrate accurate approximation of Monte Carlo reference
+solutions and systematic improvement with increasing basis
+resolution.
+1
+Introduction
+The notion of causality has been central to philosophical
+discourse since antiquity. Structural Causal Models (SCMs)
+provide one of the most widely used mathematical frame-
+works for causal reasoning (Pearl 2009). Under the assump-
+tion that the modeled system is causally closed, uncertainty
+is confined to exogenous variables and endogenous variables
+are related deterministically (Peters, Janzing, and Schölkopf
+2017). SCMs support three levels of reasoning, known as
+Pearl’s causal hierarchy: association, intervention, and coun-
+terfactuals (Pearl and Mackenzie 2018). Although these three
+query types differ in their semantics, each ultimately requires
+evaluating probability distributions induced by the SCM. Ef-
+ficient probabilistic inference therefore forms the compu-
+tational core of causal reasoning. Observational queries re-
+quire probabilistic inference in the observational distribution,
+i.e. the pushforward distribution of the exogenous distribu-
+tion under the hierarchical causal mechanism, interventional
+queries require inference after modifying the structural equa-
+tions, and counterfactual reasoning combines conditioning
+∗Corresponding author.
+with hypothetical interventions (Han, Chen, and Darwiche
+2023; Pearl 2009). Specifically, counterfactual inference can
+be formulated using a twin SCM or, equivalently, an abduct-
+intervene-infer procedure (Pearl 2009).
+While much of the causal modeling literature focuses
+on causal discovery, identification, and effect estimation
+from data (Peters, Janzing, and Schölkopf 2017), compar-
+atively less attention has been devoted to efficiently evalu-
+ating queries in a given SCM (Darwiche 2022; Wang and
+Kwiatkowska 2023; Zečević et al. 2021; Pawlowski, Castro,
+and Glocker 2020). These directions are complementary:
+discovery and identification determine the causal model and
+identifiable effects, whereas causal inference assumes a given
+SCM and answers causal queries. This setting naturally arises
+when the model is provided by expert knowledge or a pre-
+ceding learning stage.
+Causal inference appears closely related to inference in
+Bayesian networks (BNs) (Koller and Friedman 2009), where
+algorithms such as variable elimination, belief propagation,
+and junction-tree message passing enable efficient exact and
+approximate inference (Pearl 1982; Zhang and Poole 1996;
+Wainwright and Jordan 2008). Since every acyclic SCM in-
+duces a BN, it is natural to ask whether these methods apply
+directly. However, BN inference requires explicit conditional
+distributions, whereas SCMs define them only implicitly
+through deterministic structural mechanisms and exogenous
+noise. Thus, inference depends both on the graph structure
+and the representation of the structural mechanisms.
+Several approaches have addressed this challenge. One
+line of work compiles SCMs into alternative representa-
+tions that support tractable inference, including tractable cir-
+cuits and related representations (Darwiche 2022; Wang and
+Kwiatkowska 2023; Zečević et al. 2021). Another employs
+expressive structural mechanisms based on deep generative
+models (Pawlowski, Castro, and Glocker 2020), where infer-
+ence is typically performed approximately. Existing methods
+therefore either transform the SCM into a tractable represen-
+tation or perform inference approximately using sampling or
+learned generative models.
+In this work, we instead perform inference directly on
+the original SCM representation. We formulate message
+passing in a common finite-dimensional function space for
+structural mechanisms and probability densities. Forward
+propagation evaluates the Law of the Unconscious Statis-
+arXiv:2610.28103v1  [cs.AI]  20 Oct 2026
+
+
+tician (LOTUS) integrals numerically and recovers propa-
+gated densities through spline projection, yielding a semi-
+analytical inference procedure that avoids SCM compila-
+tion and sampling-based inference. The same representation
+naturally extends to backward message passing, providing
+a unified framework for observational, interventional, and
+counterfactual inference.
+We instantiate the framework using tensor-product B-
+spline bases, whose approximation properties, numerical sta-
+bility, and efficient quadrature algorithms (de Boor 2001;
+Schumaker 2007; Cottrell, Hughes, and Bazilevs 2009) al-
+low inference to be expressed through linear algebra and
+numerical quadrature while representing highly nonlinear
+mechanisms. Specifically, we model both densities and struc-
+tural mechanisms using tensor-product B-splines. Restricting
+structural mechanisms is not itself new (Hoyer et al. 2008;
+Bühlmann, Peters, and Ernest 2014; Morville and Park 2025;
+Zhang and Hyvärinen 2009). Previous work, however, does
+so primarily to facilitate causal discovery or parameter esti-
+mation. In contrast, we employ a restricted mechanism fam-
+ily to perform efficient inference in fully specified continuous
+SCMs. The main contributions of this work are as follows:
+• We formulate probabilistic inference in continuous SCMs
+as message passing in a common finite-dimensional ap-
+proximate functional space, avoiding the explicit con-
+struction of the distributions induced by nonlinear struc-
+tural mechanisms.
+• We derive forward and backward message-passing oper-
+ators based on LOTUS and spline projection, reducing
+inference to linear algebra and numerical quadrature in
+this common function space.
+• We instantiate the framework using tensor-product B-
+spline representations for both structural mechanisms
+and probability densities, resulting in a practical semi-
+analytical inference algorithm for continuous SCMs.
+2
+Preliminaries
+We briefly review the concepts required throughout the paper
+and establish the notation.
+2.1
+Structural Causal Models
+A Structural Causal Model (SCM) (Pearl 2009) is a tuple
+M = (U, V, F, P(U)),
+where
+• U is the set of exogenous variables;
+• V is the set of endogenous variables;
+• F = {fX}X∈V is a collection of structural mechanisms,
+X = fX(Pa(X), UX),
+where each endogenous variable is a deterministic func-
+tion of its endogenous parents, Pa(X), and its associated
+exogenous variable UX. Throughout this work, we as-
+sume mutually independent exogenous variables and one
+exogenous variable per endogenous variable.
+• P(U) is the joint probability distribution of the exogenous
+variables.
+The structural mechanisms induce a directed acyclic graph
+(DAG) G whose vertices are the endogenous variables and
+whose edges encode parent-child relationships. Under the
+above assumptions, the SCM satisfies the causal Markov
+property (Peters, Janzing, and Schölkopf 2017), implying
+the factorization P(V) = Q
+X∈V P(X | Pa(X)).
+SCMs support three principal classes of inference
+queries (Pearl and Mackenzie 2018). Observational queries
+compute probabilities conditioned on observed variables. In-
+terventional queries evaluate the distribution resulting from
+modifying one or more structural mechanisms via the do(·)
+operator. Counterfactual queries reason about hypothetical
+outcomes by combining observed evidence with interven-
+tions on the same SCM instance. Although these queries
+differ in their semantics, they all ultimately require efficient
+probabilistic inference. For an illustrative representation of
+these queries, we refer the reader to the Appendix.
+2.2
+Message Passing on Graphical Models
+Exact probabilistic inference in graphical models is com-
+monly performed by message-passing algorithms, which ex-
+ploit conditional independence to decompose global infer-
+ence into local computations (Cowell et al. 1999; Koller and
+Friedman 2009). Rather than manipulating the full joint dis-
+tribution directly, neighboring regions exchange messages
+that summarize the influence of the remaining variables.
+For tree-structured graphical models, exact marginals are
+computed by the sum-product algorithm, which propagates
+messages along the graph edges (Pearl 1982). For non-tree
+models, exact inference first constructs a junction tree whose
+nodes correspond to variable cliques. Messages are then ex-
+changed between neighboring cliques through their separator
+sets using local multiplication, marginalization, and normal-
+ization (Lauritzen and Spiegelhalter 1988; Jensen, Olesen,
+and Andersen 1990; Shenoy and Shafer 1990).
+Let T = (C, E) denote a junction tree, where each node
+C ∈C is a clique and each edge (Ci, Cj) ∈E connects
+neighboring cliques. The separator associated with an edge
+is Sij = Ci ∩Cj. Each clique stores a joint state, while
+separator messages ensure consistency between neighboring
+cliques. After the collect and distribute passes, calibrated
+clique states agree on their separator marginals.
+Although every acyclic SCM induces a Bayesian net-
+work (Koller and Friedman 2009) satisfying the causal
+Markov property (Section 2.1), its local conditional distri-
+butions are not represented explicitly. Instead, they are de-
+fined implicitly by deterministic structural mechanisms and
+exogenous variables. Consequently, the local probability fac-
+tors required by standard message-passing algorithms are
+unavailable. The proposed framework overcomes this limi-
+tation by propagating probability measures directly through
+structural mechanisms rather than explicit conditional den-
+sities. By combining numerical realizations of the LOTUS
+with least-squares recovery in a common functional space,
+the resulting algorithm retains the junction-tree message-
+passing paradigm while avoiding the explicit construction of
+conditional probability distributions.
+
+
+2.3
+Spline Representation
+Throughout, probability densities and structural mechanisms
+are represented in a finite-dimensional B-spline space. Let
+{Ni}n
+i=1
+denote a B-spline basis of polynomial degree 3 defined by the
+Cox-de Boor formula (de Boor 2001) over the computational
+domain Ω. Any spline in this space can be written as
+s(u) =
+Xn
+i=1 wiNi(u),
+where wi ∈R are the spline coefficients.
+The framework relies on two fundamental properties of
+B-splines. First, Ni(x) ≥0, so non-negative coefficients
+produce non-negative functions. Second, the basis functions
+are piecewise polynomials, enabling efficient evaluation of
+integrals by Gaussian quadrature.
+Let f : Ω→R be approximated in the B-spline space
+spanned by {Ni}n
+i=1. The approximation is
+ˆf(x) =
+Xn
+i=1 wiNi(x) = N(x)⊤w.
+The spline coefficients are obtained by the L2(Ω) projec-
+tion (Cottrell, Hughes, and Bazilevs 2009), which yields the
+linear system
+Mw = b,
+where Mij =
+R
+ΩNi(x)Nj(x) dx form the mass matrix and
+bi =
+R
+ΩNi(x)f(x) dx the load vector. Since the B-spline
+basis is linearly independent, the mass matrix is symmetric
+positive definite and the projection is uniquely defined. Both
+the mass matrix and load vector are evaluated efficiently us-
+ing Gaussian quadrature. A q-point Gaussian quadrature rule
+integrates polynomials of degree up to 2q −1 exactly (Quar-
+teroni, Sacco, and Saleri 2007). More details in the Appendix.
+Multivariate spline spaces are obtained by tensor products,
+Ni(x) =
+Yd
+k=1 N (k)
+ik (xk),
+where i = (i1, . . . , id) is a multi-index, giving
+s(x) =
+Xn1
+i1=1 · · ·
+Xnd
+id=1 wi1,...,id
+Yd
+k=1 N (k)
+ik (xk),
+where wi1,...,id are the spline coefficients. The resulting basis
+inherits the properties of one-dimensional B-splines in each
+coordinate direction (Piegl and Tiller 1997; Hughes, Cottrell,
+and Bazilevs 2005). The tensor-product structure implies fac-
+torization of the multidimensional mass matrix into products
+of one-dimensional matrices, allowing both the projection
+and Gaussian quadrature to be performed efficiently by ten-
+sor products of one-dimensional rules (Stoer and Bulirsch
+2002). These projection operators form the numerical foun-
+dation of this inference framework.
+3
+Method
+This section presents the message-passing framework for in-
+ference in fully specified SCMs. Whereas causal discovery
+and identification determine the causal model and identifi-
+able causal effects, we address the complementary problem
+of efficiently answering causal queries. The algorithm op-
+erates directly on structural mechanisms, avoiding the ex-
+plicit construction of conditional densities. Inference pro-
+ceeds in two stages. The forward pass propagates probabil-
+ity measures through the SCM to construct marginals and
+clique states for observational and interventional inference.
+The backward pass then propagates likelihood information
+through these states to incorporate evidence, enabling con-
+ditional and counterfactual inference.
+3.1
+Densities and Mechanisms as Splines
+The framework represents probability densities and struc-
+tural mechanisms in a common finite-dimensional spline
+space, allowing all inference operations to be expressed
+through spline coefficients, projection operators, and nu-
+merical quadrature. Let Pa(X) denote the parent set of
+an endogenous variable X and | Pa(X)| = M. For each
+parent variable Xm ∈Pa(X), let {N (m)
+i
+}nm
+i=1 be a one-
+dimensional B-spline basis defined over the computational
+domain Ωm = [αm, βm]. The tensor-product basis associ-
+ated with the parent set is
+Nj(x) =
+YM
+m=1 N (m)
+jm (xm),
+where x = (x1, . . . , xM) and j = (j1, . . . , jM). The joint
+marginal density over the parent variables is represented by
+pPa(X)(x) =
+X
+j wPa(X)
+j
+Nj(x)
+=
+n1
+X
+j1=1
+· · ·
+nM
+X
+jM=1
+wPa(X)
+j1,...,jM
+M
+Y
+m=1
+N (m)
+jm (xm).
+The coefficients are collected in the tensor wPa(X), which
+characterizes the modeled joint density (Schellhase and
+Kauermann 2012).
+A tensor-product B-spline expansion is generally not a
+probability density. Even so, non-negative coefficients guar-
+antee a non-negative spline (Section 2.3). Its total mass is
+Z
+ΩPa(X)
+pPa(X)(x) dx =
+X
+j wPa(X)
+j
+cj, cj =
+Z
+ΩPa(X)
+Nj(x) dx,
+where cj are the tensor-product mass coefficients. Hence, the
+spline defines a valid probability density whenever
+wPa(X)
+j
+≥0,
+X
+j wPa(X)
+j
+cj = 1.
+The structural mechanism associated with an endogenous
+variable X is likewise represented using a tensor-product
+B-spline basis over its parent variables and the correspond-
+ing exogenous variable UX. Let {N (UX)
+i
+}nU
+i=1 be a one-
+dimensional B-spline basis defined over the computational
+domain ΩUX = [αU, βU]. Then
+fX(x, u) =
+X
+r
+nU
+X
+ℓ=1
+θX
+r,ℓNr(x)N (UX)
+ℓ
+(u)
+=
+n1
+X
+r1=1
+· · ·
+nM
+X
+rM=1
+nU
+X
+ℓ=1
+θX
+r1,...,rM,ℓ
+×
+YM
+m=1 N (m)
+rm (xm)
+
+N (UX)
+ℓ
+(u).
+
+
+Throughout, we assume that the pushforward distributions
+considered by the method are absolutely continuous with re-
+spect to Lebesgue measure on their computational domains.
+3.2
+Forward Message Passing
+The forward pass processes the SCM in topological order.
+For each endogenous variable, it propagates the parent mea-
+sure through the structural mechanism to recover the child
+marginal. Whenever required to preserve downstream de-
+pendencies, it additionally constructs joint spline states over
+selected variable scopes. After forward propagation, scopes
+that are strict subsets of another stored scope are discarded,
+and the remaining maximal scopes become the cliques of the
+junction tree used during backward inference.
+Rather than explicitly constructing the pushforward den-
+sity induced by a structural mechanism, the method charac-
+terizes the propagated measure through its moments. By the
+LOTUS, these moments can be evaluated for any measur-
+able test function φ (Pollard 2002). Thus, for an endogenous
+variable X with structural mechanism fX,
+E[φ(X)] = E[φ(fX(Pa(X), UX))] .
+(1)
+It remains to choose test functions that recover the spline co-
+efficients. Thus, the forward pass consists of three steps. First,
+LOTUS is used to evaluate the moments of the propagated
+probability measure. Second, these moments are projected
+onto the spline basis to recover a density. Third, whenever de-
+pendencies must be preserved, the same procedure constructs
+joint clique states used later during backward inference.
+Marginal propagation.
+The natural choice is to select the
+B-spline basis functions themselves as test functions, since
+the resulting moments are the entries of the load vector re-
+quired by the L2 projection (Section 2.3). Consequently, the
+forward pass computes the quantities needed to recover the
+spline coefficients. Given B-splines {N X
+i }nX
+i=1 as test func-
+tions. Given the joint density pPa(X) and fX : ΩPa(X) ×
+ΩUX→ΩX, Eq. (1) reduces to
+V X
+i
+=
+Z
+ΩPa(X)
+pPa(X)(x)
+Z
+ΩUX
+pUX(u) N X
+i (fX(x, u)) du dx, (2)
+for i = 1, . . . , nX. Let pX(x) = PnX
+j=1 wX
+j N X
+j (x) be the
+spline approximation of the propagated density. Since
+Z
+ΩX
+N X
+i (x)pX(x) dx = E
+
+N X
+i (X)
+
+= V X
+i ,
+the projection coefficients satisfy
+MXwX = VX,
+where (MX)ij =
+R
+ΩX N X
+i (x)N X
+j (x) dx are the mass ma-
+trix entries and VX =
+ V X
+1 , . . . , V X
+nX
+⊤is the load vector.
+Clique-state construction.
+Marginal densities suffice only
+for single-variable queries. Message passing requires joint
+clique states over the junction tree introduced in Section 2.2.
+These joint states preserve the dependencies required by
+downstream structural mechanisms and later serve as the
+clique states updated during the backward pass.
+For an endogenous variable X, let R = {Rm}L
+m=1 ⊆
+Pa(X) denote the parent variables retained in the joint state
+associated with X, as determined by the required down-
+stream dependencies. The resulting clique state has scope
+C = R ∪{X}. Let {N Rm
+im }nRm
+im=1 and {N X
+i }nX
+i=1 denote the
+corresponding one-dimensional B-spline bases. The tensor-
+product basis on the clique C is
+N C
+i (r, x) =
+YL
+m=1 N Rm
+im (rm)
+
+N X
+iL+1(x),
+where i = (i1, . . . , iL, iX). Choosing the tensor-product
+basis functions as test functions yields the load-tensor entries
+V C
+i
+= E
+
+N C
+i (R, X)
+
+=
+Z
+ΩPa(X)
+pPa(X)(x)
+Z
+ΩUX
+pUX(u)
+×
+YL
+m=1N Rm
+im (rm)
+
+N X
+iL+1(fX(x, u)) du dx. (3)
+The expectation is evaluated over the full parent tuple, while
+the clique state retains only the variables in C. Variables in
+Pa(X) \ R are marginalized automatically, since their basis
+functions do not appear in the test function. Computationally,
+this corresponds to quadrature summation over the omit-
+ted parent dimensions. The clique-state coefficients satisfy
+MCwC = VC, where, MC = MR1⊗· · ·⊗MRL⊗MX. Its
+Kronecker structure enables matrix-free matrix-vector prod-
+ucts, avoiding explicit construction of the full mass matrix.
+Clique-tree construction.
+Since non-maximal scopes can
+be recovered by marginalization, only maximal scopes are
+retained. Let S denote the collection of scopes for which the
+forward pass has constructed explicit joint spline states. Then
+C = {C ∈S : ∄C′ ∈S such that C ⊊C′} .
+The clique-intersection graph connects cliques with non-
+empty intersections, weighted by |Sij|. A maximum-weight
+spanning tree (Kruskal 1956; Prim 1957) yields the junc-
+tion tree (Lauritzen and Spiegelhalter 1988; Jensen, Olesen,
+and Andersen 1990), which is accepted only if it satisfies the
+running-intersection property; that is, for every variable X,
+the cliques containing X form a connected subtree.
+Quadrature and projection.
+The moments in Eqs. (2)
+and (3) are evaluated by tensor-product Gaussian quadrature.
+The spline coefficients are then recovered by a regularized
+non-negative least-squares approximation (NNLS) (Lawson
+and Hanson 1995) of the corresponding L2-projection sys-
+tem. Let {x(m)
+qm , ω(m)
+qm }Qm
+qm=1, {us, ω(U)
+s
+}S
+s=1 denote the quad-
+trature rule for the parent and exogenous respectively. Defin-
+ing xq =
+ x(1)
+q1 , . . . , x(M)
+qM
+
+and ωq = QM
+m=1 ω(m)
+qm , Eq. (3)
+becomes
+V C
+i
+≈
+X
+q ωqpPa(X)(xq)
+XS
+s=1 ω(U)
+s
+pUX(us)
+×
+YL
+m=1 N Rm
+im (rm,q)
+
+N X
+iL+1(fX(xq, us)) .
+To enforce non-negative coefficients, we solve the diago-
+nally regularized NNLS
+wC = arg min
+w≥0 ∥(MC + λI)w −VC∥2
+2 ,
+
+
+where the diagonal shift λI improves the numerical condi-
+tioning of the projection operator. The coefficients are then
+normalized, wC ←
+wC
+P
+j wjcj , ensuring that the recovered
+spline represents a normalized probability density.
+Interventions.
+Interventional inference requires no ad-
+ditional message-passing operator. Under an intervention
+do(X = x⋆), the structural mechanism of X is replaced
+by the constant assignment X := x⋆, yielding a modified
+SCM. The forward pass is then reapplied, reusing the states
+of non-descendants and recomputing only those affected by
+the intervention. Since a point intervention induces a Dirac
+measure, the intervened variable is propagated deterministi-
+cally rather than represented as a spline density.
+3.3
+Backward Message Passing
+The backward pass incorporates observations by propagating
+likelihoods through the junction tree (Section 2.2). Starting
+from the prior clique states computed during the forward
+pass, neighboring cliques exchange likelihood-ratio mes-
+sages that update these priors into posterior clique states.
+Whenever a message is propagated through a structural
+mechanism, the corresponding conditionaldensity isunavail-
+able explicitly. Instead, likelihoods are propagated through
+the structural mechanism via a local backward operator.
+Local backward operator.
+Let X be an endogenous vari-
+able with structural mechanism fX and mX : ΩX →R≥0
+denote the likelihood accumulated at X. Propagating this
+likelihood through the structural mechanism induces the un-
+normalized likelihood
+emX(x, u) = mX(fX(x, u)) ,
+defined over the mechanism inputs. This representation can
+subsequently be marginalized onto any subset of the mech-
+anism inputs. For ordinary backward message passing, the
+exogenous variable is marginalized, yielding the propagated
+likelihood over the endogenous parents,
+BX[mX](x) =
+Z
+ΩUX
+emX(x, u) pUX(u) du,
+where x ∈ΩPa(X). Thus, evidence is propagated through
+the structural mechanism without explicitly constructing the
+conditional density p(X | Pa(X)). Retaining the exogenous
+variable instead yields likelihoods over UX, which are used
+during the abduction step of counterfactual inference.
+Using the Gaussian quadrature rule {us, ω(U)
+s
+}S
+s=1, parent
+likelihood is approximated at the quadrature nodes xq by
+BX[mX](xq) ≈
+S
+X
+s=1
+ω(U)
+s
+pUX(us) emX(xq, us).
+The propagated likelihood is combined with the stored prior
+parent state, epPa(X)(x) = pPa(X)(x)BX[mX](x). When
+mX represents the likelihood induced by the observations
+O, normalizing this quantity yields the posterior parent
+state pPa(X)|O(x), represented in the corresponding tensor-
+product B-spline space using the same quadrature-based pro-
+jection procedure as in the forward pass.
+Observation likelihoods.
+Observed evidence is incorpo-
+rated through local likelihoods. For an observation Y = y⋆,
+we define LY (y) = L(y⋆| y), where L(y⋆| y) is a Gaus-
+sian kernel centered at y⋆providing a smooth approximation
+of the Dirac measure corresponding to exact conditioning.
+If a clique contains multiple observations, their likelihoods
+are multiplied. For OC = { Yr = y⋆
+r : Yr ∈C }, the local
+likelihood is ΛC(xC) = Q
+Yr∈OC LYr(xr).
+Junction-tree propagation.
+The forward pass provides
+prior joint spline states pC for the cliques of the constructed
+junction tree. Because these states are clique marginals, sep-
+arator messages are represented as likelihood ratios rather
+than posterior densities. This avoids repeatedly incorporat-
+ing the separator prior when neighboring clique beliefs are
+combined. For a directed edge C →D, define
+ΛC\D(xC) = ΛC(xC)
+Y
+B∈N (C)\{D} mB→C(xSBC).
+The corresponding updated clique state is
+p C\D
+C
+(xC) ∝pC(xC)ΛC\D(xC).
+After marginalizing the updated and prior clique states onto
+SCD, the outgoing message is
+mC→D(xSCD) ∝p C\D
+SCD (xSCD)
+pSCD(xSCD) .
+Thus, clique and separator densities are represented by spline
+coefficients, while likelihood messages are evaluated as ra-
+tios of these spline densities. After the collect and distribute
+passes, the posterior associated with clique C is
+pC|O(xC) =
+1
+ZC
+pC(xC)ΛC(xC)
+Y
+D∈N (C)
+mD→C(xSDC).
+To represent an updated density in the spline basis or perform
+normalization, the corresponding projection is performed us-
+ing tensor-product Gaussian quadrature.
+Counterfactuals.
+Counterfactual inference follows the
+abduct-intervene-infer procedure. During the abduction step,
+the local backward operator is applied while retaining the rel-
+evant exogenous variables in the propagated state, yielding
+their posterior distributions conditioned on the observations
+(abduct). The intervention is then applied by replacing the
+corresponding structural mechanisms (intervene). Finally,
+the modified SCM is evaluated using the abducted exogenous
+distribution (infer). This preserves the shared exogenous re-
+alization between the factual and counterfactual worlds.
+3.4
+Complexity Analysis
+Let N denote the number of endogenous variables, K the
+number of B-spline basis functions and Q the number of
+quadrature nodes per dimension, and S the number of quadra-
+ture nodes used for the exogenous variable. For a node with
+M parents, the tensor-product representation contains KM
+coefficients and uses a QM-point quadrature grid. The im-
+plementation exploits tensor-product structure throughout
+via tensor contractions and Kronecker-structured operators,
+avoiding explicit tensor-product mass matrices.
+
+
+Figure 1: Mean percentage of endogenous variables with
+ϵdom ≥0.5% in the forward pass versus the number of B-
+spline basis functions. Shaded bands show standard deviation
+across independently generated tree and two-parent SCMs.
+Forward pass.
+For a node with M parents, the dominant
+cost is evaluating the structural mechanism and parent den-
+sity over the SQM quadrature pairs and assembling the K
+child moments, requiring O(SQMK) operations. For an
+SCM with N endogenous variables and maximum parent
+count Mmax, the total forward-pass complexity is
+O
+ NSQMmaxK
+
+.
+Backward pass.
+Let C denote the clique set of the junction
+tree, Cmax its maximum clique size, and τ the treewidth of
+the triangulated SCM graph. The largest junction-tree clique
+then has size Cmax = τ + 1. A clique update evaluates local
+likelihoods, separator messages, and, where required, the lo-
+cal backward operator over a tensor-product quadrature grid.
+Excluding the projection solve, the worst-case complexity is
+O
+ |C| SQCmaxK
+
+.
+Collect-distribute sends two directed messages along each
+junction-tree edge, making this bound tight up to a constant
+factor.
+Space complexity.
+Let J denote the maintained joint
+states and dJ its dimension. Storing the spline coefficients
+requires O(P
+J∈J KdJ) memory, while the largest tensor-
+product quadrature grid requires O(dmaxQdmax), where
+dmax is the maximum state dimension. Excluding optional
+operator caching, the total memory requirement is
+O
+X
+J∈J KdJ + dmaxQdmax
+.
+4
+Experiments
+For the experiments, we generate random directed acyclic
+SCMs with varying numbers of endogenous variables, graph
+depths, and maximum parent orders. For each configuration,
+we generate a random depth-constrained DAG. A single-
+parent backbone first fixes the graph depth, after which the
+remaining nodes are assigned random depths and connected
+to admissible parent sets from preceding levels, subject to the
+maximum in-degree. Exogenous noise distributions are sam-
+pled as random spline densities, providing controlled varia-
+tion in smoothness and multimodality. Endogenous densities
+Figure 2: Average forward-pass runtime of the method and
+the MC reference versus the number of basis functions over
+randomly generated tree SCMs.
+and structural mechanisms are represented using uniform
+cubic B-spline bases on Ω= [0, 1], with Gauss-Legendre
+quadrature for numerical integration.
+The implementation exploits the resulting tensor-product
+structure
+through
+matrix-free
+tensor
+contractions
+and
+Kronecker-structured operators. Quadrature-intensive com-
+putations are accelerated on GPUs.1 Parent-density, struc-
+tural mechanism, basis, and projection evaluations are per-
+formed as batched tensor operations. Basis evaluations are
+cached and reused during inference.
+Inference is compared against an ancestral Monte Carlo
+(MC) reference computed from 106 independent samples.
+Metrics are evaluated for every endogenous variable en-
+countered during propagation and aggregated over the entire
+graph. For each endogenous variable we report two accuracy
+measures. For additional evaluation metrics, we refer the
+reader to the Appendix. The first is the domain-normalized
+expectation error,
+ϵdom = 100 |µours −µMC|
+b −a
+,
+where Ω= [a, b] is the computational domain, measuring
+the expectation error relative to the variable’s natural scale.
+The second is the Hellinger distance,
+H(p, q) =
+1
+√
+2
+Z
+Ω
+p
+p(x) −
+p
+q(x)
+2
+dx
+1/2
+,
+which compares the analytical density p with the MC refer-
+ence density q. It lies in [0, 1], where 0 indicates identical
+densities.
+We compare only against MC simulation since no existing
+method, to the best of our knowledge, performs general-
+purpose probabilistic inference in continuous SCMs di-
+rectly on arbitrary nonlinear structural mechanisms. Exist-
+ing approaches either target causal identification and esti-
+mation (Sharma and Kiciman 2020) or require compiling
+the SCM into an alternative tractable representation (Dar-
+wiche 2022; Wang and Kwiatkowska 2023; Zečević et al.
+2021). MC is therefore the natural model-agnostic baseline,
+converging to the true solution with increasing samples.
+1Implemented in PyTorch 2.11.0 with CUDA 12.8 on an
+NVIDIA RTX PRO 4000 Blackwell GPU; 8 CPU cores per task.
+
+
+Figure 3: Hellinger distance between the estimated and ref-
+erence forward densities.
+4.1
+Results
+The main experiments consider tree-structured SCMs and
+DAGs where approximately 20% of the nodes have two par-
+ents, reflecting the exponential tensor-product scaling of the
+proposed representation. We therefore focus on the regime
+where exact tensor-product inference remains computation-
+ally practical, leaving sparse and low-rank extensions to
+future work. Throughout, the number of quadrature points
+scales with the basis resolution; eight points per basis func-
+tion were found best in preliminary experiments. For each
+graph size, we generate five random SCMs.
+Forward pass.
+Figure 1 reports the percentage of endoge-
+nous variables whose domain-normalized expectation error
+exceeds 0.5%. As expected, increasing the number of basis
+functions consistently improves the approximation. With 32
+basis functions, no high-error variables are observed, even for
+SCMs with up to 104 endogenous variables. For two-parent
+SCMs, computational cost limited experiments to graphs of
+at most 500 endogenous variables, and to only 20 variables
+when using 128 basis functions. For tree-structured SCMs,
+Figure 2 compares the runtime of the proposed method with
+the high-accuracy MC reference. Our approach is approxi-
+mately one order of magnitude faster while maintaining com-
+parable accuracy. Finally, Figure 3 reports the mean Hellinger
+distance to the MC reference, together with one standard
+deviation across experiments. The error decreases from ap-
+proximately 0.2 with 32 basis functions toward zero as the
+basis is refined, demonstrating convergence of the inferred
+densities.
+Backward pass.
+For backward evaluation, we consider
+smaller SCMs than in the forward experiments, since condi-
+tioning evidence at leaf nodes becomes less informative for
+distant ancestors. Validating backward inference requires a
+different MC reference, as rejection sampling becomes im-
+practical under conditioning. Instead, we generate ancestral
+samples by forward simulation and approximate condition-
+ing using Gaussian kernel weights. Conditional expectations
+are estimated via self-normalized importance sampling.
+Figure 4 reports the average percentage of endogenous
+variables with ϵdom ≥0.5% for two-parent SCMs with
+three observations, maximum clique size three, and maxi-
+mum separator size two. Increasing the number of B-spline
+Figure 4: Mean percentage of endogenous variables with
+ϵdom ≥0.5% in the backward pass for two-parent SCMs and
+3 observed variables versus the number of basis functions.
+Figure 5: Hellinger distance between the estimated and ref-
+erence backward densities for 3 observations.
+basis functions consistently improves the approximation, al-
+though backward inference requires a finer basis than the for-
+ward pass to eliminate high-error variables. This is expected,
+since conditional densities are more difficult to approximate
+and kernel weighting reduces the effective sample size of the
+MC reference. Figure 5 reports the corresponding Hellinger
+distances for both tree and two-parent SCMs. Although back-
+ward inference exhibits larger errors and greater variability
+than the forward pass, the distance decreases systematically
+with basis resolution. As in the forward pass (Figure 3), the
+performance is largely independent of the number of parents.
+5
+Conclusion
+This work introduced a message-passing framework for fully
+specified SCMs that performs observational, interventional,
+and counterfactual inference within a unified B-spline rep-
+resentation. By combining forward propagation of probabil-
+ity measures with backward propagation of likelihoods, the
+method avoids explicit construction of pushforward and con-
+ditional densities. Experiments demonstrate accurate proba-
+bility densities and expectations while scaling to large SCMs,
+with errors decreasing consistently as the spline resolu-
+tion increases. Future work will investigate low-rank ten-
+sor approximations and adaptive basis refinement for higher-
+dimensional models with larger parent sets.
+
+
+Acknowledgments.
+This research was funded in whole or in part by the Aus-
+trian Science Fund (FWF) (Standalone project "TraCause",
+10.55776/PIN1217124). The work of Robert Peharz was ad-
+ditionally supported by the FWF Cluster of Excellence "Bi-
+lateral AI" (10.55776/COE12).
+References
+Bühlmann, P.; Peters, J.; and Ernest, J. 2014. CAM: Causal
+Additive Models, High-Dimensional Order Search and Pe-
+nalized Regression. The Annals of Statistics, 42(6): 2526–
+2556.
+Cottrell, J. A.; Hughes, T. J. R.; and Bazilevs, Y. 2009. Iso-
+geometric Analysis: Toward Integration of CAD and FEA.
+Chichester, UK: John Wiley & Sons.
+ISBN 978-0-470-
+74873-2.
+Cowell, R. G.; Dawid, A. P.; Lauritzen, S. L.; and Spiegelhal-
+ter, D. J. 1999. Probabilistic Networks and Expert Systems:
+Exact Computational Methods for Bayesian Networks. In-
+formation Science and Statistics. Springer New York. ISBN
+978-0-387-98767-5.
+Darwiche, A. 2022. Causal Inference Using Tractable Cir-
+cuits.
+Appeared in Why-21 workshop of NeurIPS 2021
+(Causal Inference & Machine Learning: Why now?).
+de Boor, C. 2001. A Practical Guide to Splines. New York,
+NY: Springer, revised edition. ISBN 978-0-387-95366-3.
+Han, Y.; Chen, Y.; and Darwiche, A. 2023. On the Com-
+plexity of Counterfactual Reasoning. In Proceedings of the
+Thirty-Second International Joint Conference on Artificial
+Intelligence.
+Hoyer, P.; Janzing, D.; Mooij, J.; Peters, J.; and Schölkopf, B.
+2008. Nonlinear causal discovery with additive noise models.
+In Koller, D.; Schuurmans, D.; Bengio, Y.; and Bottou, L.,
+eds., Advances in Neural Information Processing Systems,
+volume 21. Curran Associates, Inc.
+Hughes, T.; Cottrell, J.; and Bazilevs, Y. 2005. Isogeometric
+analysis: CAD, finite elements, NURBS, exact geometry and
+mesh refinement. Computer Methods in Applied Mechanics
+and Engineering, 194(39): 4135–4195.
+Jensen, F. V.; Olesen, K. G.; and Andersen, S. K. 1990.
+An algebra of bayesian belief universes for knowledge-based
+systems. Networks, 20(5): 637–659.
+Koller, D.; and Friedman, N. 2009. Probabilistic Graphical
+Models: Principles and Techniques. Cambridge, MA: MIT
+Press. ISBN 9780262013192.
+Kruskal, J. B. 1956. On the Shortest Spanning Subtree of a
+Graph and the Traveling Salesman Problem. Proceedings of
+the American Mathematical Society, 7(1): 48–50.
+Lauritzen, S. L.; and Spiegelhalter, D. J. 1988. Local Compu-
+tations with Probabilities on Graphical Structures and Their
+Application to Expert Systems. Journal of the Royal Statis-
+tical Society: Series B (Methodological), 50(2): 157–194.
+Lawson, C. L.; and Hanson, R. J. 1995. Solving Least Squares
+Problems. Society for Industrial and Applied Mathematics.
+Morville, A. B.; and Park, B. U. 2025. Causal additive models
+with smooth backfitting. Journal of Causal Inference, 13(1):
+20240035.
+Pawlowski, N.; Castro, D. C.; and Glocker, B. 2020. Deep
+Structural Causal Models for Tractable Counterfactual Infer-
+ence. In Advances in Neural Information Processing Systems.
+Pearl, J. 1982. Reverend bayes on inference engines: a dis-
+tributed hierarchical approach. In Proceedings of the Sec-
+ond AAAI Conference on Artificial Intelligence, AAAI’82,
+133–136. AAAI Press.
+Pearl, J. 2009. Causality: Models, Reasoning, and Inference.
+Cambridge University Press, 2 edition.
+Pearl, J.; and Mackenzie, D. 2018. The Book of Why: The
+New Science of Cause and Effect. Basic Books.
+Peters, J.; Janzing, D.; and Schölkopf, B. 2017. Elements
+of Causal Inference: Foundations and Learning Algorithms.
+MIT Press.
+Piegl, L.; and Tiller, W. 1997. The NURBS Book. Mono-
+graphs in Visual Communication. New York, NY: Springer
+Berlin, Heidelberg, 2 edition. ISBN 978-3-540-61545-3.
+Pollard, D. 2002.
+A User’s Guide to Measure Theoretic
+Probability. Cambridge University Press. ISBN 978-0-521-
+00289-9.
+Prim, R. C. 1957.
+Shortest Connection Networks and
+Some Generalizations. Bell System Technical Journal, 36(6):
+1389–1401.
+Quarteroni, A.; Sacco, R.; and Saleri, F. 2007. Numerical
+Mathematics. Berlin, Heidelberg: Springer-Verlag, 2 edition.
+ISBN 978-3-540-34658-6.
+Schellhase, C.; and Kauermann, G. 2012. Density Estima-
+tion and Comparison with a Penalized Mixture Approach.
+Computational Statistics, 27(4): 757–777.
+Schumaker, L. L. 2007. Spline Functions: Basic Theory.
+Cambridge University Press, 3 edition.
+Sharma, A.; and Kiciman, E. 2020.
+DoWhy: An End-
+to-End Library for Causal Inference.
+arXiv preprint
+arXiv:2011.04216.
+Shenoy, P. P.; and Shafer, G. 1990.
+Axioms for Proba-
+bility and Belief-Function Propagation.
+In SHACHTER,
+R. D.; LEVITT, T. S.; KANAL, L. N.; and LEMMER, J. F.,
+eds., Uncertainty in Artificial Intelligence, volume 9 of Ma-
+chine Intelligence and Pattern Recognition, 169–198. North-
+Holland.
+Stoer, J.; and Bulirsch, R. 2002. Introduction to Numerical
+Analysis. Springer, 2 edition.
+Wainwright, M. J.; and Jordan, M. I. 2008. Graphical Mod-
+els, Exponential Families, and Variational Inference. Foun-
+dations and Trends in Machine Learning, 1(1–2): 1–305.
+Wang, B.; and Kwiatkowska, M. 2023. Compositional Proba-
+bilistic and Causal Inference using Tractable Circuit Models.
+In Proceedings of the 26th International Conference on Ar-
+tificial Intelligence and Statistics (AISTATS), volume 206 of
+Proceedings of Machine Learning Research.
+Zečević, M.; Dhami, D.; Karanam, A.; Natarajan, S.; and
+Kersting, K. 2021. Interventional Sum-Product Networks:
+
+
+Causal Inference with Tractable Probabilistic Models. In
+Ranzato, M.; Beygelzimer, A.; Dauphin, Y.; Liang, P.; and
+Vaughan, J. W., eds., Advances in Neural Information Pro-
+cessing Systems, volume 34, 15019–15031. Curran Asso-
+ciates, Inc.
+Zhang, K.; and Hyvärinen, A. 2009. On the identifiability
+of the post-nonlinear causal model. In Proceedings of the
+Twenty-Fifth Conference on Uncertainty in Artificial Intelli-
+gence, UAI ’09, 647–655. Arlington, Virginia, USA: AUAI
+Press. ISBN 9780974903958.
+Zhang, N. L.; and Poole, D. 1996. Exploiting causal inde-
+pendence in Bayesian network inference. J. Artif. Int. Res.,
+5(1): 301–328.
+A
+Causal Queries
+Figure 6 illustrates the three levels of Pearl’s causal hierar-
+chy on a simple smoking-tar-lung cancer SCM. The obser-
+vational model (Figure 6a) represents the joint distribution
+induced by the structural mechanisms. An intervention (Fig-
+ure 6b) replaces the structural mechanism of the intervened
+variable by a constant assignment and removes its incoming
+causal edge. Counterfactual reasoning (Figure 6c) is repre-
+sented by a twin SCM, in which the factual and counterfactual
+worlds share the same exogenous variables while differing
+only in the applied intervention.
+B
+B-spline Basis Functions
+The proposed framework employs tensor-product B-spline
+basis functions to represent probability densities over
+bounded computational domains. Throughout this work, let
+Ω= [a, b] ⊂R
+denote the computational domain of a single variable. A
+univariate B-spline basis is defined by a non-decreasing knot
+vector
+ξ = (ξ1, . . . , ξm),
+ξi ≤ξi+1,
+and polynomial degree p. If the spline space contains K
+basis functions, then m = K + p. Throughout this work, we
+employ open knot vectors, in which the first and last knots
+are repeated p + 1 times. Consequently, the spline basis is
+defined on
+Ω= [ξp+1, ξm−p],
+which coincides with the interval bounded by the first and
+last distinct knots. The B-spline basis
+{Ni,p}K
+i=1
+is defined recursively by the Cox-de Boor formula. For p = 0,
+Ni,0(u) =
+(
+1,
+ξi ≤u < ξi+1,
+0,
+otherwise,
+Ni,p(u) =
+u −ξi
+ξi+p −ξi
+Ni,p−1(u)
++
+ξi+p+1 −u
+ξi+p+1 −ξi+1
+Ni+1,p−1(u),
+where fractions with zero denominator are interpreted as
+zero. Figure 7 illustrates an open cubic B-spline basis. Any
+spline in the resulting approximation space can be expressed
+as
+s(u) =
+K
+X
+i=1
+wiNi,p(u),
+where wi ∈R are the spline coefficients.
+For multivariate functions, the computational domain is
+Ω= Ω1 × · · · × Ωd ⊂Rd.
+C
+Isogeometric Analysis
+Isogeometric analysis (IGA) employs spline basis func-
+tions for numerical approximation. The proposed framework
+adopts several numerical techniques from IGA, including
+spline representations and efficient quadrature for evaluating
+integrals. For this section, without loss of generality, we omit
+the degree notation in the B-spline basis.
+We first consider the one-dimensional case. Let f : Ω→R
+be approximated in a finite-dimensional spline space spanned
+by the B-spline basis {Ni}n
+i=1. The approximation is
+ˆf(x) =
+Xn
+i=1 wiNi(x) = N(x)⊤w,
+where N(x) = [N1(x) · · · Nn(x)]⊤denotes the basis vec-
+tor and w = (w1, . . . , wn)⊤contains the spline coefficients.
+The coefficients are determined through the L2(Ω) projec-
+tion by minimizing
+J(w) = 1
+2
+Z
+Ω
+ f(x) −N(x)⊤w
+2 dx.
+The first-order optimality conditions yield the linear system
+Mw = b,
+where Mij =
+R
+ΩNi(x)Nj(x) dx are the entries of the mass
+matrix and bi =
+R
+ΩNi(x)f(x) dx the load vector ones.
+The multivariate case is obtained by tensor products of
+the one-dimensional bases. Let Ni be a multivariate spline.
+Then the entries of the mass matrix become
+Mij =
+Yd
+k=1
+Z
+Ω
+N (k)
+ik (xk)N (k)
+jk (xk) dxk,
+where the equality follows from the tensor-product struc-
+ture of the basis. Consequently, multidimensional quadra-
+ture reduces to tensor products of one-dimensional Gaussian
+quadrature rules. These rules are exact whenever the inte-
+grand is a polynomial and the quadrature order is chosen to
+integrate its degree exactly.
+D
+Additional Evaluation
+Along with the domain-normalized error, for the forward
+pass we record whether the analytical expectation lies within
+the 95% confidence interval of the MC estimator, assessing
+whether any discrepancy is consistent with the sampling un-
+certainty of the MC reference. Figure 8 reports the percent-
+age of endogenous variables whose analytical expectation
+falls outside the MC 95% confidence interval. Across exper-
+iments, agreement with the MC reference remains stable as
+graph size increases and improves monotonically with the
+basis resolution.
+
+
+S
+T
+C
+US
+UT
+UC
+(a) Association
+S
+T
+C
+US
+UT
+UC
+const
+(b) Intervention
+S
+T
+C
+S′
+T ′
+C′
+US
+UT
+UC
+(c) Counterfactual
+Figure 6: Illustration of Pearl’s causal hierarchy using the famous smoking-tar-lung cancer example-SCM, where S denotes
+smoking, T tar accumulation, and C lung-cancer risk. (a) Association concerns the observational distribution p(S, T, C). (b)
+Under do(S = s⋆), the mechanism of S is replaced by the constant assignment S := s⋆. (c) The counterfactual model shares
+the same exogenous realization across the factual and counterfactual branches.
+ξ1 = · · · = ξ4
+ξ5
+ξ6
+ξ7
+ξ8 = · · · = ξ11
+Ω= [0, 4]
+u
+Ni,3(u)
+0
+1
+2
+3
+4
+0
+0.5
+1
+N1,3
+N2,3
+N3,3
+N4,3
+N5,3
+N6,3
+N7,3
+Figure
+7:
+Open
+cubic
+B-spline
+basis
+for
+ξ
+=
+(0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4) on Ω= [0, 4].
+Figure 8: Mean percentage of endogenous variables whose
+analytical expectation lies within the 95% MC confidence
+interval in the forward pass, as a function of the number of
+B-spline basis functions.

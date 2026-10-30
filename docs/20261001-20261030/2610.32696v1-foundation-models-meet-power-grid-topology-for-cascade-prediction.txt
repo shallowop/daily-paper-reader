@@ -1,0 +1,1440 @@
+Foundation Models Meet Power Grid Topology for
+Cascade Prediction
+Soumav Biswas and Mia Naeini
+Electrical Engineering Department, University of South Florida, Tampa, Florida, USA
+soumavbiswas@usf.edu, mnaeini@usf.edu
+Abstract—Accurate early-stage prediction of cascading failure
+severity is essential for assessing the vulnerability of power
+transmission networks. However, existing data-driven approaches
+often rely on network-specific representations, limiting their
+generalizability across power system topologies. This work inves-
+tigates the complementary capabilities of Large Language Models
+(LLMs) and Graph Neural Networks (GNNs) for cascading
+failure severity prediction. First, standalone LLM predictors are
+developed using a LoRA-fine-tuned LLaMA-3-8B-Instruct model
+with varying degrees of topological information. A hybrid Graph-
+LLM fusion framework is then proposed, integrating a Topology-
+Aware Graph Attention Transformer (TAGAT) with the LLM
+through confidence-gated fusion. TAGAT captures structural
+dependencies among transmission lines, while the LLM extracts
+representations from early-stage power-flow observations and
+aggregated cascade descriptors. The frameworks are evaluated
+on 30,000 simulated cascading failure scenarios for each of the
+IEEE 118-bus and IEEE 300-bus systems. Using only the first four
+cascade steps, the hybrid framework achieves weighted F1 scores
+of 0.94 and 0.92, respectively. In cross-system transfer from IEEE
+118-bus to IEEE 300-bus, it achieves 0.72 zero-shot accuracy,
+improving to 0.83 with limited target-system calibration, out-
+performing standalone models and conventional baselines. These
+results show the potential of combining graph-based structural
+learning with foundation models to improve cascading failure
+severity prediction and cross-system transferability.
+Index Terms—Large Language Model, Graph Neural Net-
+works, Graph Signal Processing, Cascade Size Prediction.
+I. INTRODUCTION
+Cascading failures are complex, high-impact events that
+arise as interdependent component failures triggered by initial
+outages and intensified by shortcomings in control, computa-
+tion and human error. For decades, these phenomena have been
+examined from various perspectives to better understand their
+behavior and develop strategies for prevention, mitigation, and
+recovery. The techniques used to analyze these phenomena
+include simulation-based [1], physics-driven [2] and machine
+learning (ML)-based [3] models.
+In particular, ML–based models have recently gained signif-
+icant attention for cascading failure analysis in power systems
+to supplement the traditional techniques [4]. From classical
+ML models, including support vector machines (SVMs) and
+random forests (RFs) [5], to deep neural networks (DNNs) and
+graph-aware models, such as Graph Neural Networks (GNNs)
+[6], a range of data-driven approaches has demonstrated strong
+potential for cascade analyses and prediction [7]. Among these
+approaches, GNN-based models can utilize network topology
+and component interactions to capture the complex depen-
+dencies underlying cascading failures. However, conventional
+GNN architectures rely on local neighborhood aggregation and
+are often coupled to specific network topologies, limiting their
+system-level reasoning and generalizability across heteroge-
+neous power systems [8].
+Conversely, Large Language Models (LLMs) have emerged
+as powerful sequence modeling and reasoning tools for het-
+erogeneous numerical and textual information. For power
+system applications, LLMs provide a flexible mechanism
+for representing structured measurements, event descriptors,
+and system-level properties and indicators as natural-language
+prompts [9]. For cascading failure prediction, LLMs can learn
+latent relationships between early-stage indicators and eventual
+cascade severity, providing representations less dependent on
+fixed graph structures than conventional graph-based models.
+To utilize the complementary strengths of two powerful
+classes of learning models, namely graph-based architectures
+and LLMs, this paper adopts a hybrid learning paradigm. The
+main contributions of this work are summarized as follows:
+• A Graph-LLM Fusion framework is proposed for cascad-
+ing failure severity prediction, integrating topology-aware
+structural representations learned by Topology-Aware
+Graph Attention Transformer (TAGAT) with the reason-
+ing and representation capabilities of LLMs through a
+confidence-gated fusion mechanism.
+• A comprehensive taxonomy and comparison of cascade
+severity prediction models is developed across three
+distinct categories: (i) topology-agnostic, (ii) topology-
+aware, and (iii) Graph-LLM fusion models.
+• An extensive set of topology-agnostic baseline models
+is investigated, including SVM, RF, DNN, Feature To-
+kenizer Transformer (FT-Transformer), and a standalone
+LLM variant.
+• Multiple topology-aware standalone prediction frame-
+works are evaluated, including TAGAT and LLM-based
+models enriched with either aggregated topological de-
+scriptors or explicit network topology information.
+• Topological features based on Graph Signal Process-
+ing (GSP) are considered to capture global power-flow
+smoothness and its relationship to uncontrolled islanding.
+Additional descriptors, including betweenness centrality
+and bridge properties of initially failed lines, are used to
+characterize structural vulnerability.
+• Cross-system transferability study evaluates graph-based,
+LLM-based, and Graph-LLM fusion models trained on
+the IEEE 118-bus system and tested on the IEEE 300-
+arXiv:2610.32696v1  [eess.SY]  23 Oct 2026
+
+
+2
+bus system, assessing zero-shot generalization without
+parameter adaptation and few-shot calibration using lim-
+ited target-system data, to address scalability.
+II. RELATED WORKS
+Existing data-driven research has focused on classical ML
+methods and graph-based deep learning frameworks, partic-
+ularly GNNs. Examples of such studies include cascade size
+prediction formulated as a classification problem [5], [7], [10],
+component status prediction [11], [12], and risk assessment
+based on contingency precursors [13]. Other applications of
+data-driven techniques include predicting cascading failure
+trajectories [14], [15] and identifying critical components
+involved in the cascade process [16]–[18]. Moreover, physics-
+informed graph-based models, with domain constraints or
+attention mechanisms [8], [19] have also been proposed for
+cascade analyses in power systems. GSP methods have also
+been employed to capture topological relationships and power-
+flow variations for identifying early indicators of cascading
+failures [20]–[22].
+The use of LLMs in power systems analytics is a recent
+development. Domain-tuned assistants and agent-based sys-
+tems like GAIA [23] and GridMind [24], utilize LLMs for
+operational guidance and contingency reasoning. LLM has
+also been introduced for time-series analysis [25], [26] and
+event forecasting [27] of real-time data in power systems.
+This approach also has demonstrated notable gains in load
+forecasting [28]–[30], fault diagnosis [31], [32], and event
+classification [33], showing its potential for predictive ana-
+lytics in power systems.
+Recent advances in multimodal learning have demonstrated
+that combining graph-based models with foundation models
+enables complementary learning of structural and semantic
+representations in specific domains [34]–[36]. Although graph-
+language hybrid frameworks have shown promising results in
+molecular modeling, knowledge graphs, and recommendation
+systems, their application to power systems, particularly cas-
+cading failure prediction, remains largely unexplored. Moti-
+vated by these advances, this work integrates topology-aware
+graph representation learning with LLM reasoning capabilities
+for early cascade severity prediction.
+Moreover, cross-system transferability remains a key chal-
+lenge for many ML models, particularly those developed for
+power systems with different network topologies. Power net-
+works may differ significantly in bus count, line count, graph
+density, and operating conditions. Recent studies on GNNs for
+power system applications have shown that topology changes
+and distribution shifts can strongly affect model generalization,
+motivating topology-aware but transferable learning strategies
+[8], [37], [38]. Domain adaptation techniques, such as corre-
+lation alignment, can reduce distribution mismatch between
+source and target systems by aligning second-order feature
+statistics [39]. In addition, few-shot calibration and source-to-
+target adaptation methods provide practical mechanisms for
+adapting a trained model using limited target-domain informa-
+tion [40], [41]. These ideas are especially relevant for hybrid
+graph-language models, where topology-aware representations
+may improve in-distribution prediction but may also require
+adaptation when deployed on unseen network topologies.
+To the best of our knowledge, existing studies have not
+systematically compared topology-aware graph representation
+learning, topology-agnostic LLMs, and their hybrid fusion for
+cascading failure analysis in power systems. This paper ad-
+dresses these shortcomings by systematically evaluating these
+formulations in terms of in-distribution predictive accuracy,
+zero-shot cross-system transferability, and few-shot adaptation
+under a limited target-label budget.
+III. CASCADE SIMULATION, DATA GENERATION, AND
+FEATURE DEFINITION
+This section describes the cascading failure model used in
+the simulation and the methodology used for generating data
+description from the simulated cascading failure events.
+1) Cascading Failures Model: The cascading failure events
+are modeled using a line-overloading mechanism implemented
+in MATPOWER, where DC power flow is recomputed after
+each outage to determine post-contingency line loading [42].
+The cascade continues until no additional overloaded lines are
+detected. Two systems, specifically, the IEEE-118 and IEEE-
+300 test systems have been used for generating the cascade
+events and for the performance evaluation of the models. The
+IEEE 118-bus (118 buses, 186 lines, 54 generators, 91 loads)
+and IEEE 300-bus (300 buses, 411 lines, 69 generators, 200
+loads) systems serve as standard benchmark models.
+It is assumed that two initial failures trigger the cascading
+process, after which subsequent steps involve a single failure
+at a time caused by line overloading. This simplification states
+that time can be divided into sufficiently small intervals,
+allowing multiple near-simultaneous failures to be treated as
+sequential events occurring in rapid succession.
+The cascade scenarios are grouped by the severity of the
+outage: Small (1 to 10%), Medium (10 to 30%), large (30
+to 60%), and Very large (>60%) number of transmission
+lines failed. Each dataset contains 30,000 cascading failure
+scenarios, with 3,466 small, 13,303 medium, 10,108 large, and
+3,123 very large cascades for IEEE-118, and 2,964, 12,443,
+13,206, and 1,387, respectively, for IEEE-300. The objective
+is to predict the severity label y ∈{0, 1, 2, 3}, representing
+small, medium, large, and very large cascades, respectively.
+2) System Model as a Graph: The power transmission
+network is represented as a line graph G = (V, E), where
+each node vi ∈V represents transmission line i, and each
+edge (vi, vj) ∈E indicates that the two transmission lines
+share a common bus. Unlike the conventional bus graph,
+the line graph captures the connectivity among transmission
+lines through which cascading failures propagate. For each
+benchmark system, the line graph is constructed once and
+remains fixed across cascading failure scenarios, while node
+attributes evolve with the cascade.
+3) Node Features: For the first T observed cascade steps,
+the feature vector associated with transmission line i is defined
+as xi = (p(1)
+i , p(2)
+i , . . . , p(T )
+i
+), where p(t)
+i
+denotes the active
+power flow through transmission line i after cascade step t.
+
+
+3
+These node features form the graph signal matrix X ∈RL×T ,
+where L denotes the total number of transmission lines.
+4) Global Features: In addition to localized node-level
+features, the proposed framework incorporates a set of global
+cascade descriptors that summarize the overall operating
+conditions and cascade behaviors, providing complementary
+information beyond local graph neighborhoods.
+GSP-based Global Features: Following the GSP framework
+proposed in [22], this work defines four GSP-derived features
+for each cascade case to capture the global characteristics of
+the cascading event. In the following paragraphs, first the key
+GSP concepts used to define these features are reviewed and
+then the four features are presented.
+The graph signal X introduced earlier represents the power-
+flow values on the transmission lines, which are modeled
+as nodes in the line graph. Variations in the graph signal
+reflect the degree of unevenness in power-flow distribution
+across electrically adjacent transmission lines. To quantify
+this variation, graph signal smoothness is used as a system-
+level indicator of power-flow variation over the line graph.
+At each cascade step t, the local smoothness, s(t)
+i , of trans-
+mission line i quantifies the deviation of its power flow
+from the average power flow of its neighboring lines, s(t)
+i
+=
+p(t)
+i
+−
+1
+|N(i)|
+P
+j∈N(i) p(t)
+j
+ , where N(i) denotes the set of
+neighboring lines connected to line i in the line graph. The
+global smoothness is then obtained by aggregating the local
+smoothness values over all transmission lines, S(t)
+global
+=
+PL
+i=1 s(t)
+i . A larger value of S(t)
+global indicates greater spatial
+variation in power flows across adjacent transmission lines,
+which may reflect increasing system stress during the cascade.
+The analysis presented in [22] showed that the first local
+maximum of the global smoothness trajectory often occurs
+before the first uncontrolled islanding event, indicating that
+the system experiences a stress peak before losing network
+connectivity, motivating the use of graph smoothness-based in-
+dicators as early descriptors of cascade severity. Accordingly,
+four GSP-derived features are extracted for each cascading
+failure scenario:
+• GF1: The cascade step at which the first local maximum
+of S(t)
+global occurs.
+• GF2: The cascade step at which the first uncontrolled
+islanding event occurs.
+• GF3: The step distance between these two events (be-
+tween GF1 and GF2).
+• GF4: Amplitude of the first local maximum of S(t)
+global.
+non-GSP-based Global Features: In addition to the GSP-
+derived features, sets of global descriptors are extracted from
+the initial failures and the early-stage cascade trajectory.
+Specifically, for each of the two initial line failures, three
+static structural descriptors are computed from the fixed line-
+graph topology. The first is the bridge line indicator meaning
+whether the failed line is a bridge, i.e., whether its removal dis-
+connects the line graph. Second one is the line’s betweenness
+centrality, defined as the fraction of shortest paths between
+pairs of other lines that pass through the line. And the third
+one is line’s degree, representing the number of lines adjacent
+to it in the graph. These features are referred to as:
+• GF5: The structural descriptors (bridge indicator, degree
+and betweenness centrality) of each of the two initially
+failed lines.
+To further characterize the system state, root-mean-square
+(RMS) power-flow indicators are computed at each observed
+cascade step to summarize the global loading level. At cascade
+step t, the RMS power-flow indicator is defined as R(t) =
+r
+1
+L
+PL
+i=1
+
+p(t)
+i
+2
+.
+Evaluating this expression at each of the T observed cascade
+steps yields the sequence of scalar values R(1), . . . , R(T ).
+These features are referred to as:
+• GF6: The RMS power-flow indicators R(1), . . . , R(T ).
+The mean graph distance between pairs of failed lines within
+the observed cascade window of size T is also considered.
+The mean graph distance is the average shortest path distance
+in hops along the line-connectivity graph between the failed
+lines, denoted as:
+• GF7: The mean graph distance among the lines that have
+failed within the observed window of size T.
+Finally, two network-level descriptors characterize the sys-
+tem itself and are identical for every scenario on a given
+network. These include the average node degree,
+¯d
+=
+1
+L
+PL
+i=1 |N(i)|, and the graph density, ρ =
+2|E|
+L(L−1), where
+N(i) is the set of lines adjacent to line i [43]. The density
+ρ is the fraction of line pairs that share a bus. These features
+are referred to as:
+• GF8: The network-level descriptors including the average
+node degree, ¯d, and graph density of the line graph, ρ.
+IV. CASCADE PREDICTION FRAMEWORK AND MODEL
+ARCHITECTURE
+This section reviews and presents the class-based cascade
+size prediction frameworks considered in this study. The
+models are organized into three categories according to the
+extent to which they incorporate structural information about
+the system’s graph:
+(A) Topology-agnostic baseline models, which operate
+solely on tabular or sequential feature representations without
+explicitly incorporating the network structure. The models in
+this category include SVM, RF, DNN, FT-Transformer, and a
+standalone LLM model. (B) Topology-aware standalone mod-
+els, which incorporate explicit line-graph structure or structural
+descriptors as part of their input. This category includes the
+TAGAT and two standalone LLM models with topological
+information. (C) Graph–LLM fusion model, which combines
+both representations through a confidence-gated fusion mod-
+ule.
+A. Topology-Agnostic Baseline Models
+The following five models serve as topology agnostic
+baselines. Each is trained and evaluated using the same
+train/validation/test splits as the other presented models, with-
+out access to the line-graph adjacency or any structural de-
+scriptor of the transmission network.
+
+
+4
+1) Support Vector Machine (SVM): An SVM classifier
+with a radial basis function (RBF) kernel is used as a non-
+parametric baseline. The RBF kernel enables the model to
+learn nonlinear decision boundaries between cascade severity
+classes.
+2) Random Forest (RF): An RF classifier is used as
+an ensemble tree-based baseline. By aggregating predictions
+across a large number of decorrelated decision trees trained
+on bootstrap-resampled subsets of the data, the RF model
+provides a robust, low-variance baseline that does not require
+explicit topological information.
+3) Deep Neural Network (DNN):
+The DNN baseline
+consists of an input layer whose size equals the dimension of
+the feature vector, depending on the size of the system and the
+feature set, followed by four fully connected hidden layers of
+widths 128, 128, 256, and 256, using ReLU activations and a
+dropout rate of 20% for regularization. The network is trained
+with the Adam optimizer at a learning rate of 1×10−4, using
+categorical cross-entropy as the loss function, for 120 epochs
+with a batch size of 64 and a validation split of 20%.
+4) Feature Tokenizer Transformer (FT-Transformer): As
+a more advanced topology-agnostic baseline for tabular data,
+an FT-Transformer is also implemented. Unlike recurrent or
+graph-based architectures, the FT-Transformer employs multi-
+head self-attention directly on feature tokens, allowing global
+interactions among input features without relying on explicit
+graph topology modeling.
+5)
+No Topology Information LLM (NTI-LLM): The first
+variant of standalone LLM model developed in this study
+predicts cascade severity directly from a structured natural-
+language prompt. It does not use a graph encoder, line-graph
+representation, or any explicit topological information. Instead,
+the model uses only the per-line active power flow, i.e.,
+the vector xi = (p(1)
+i , . . . , p(T )
+i
+) of every transmission line
+i = 1, . . . , L. Figure 1 depicts the structure of the prompt,
+which consists of information blocks, where each block is
+relevant to a specific variant of the LLM model in this paper.
+This variant of LLM uses a single block, marked as B1, which
+contains the per-line active power flow p(t)
+i
+for t = 1, . . . , T.
+The rest of the information blocks will be introduced along
+with the other LLM variants. During supervised fine-tuning
+in training, the severity label is appended to the prompt as
+the expected output; during testing, it is omitted and the LLM
+predicts the severity class.
+The open-source Meta-LLaMA-3-8B-Instruct model serves
+as the LLM backbone. Its decoder architecture incorporates
+multi-head self-attention, rotary position embeddings, and
+automatic tokenization, enabling cascade severity prediction
+to be formulated as a conditional generation task.
+Low-Rank Adaptation (LoRA) offers parameter-efficient
+finetuning by injecting small-rank decomposition matrices into
+the model’s attention projections while also keeping the origi-
+nal weights of the model unchanged [44]. LoRA adapters are
+applied to the attention projection matrices wq, wk, wv, wo,
+corresponding to the query, key, value, and output transforma-
+tions in each attention layer, while the other parameters were
+frozen.
+This cascading failure scenario has
+the following attributes.
+B1 | Per-line power flow
+t = 1..4 flows (MW); failed lines 54, 124 = 0
+Line 1: [-11.35, -19.15, -19.15, -16.68]
+Line 2: [-40.80, -27.65, -27.65, -24.07]
+ ...
+B2 | GSP indicators (all within T = 4)
+GF1 (first local-max step): 3
+GF2 (first islanding step): 4
+GF3 (step distance): 1
+GF4 (amplitude at GF1): 9867.23
+B3 | Aggregated indicators
+RMS Power Flow Indicator at t = 1..4:
+91.07, 80.74, 91.24, 66.71.
+Line 54: non-bridge,
+Betweenness Centrality 3254.75, degree 5.
+Line 124: non-bridge,
+Betweenness Centrality 1205.37, degree 4.
+5 failed lines by t = 4; Mean Distance 6.50.
+Average Degree 5.69,Graph density 0.0320.
+B4 | Adjacency description
+Line 1 is adjacent to lines 2, 13.
+Line 2 is adjacent to lines 1, 4, 14.
+ ...
+Classes: 0=small, 1=medium, 2=large,
+3=very large. Predict the class (0-3).
+Respond with only the class number.
+ NTI-LLM 
+ ATI-LLM 
+ ETI-LLM 
+Fig. 1.
+Example testing prompt for a scenario in which all four GSP
+indicators are observed within the first T = 4 steps. The brackets mark
+the blocks used by each variant: (a) NTI-LLM uses B1 (per-line power flow);
+(b) ATI-LLM uses B1-B3 (adds the GSP and Non-GSP Global indicators);
+(c) ETI-LLM uses B1-B4 (adds the line-adjacency description).
+LoRA modifies the existing weight matrix W using a low-
+rank update: W′ = W + BA, where A ∈Rr×d, and
+B ∈Rd×r, where, d is the hidden dimension of the attention
+projection matrix being adapted and r is the LoRA rank.
+Because r ≪d, the number of trainable parameters is
+reduced considerably to make the model size compatible with
+the available computational resources. The objective function
+of the fine-tuning is the standard causal language modeling
+(CLM) loss.
+Given a scenario prompt s and its associated label token y,
+the loss is L = −log Pθ(y | s), which is computed only over
+the final label token.
+Fine-tuning and training are performed using the Hugging-
+Face Trainer, which enables automatic checkpointing at each
+epoch and loads the best model based on lowest validation
+loss. All prompt tokens are masked with a loss value of
+−100, ensuring that only the prediction of the cascade class
+contributes to the gradient updates. Table I presents the
+model initialization and the associated parameters tuned for
+optimizing the predictor. Due to GPU memory constraints
+associated with fine-tuning of the 8B-parameter model, the
+per-device batch size was set to 1. Gradient accumulation
+with 8 steps was employed to maintain an effective batch
+size of 8, ensuring stable optimization while preserving com-
+
+
+5
+putational feasibility. Rather than relying on autoregressive
+label generation, the proposed implementation extracts both
+the semantic embedding and class-probability estimate from
+a single forward pass through the fine-tuned LLM. The final-
+layer hidden states are mean-pooled over the prompt tokens
+to obtain the semantic embedding hL ∈R4096, where 4096
+is the hidden state dimension of the Meta-LLaMA-3-8B-
+Instruct backbone model. In parallel, a four-dimensional class-
+probability vector πL is obtained from the next-token logits
+by applying softmax over the token IDs corresponding to the
+four class labels.
+TABLE I
+MODEL PARAMETERS AND CONFIGURATION FOR THE STANDALONE
+LLM-BASED PREDICTION MODELS
+Category
+Parameter
+Value
+Model
+Base model
+Meta-LLaMA-3-8B-Instruct
+Number of Attention Heads
+32
+Train/Val/Test Split
+70% / 10% / 20%
+Epochs
+3
+Max sequence length
+768
+Optimization
+Optimizer
+AdamW
+Per-device batch size
+1
+Gradient accumulation
+8 (effective batch = 8)
+Learning rate
+1 × 10−4
+Weight decay
+0.02
+LoRA
+Rank (r)
+16
+Alpha
+32
+Dropout
+0.03
+Target modules
+wq, wk, wv, wo
+Precision
+Mixed Precision
+bf16
+Hardware
+GPU
+NVIDIA A100
+B. Topology-Aware Standalone Models
+The following three models incorporate structural informa-
+tion about the transmission network, either through the explicit
+line graph or through structural descriptors derived from it.
+1) Topology-Aware
+Graph
+Attention
+Transformer
+(TAGAT): The proposed TAGAT encoder consists of three
+stacked graph transformer layers followed by a global pooling
+stage, as shown in Fig. 2. Each layer is built from five blocks
+applied in sequence to the per-line hidden representation
+H(l) ∈RL×d, where L is the number of transmission lines,
+d is the hidden dimension, and the rows h(l)
+i
+are the hidden
+vectors of the individual lines. The output of block (5) is the
+input of the next layer, and block (6) is applied once, after
+the third layer.
+Block 1-Linear projection of query, key, and value vectors:
+Each layer first projects the node features into a hidden
+representation before computing query, key, and value vectors,
+Q = H(l)WQ, K = H(l)WK, V
+= H(l)WV , where
+H(l) ∈RL×d denotes the hidden representation at the l-th
+layer, whose rows are the per-line hidden vectors h(l)
+i , and
+H(l) is the full set of node vectors h(l)
+i . WQ, WK, and WV
+are learnable projection matrices. Moreover, qi = h(l)
+i WQ,
+ki = h(l)
+i WK, and vi = h(l)
+i WV denote the row-wise query,
+key, and value vectors for line i, in Q, K, and V, respectively.
+Block 2- Multi-head neighborhood attention: For every
+transmission line, attention coefficients are computed over
+its neighboring transmission lines using scaled dot-product
+attention, as αij = exp
+
+qT
+i kj
+√
+d
+
+/ P
+k∈N (i)
+exp
+
+qT
+i kk
+√
+d
+
+, where
+N(i) denotes the neighboring transmission lines connected to
+line i, and d is the hidden embedding dimension. The attention
+coefficients quantify the influence of neighboring transmission
+lines, while four independent attention heads capture different
+neighborhood interaction patterns during cascade evolution.
+Block 3- Aggregation and head concatenation: The hidden
+representation of each node is then updated through weighted
+aggregation within each head, a(l)
+i,m = P
+j∈N (i) αijWOvj,
+where WO is a learnable output projection matrix and vj is
+the value vector of neighboring line j. The outputs of the
+heads are then concatenated, a(l)
+i
+=
+M
+m=1a(l)
+i,m, where M = 4
+denotes the number of attention heads and ∥represents feature
+concatenation. Here, a(l)
+i,m is the attention output of line i
+computed independently by the m-th head, using that head’s
+own attention weights and projection matrices, and a(l)
+i
+is the
+resulting multi-head output of line i.
+Block 4- Residual connection and layer normalization:
+Following each graph attention layer, residual connections and
+layer normalization are applied to stabilize optimization and
+facilitate gradient propagation through deeper architectures,
+eH(l+1)
+=
+LayerNorm
+ H(l) + TAGAT(H(l))
+
+, where
+TAGAT(H(l)) denotes the matrix obtained by stacking the
+per-node multi-head outputs a(l)
+i
+of Block 3 row-wise, while
+both terms of the sum are computed at layer l, and eH(l+1)
+denotes this post-attention, pre-FFN state.
+Block 5- Position-wise Feed-Forward Network: The re-
+sulting node representations are subsequently refined through
+a position-wise feed-forward network consisting of two
+fully connected layers with GELU activation, FFN(h) =
+W2 GELU(W1h), applied identically to each node’s hidden
+vector h, where h = ˜h(l+1)
+i
+, the i-th row of eH(l+1) for each
+line in turn. This is the post-attention, pre-FFN vector of
+line i, not the layer input h(l)
+i
+or the attention outputs a(l)
+i,m
+and a(l)
+i . W1 and W2 are the feed-forward layer’s learnable
+weight matrices. The hidden dimension of the feed-forward
+network is set to 256. Dropout with probability 0.1 is applied
+after both the attention and feed-forward blocks to reduce
+overfitting. Applying the FFN row-wise to every line’s hidden
+vector yields the layer’s final output H(l+1), whose rows are
+h(l+1)
+i
+= FFN(˜h(l+1)
+i
+). This becomes the input H(l) of the
+next graph transformer layer; continuing up to the third layer
+before global pooling.
+Block 6- Global attention pooling: After the third and
+final TAGAT layer, the node embeddings are aggregated using
+global attention pooling to obtain a graph-level representation,
+hG = PN
+i=1 βihi, where βi = exp(g(hi))/ P
+j exp(g(hj))
+represents the learned attention weight assigned to transmis-
+sion line i, and g(·) is a learnable scoring network [45]. The
+final graph embedding hG ∈R128 encodes the structural
+characteristics of the cascading failures. The architecture of
+Standalone-TAGAT model is shown in Fig. 2.
+During training, topology augmentation is applied by sam-
+pling random induced subgraphs from the full line graph. For
+each training instance, a fraction of the line nodes is sampled
+
+
+6
+Line-graph
+input
+G=(V, E),  X ∈ℝL×T
+H(0)
+Graph transformer layer × 3
+Linear projection
+1
+Multi-head neighborhood
+attention (M = 4 heads)
+2
+Head aggregation and concatenation
+3
+Residual connection & LayerNorm
+4
+H̃(l+1)
+Position-wise feed-forward network (GELU)
+5
+H(l+1) → H(l)
+Global
+attention
+pooling
+6
+Graph
+embedding
+hG ∈ℝ128
+Cascade severity
+classification
+head
+Severity class ŷ
+Fig. 2.
+Architecture of the standalone TAGAT model. Three stacked graph transformer layers perform multi-head neighborhood attention, residual
+normalization, and feed-forward transformations. Global attention pooling produces the graph embedding hG ∈R128, used for cascade severity classification.
+uniformly between 0.5 and 1.0, with a minimum of eight
+nodes. The adjacency matrix and node features are used for
+training, while validation, testing, and target-system evaluation
+use the full original line graph. This augmentation prevents
+the graph encoder from overfitting to a fixed network size.
+To improve cross-system representation alignment, Correlation
+Alignment (CORAL) loss is applied during training between
+source-system and unlabeled target-system graph embeddings
+by penalizing differences between their covariance matrices
+[39]. This alignment requires no target-system labels and is
+not updated during subsequent target-system evaluation.
+2) Aggregated Topology-Informed LLM (ATI-LLM):
+While the LLM formulation described in Section IV.A operates
+only on per-line power flow data, this topology-aware variant
+of the standalone LLM classifier incorporates some aggregated
+topological information in the form of natural language for
+the classification. This model shares the same LLaMA-3-8B-
+Instruct backbone and LoRA fine-tuning procedure detailed
+in Section IV.A; the only distinction from the topology-
+agnostic formulation lies in two additional information blocks
+appended to the prompt after information block B1 in Fig. 1.
+These information blocks include (B2) the GSP-based features
+including GF1 to GF4, and (B3) the non-GSP-based global
+features including GF5 to GF8, as explained in Section III.
+To prevent information leakage beyond the first T observed
+steps, GSP features in block (B2) are conditionally included
+based on event occurrence. If both the first local maximum and
+uncontrolled islanding occur, GF1–GF4 are included; if only
+the local maximum occurs, GF1 and GF4 are included; and if
+only islanding occurs, GF2 is included. If neither occurs, no
+GSP feature values are provided. Unavailable indicators are
+explicitly identified in the prompt.
+3) Explicit Topology-Informed LLM (ETI-LLM): This
+topology-aware variant of the standalone LLM classifier in-
+corporates explicit knowledge of the network topology in the
+form of adjacency matrix information in natural language
+classification. This model shares the same LLaMA-3-8B-
+Instruct backbone and LoRA fine-tuning procedure detailed in
+the LLM presented previously; the only distinction from the
+ATI-LLM lies in a fourth information block (B4), which is a
+natural-language description of the line-graph adjacency that
+lists, for each line, the lines adjacent to it (see Fig. 1). The
+information blocks B1–B3 and the conditional disclosure of
+the GSP features in (B2) are identical to those of the previous
+variants, so the same reduced (B2) block, as discussed earlier,
+is used whenever an event is not observed within the window.
+C. Graph-LLM Fusion Network
+The hybrid Graph-LLM Fusion framework includes two
+branches: a TAGAT branch and an LLM branch with aggre-
+gated topological features and unifies the two within a single
+end-to-end classifier, as illustrated in Fig. 3. Since the TAGAT
+branch uses explicit topological information, the chosen LLM
+is the ATI-LLM. Note that the LLM branch receives the
+reduced (B2) information block shown in Fig. 1 whenever a
+GSP event is not observed within the window of size T, while
+the TAGAT branch uses no GSP features and is unaffected.
+The framework employs decision-level fusion, where class
+logits from both branches are combined through a learned
+confidence gate, which enables scenario-specific weighting of
+graph-based and language-based predictions. The remainder
+of this subsection first presents the confidence-gated fusion
+module, which turns the graph and language embeddings into
+a single prediction, and then the gate regularization terms and
+the composite training objective used to train it.
+
+
+7
+Line graph
+G=(V,E)
+X∈ℝL×T
+TAGAT encoder
+(3 graph transformer
+layers + pooling)
+Linear
+projection WG
+Graph head fG
+(2-layer MLP)
+Natural language
+prompt (LLM with
+aggregated topological
+information)
+LoRA-tuned
+LLaMA-3-8B
+Linear
+projection WL
+Language head fL
+(2-layer MLP)
+Gate network fgate
+[̃hG,̃hL,πL]→g
+Confidence-gated
+fusion
+ofused =goG +(1−g)oL
+g=0.2+0.6σ(r)
+Predicted severity class ̂y
+(small / medium / large / very large)
+Graph branch
+Language branch
+hG
+ℝ128̃
+hG
+ℝ256
+hL
+ℝ4096̃
+hL
+ℝ256
+πL ∈ℝ4
+oG
+g
+oL
+Fig. 3.
+Architecture of the proposed Graph-LLM Fusion framework. The TAGAT and ATI-LLM branches generate graph and language representations,
+respectively, which are projected into a shared latent space. Separate classification heads produce logits that are combined through a confidence-gated fusion
+mechanism for severity prediction.
+1) Confidence-Gated Graph-Language Feature Fusion:
+The proposed fusion module combines graph-based and
+language-based class logits through a learned confidence gate,
+enabling scenario-specific weighting of both branches.
+Let hG ∈R128 denote the graph-level embedding generated
+by the TAGAT encoder after graph attention pooling, and let
+hL ∈R4096 denote the semantic embedding extracted from
+the final hidden states of the utilized LLM model. In addition
+to the semantic embedding, the LLM branch also produces a
+four-dimensional class-probability vector πL ∈R4,
+Since the graph and language embeddings originate from
+different feature spaces and have different dimensionalities,
+they are first projected into a common latent space using inde-
+pendent learnable projection layers,˜hG = WGhG+bG, ˜hL =
+WLhL + bL, where WG ∈R256×128 and WL ∈R256×4096
+are trainable projection matrices. The projected graph em-
+bedding ˜hG is passed through a graph-specific classification
+head to produce the graph-branch logits, oG = fG(˜hG).
+Similarly, the language-specific classification head receives
+both the projected language embedding and the LLM class-
+probability vector. The language-branch logits are computed as
+oL = fL
+
+concat
+
+˜hL, πL
+
+, where fG(·) and fL(·) denote
+two-layer multilayer perceptrons with GELU activation and
+dropout. Including πL allows the language head to use both
+the semantic representation learned from the prompt and the
+LLM’s own class-probability estimate.
+To adaptively combine the two branches, a separate gate
+network is introduced. The gate network takes the projected
+graph embedding, the projected language embedding, and the
+LLM probability vector as input, u = concat
+
+˜hG, ˜hL, πL
+
+,
+and produces a raw scalar gate logit, r = fgate(u). The raw
+gate value is passed through a sigmoid function and then
+affinely rescaled to prevent the fusion module from collapsing
+completely onto either branch, g = 0.2 + 0.6σ(r). Thus, the
+gate is bounded as 0.2 ≤g ≤0.8. The final fused logits
+are obtained through a confidence-weighted combination of
+the graph and language logits, ofused = goG + (1 −g)oL.
+When g is close to its upper bound, the model assigns greater
+confidence to the TAGAT branch. When g is close to its lower
+bound, the model relies more heavily on the LLM branch.
+Since the gate is bounded, both branches always contribute
+to the fused decision, preventing the hybrid framework from
+degenerating into a single-branch classifier. The fused logits
+are converted into class probabilities through the softmax
+function, P(y = c) =
+exp(ofused,c)
+PC
+k=1 exp(ofused,k), The final predicted
+class is obtained as ˆy = arg maxc P(y = c).
+2) Gate Regularization and Composite Training Objective:
+Bounding g to [0.2, 0.8] prevents either branch from being
+fully excluded, but not from saturating near a bound for
+most scenarios. Two lightweight penalties discourage this: an
+entropy term LH = −1
+N
+P
+i[ˆgi log ˆgi + (1 −ˆgi) log(1 −ˆgi)],
+with ˆgi = (gi −0.2)/0.6, which is maximized (via a sub-
+tracted loss term) to keep per-example gates away from either
+bound; and a batch-balance term Lbal = (¯g −0.5)2, with
+¯g = 1
+N
+P
+i gi, which keeps the batch-average gate centered so
+the module does not systematically favor one branch. A second
+CORAL term, Lfusion
+CORAL, is also applied to the concatenated
+projected embeddings ˜h = concat(˜hG, ˜hL) using source
+features, complementing the TAGAT-level CORAL term of
+Section IV-B since the projection and classification heads
+sit downstream of the graph encoder and can drift out of
+alignment independently.
+V. PERFORMANCE EVALUATION
+This section reports the empirical comparison of all model
+families introduced in Section IV.
+A. In-System Performance
+In this subsection, the performance of the proposed TAGAT,
+three LLM variants, and the Graph-LLM Fusion model is
+
+
+8
+TABLE II
+CASCADE SEVERITY CLASSIFICATION PERFORMANCE ON IEEE-118 BUS
+SYSTEM USING T=4
+Category
+Model
+F1
+Precision Recall
+ML
+SVM-RBF
+0.85
+0.86
+0.85
+Random Forest
+0.94
+0.93
+0.95
+DNN
+0.86
+0.87
+0.86
+Transformer
+FT-Transformer
+0.88
+0.89
+0.87
+LLM
+NTI-LLM
+0.90
+0.91
+0.89
+ATI-LLM
+0.93
+0.93
+0.92
+ETI-LLM
+0.93
+0.93
+0.93
+Graph-Based
+TAGAT
+0.92
+0.93
+0.91
+Hybrid
+LLM-GNN Fusion
+Model
+0.94
+0.95
+0.94
+TABLE III
+CASCADE SEVERITY CLASSIFICATION PERFORMANCE ON IEEE-300 BUS
+SYSTEM USING T=4
+Category
+Model
+F1
+Precision Recall
+ML
+SVM-RBF
+0.66
+0.67
+0.64
+Random Forest
+0.79
+0.79
+0.79
+DNN
+0.81
+0.81
+0.81
+Transformer
+FT-Transformer
+0.73
+0.74
+0.72
+LLM
+NTI-LLM
+0.85
+0.85
+0.84
+ATI-LLM
+0.88
+0.88
+0.87
+ETI-LLM
+0.88
+0.88
+0.88
+Graph-Based
+TAGAT
+0.90
+0.90
+0.90
+Hybrid
+LLM-GNN Fusion
+Model
+0.92
+0.92
+0.91
+evaluated and compared with that of the baseline ML and
+transformer models. The training and test data are drawn from
+the same power system. These evaluations are conducted in-
+dependently for the IEEE 118-bus and IEEE 300-bus systems.
+All models share a common input of the per-line active
+power flow for each transmission line i, i.e., (p(1)
+i , . . . , p(T )
+i
+),
+over the window of the first T cascade steps. The cascade
+window size, T, represents a trade-off between prediction
+latency and the amount of information available for prediction.
+The impact of different values of T on the prediction accuracy
+has been investigated in this work; however, two common
+window sizes of T = 4 and T = 8 are specifically considered
+for all models to facilitate the performance comparison. In
+addition to the common power-flow information, each model
+utilizes its corresponding set of GSP and non-GSP features,
+as detailed in the model descriptions in Section IV.
+Tables II and III present the performance comparison for
+T = 4. On IEEE-118 dataset, the Fusion model achieves an
+F1 score of 0.94, matching Random Forest and outperforming
+TAGAT (0.92) and the standalone LLM variants (0.90–0.93).
+On IEEE-300, the Fusion model achieves the highest F1 score
+of 0.92, compared with 0.90 for TAGAT, 0.85–0.88 for the
+LLM variants, and 0.66–0.81 for conventional baselines. These
+results indicate a greater advantage of graph-language fusion
+(a) IEEE 118-bus system.
+(b) IEEE 300-bus system.
+Fig. 4. The evolution of classification accuracy as a function of cascade steps
+window, T for the standalone TAGAT, ATI-LLM, and Graph-LLM Fusion
+models: (a) IEEE 118-bus system and (b) IEEE 300-bus system.
+on the larger system. Table IV further evaluates the Fusion
+model using T = 4 and T = 8. Increasing the observation
+window improves its weighted F1 score from 0.94 to 0.96
+on IEEE-118 and from 0.92 to 0.95 on IEEE-300. On IEEE-
+118, the largest improvement occurs in the small cascade class
+(0.86 to 0.91), while on IEEE-300, the very large cascade class
+shows a substantial improvement (0.80 to 0.91).
+Prediction accuracy improves with the number of observed
+cascade steps, with most gains achieved in the early stages,
+as shown in Fig. 4. For IEEE-118 (Fig. 4(a)), the Fusion
+model consistently achieves the highest accuracy, increasing
+from 0.84 at Step 2 to 0.94 at Step 4 and approximately 0.97
+at Step 10. Similarly, ATI-LLM improves from 0.78 to 0.92
+and 0.97, while TAGAT increases from 0.75 to 0.90 and 0.95
+at the corresponding steps, narrowing the performance gap
+as more steps are observed. For IEEE-300 (Fig. 4(b)), the
+fusion model also maintains the highest accuracy, while ATI-
+LLM and TAGAT gradually converge. This convergence is
+more pronounced in IEEE-300 because GSP features become
+available later in the cascade. On average, the first local
+maximum and uncontrolled islanding are both observed by
+7.836 steps for IEEE-118 and 11.416 steps for IEEE-300 [22].
+Consequently, the later availability of GSP features in IEEE-
+300 helps ATI-LLM approach the performance of TAGAT,
+which does not utilize these features.
+B. Cross-System Transferability Analysis
+To evaluate cross-system transferability, each model is
+trained on the IEEE 118-bus system and evaluated on the
+
+
+9
+TABLE IV
+PERFORMANCE EVALUATION OF CASCADING SEVERITY PREDICTION USING THE PROPOSED TAGAT-LLM FUSION MODEL AND TWO WINDOW SIZE T
+FOR THE IEEE 118 AND IEEE 300 BUS SYSTEM. NOTE: THE PRESENTED VALUES ARE IN THE FORMAT OF PRECISION/ RECALL/ F-1 SCORE.
+Method
+Observation Window
+Small
+Medium
+Large
+Very Large
+Weighted Average
+IEEE 118-Bus System
+T=4
+0.93 / 0.80 / 0.86
+0.98 / 0.93 / 0.96
+0.97 / 0.92 / 0.95
+0.99 / 0.94 / 0.96
+0.95 / 0.94 / 0.94
+T=8
+0.91 / 0.91 / 0.91
+0.96 / 0.96 / 0.96
+0.96 / 0.95 / 0.95
+0.99 / 0.97 / 0.98
+0.96 / 0.95 / 0.96
+IEEE 300-Bus System
+T=4
+1.00 / 1.00 / 1.00
+0.97 / 0.95 / 0.96
+0.89 / 0.85 / 0.87
+0.82 / 0.79 / 0.80
+0.92 / 0.91 / 0.92
+T=8
+1.00 / 1.00 / 1.00
+0.98 / 0.98 / 0.98
+0.94 / 0.90 / 0.92
+0.92 / 0.90 / 0.91
+0.95 / 0.94 / 0.95
+IEEE 300-bus system without further retraining, fine-tuning, or
+parameter updates. For models employing CORAL, unlabeled
+target-system data are utilized during training for unsupervised
+representation alignment, while no target labels are used. This
+setting evaluates label-free cross-system transfer with unsu-
+pervised domain adaptation, followed by few-shot calibration
+using limited labeled target-system samples.
+Table V summarizes the zero-shot transfer performance.
+Among the classical baselines, RF achieves the highest accu-
+racy at 0.68, followed by DNN (0.67) and the FT-Transformer
+(0.65); SVM performs worst among the topology-agnostic
+baselines at 0.51, and the standalone TAGAT model reaches
+only 0.56, reflecting its tight coupling to the source-system
+topology. The standalone LLM attains 0.69 accuracy with-
+out topological information, 0.70 with aggregated topological
+information, and 0.71 with explicit topological information,
+so each additional block of information adds only a small
+gain in this setting. The Graph-LLM Fusion model achieves
+the best zero-shot accuracy overall at 0.72 (0.72 recall and
+0.71 precision), indicating that language-based reasoning over
+structured descriptors transfers more effectively across grid
+topologies than representations tied to a fixed graph structure.
+Table VI presents the few-shot transfer results using 1,000
+labeled IEEE-300 samples for target-system calibration. All
+models improve over their zero-shot performance: SVM, RF,
+DNN, and FT-Transformer achieve accuracies of 0.56, 0.71,
+0.74, and 0.67, respectively. TAGAT shows the largest im-
+provement, from 0.56 to 0.76, outperforming all topology-
+agnostic models. The standalone LLM achieves 0.71, 0.74,
+and 0.75 accuracy without, with aggregated, and with explicit
+topological information, respectively. The Graph-LLM Fusion
+model achieves the highest accuracy of 0.83 (0.83 recall and
+0.82 precision), improving by 0.11 over zero-shot transfer.
+These results demonstrate that TAGAT benefits most from
+limited target-system calibration despite its weaker zero-shot
+generalization, while the Fusion model maintains the strongest
+cross-system performance in both transfer settings.
+VI. CONCLUSION
+This work presents an LLM-GNN fusion framework for
+early-stage cascading failure severity prediction in power
+transmission networks. The proposed confidence-gated fusion
+framework combines topology-aware TAGAT representations
+with the contextual learning capabilities of a LoRA-fine-tuned
+LLaMA-3-8B model, leveraging complementary structural and
+system-level information. Evaluations on the IEEE 118-bus
+TABLE V
+CROSS-SYSTEM TRANSFERABILITY TEST: ZERO-SHOT TRANSFER FROM
+IEEE-118 TO IEEE-300 USING T=4.
+Model
+Accuracy
+Recall
+Precision
+SVM (RBF Kernel)
+0.51
+0.52
+0.51
+Random Forest
+0.68
+0.69
+0.66
+DNN
+0.67
+0.65
+0.69
+FT-Transformer
+0.65
+0.66
+0.64
+TAGAT
+0.56
+0.55
+0.55
+NTI-LLM
+0.69
+0.69
+0.69
+ATI-LLM
+0.70
+0.70
+0.69
+ETI-LLM
+0.71
+0.71
+0.71
+Graph-LLM Fusion Model
+0.72
+0.72
+0.71
+TABLE VI
+CROSS-SYSTEM TRANSFERABILITY TEST: FEW-SHOT TRANSFER FROM
+IEEE-118 TO IEEE-300 USING T=4.
+Model
+Accuracy
+Recall
+Precision
+SVM (RBF Kernel)
+0.56
+0.57
+0.55
+Random Forest
+0.71
+0.72
+0.71
+DNN
+0.74
+0.74
+0.73
+FT-Transformer
+0.67
+0.67
+0.66
+TAGAT
+0.76
+0.77
+0.75
+NTI-LLM
+0.71
+0.72
+0.71
+ATI-LLM
+0.74
+0.74
+0.73
+ETI-LLM
+0.75
+0.74
+0.76
+Graph-LLM Fusion Model
+0.83
+0.83
+0.82
+and IEEE 300-bus systems demonstrate that the proposed
+fusion framework achieves competitive or improved predic-
+tive performance compared with standalone LLM, graph-
+based, and conventional machine learning models, highlighting
+the complementary value of structural and language-based
+representations. Furthermore, the cross-system transferability
+analysis highlights the potential of combining graph-based
+and language-based representations to improve generalization
+across different network topologies. Future work will focus on
+extending the proposed framework to predict the exact cascade
+size and the sequence of transmission line failures, enabling
+more detailed characterization of cascading events.
+ACKNOWLEDGMENT
+This material is based upon work supported by the National
+Science Foundation under Grant No. 2238658.
+
+
+10
+REFERENCES
+[1] Z. Guo, K. Sun, X. Su, and S. Simunovic, “A review on simulation
+models of cascading failures in power systems,” iEnergy, vol. 2, no. 4,
+pp. 284–296, 2023.
+[2] Y. Zhu, Y. Zhou, W. Wei, and N. Wang, “Cascading failure analysis
+based on a physics-informed graph neural network,” IEEE Transactions
+on Power Systems, vol. 38, no. 4, pp. 3632–3641, 2022.
+[3] R. Pi, Y. Cai, Y. Li, and Y. Cao, “Machine learning based on bayes
+networks to predict the cascading failure propagation,” IEEE access,
+vol. 6, pp. 44 815–44 823, 2018.
+[4] N. M. Sami and M. Naeini, “Machine learning applications in cascading
+failure analysis in power systems: A review,” Electric Power Systems
+Research, vol. 232, p. 110415, 2024.
+[5] G. A. Nakas, A. Dirik, P. N. Papadopoulos, A. R. R. Matavalam, O. Paul,
+and D. Tzelepis, “Online identification of cascading events in power
+systems with renewable generation using measurement data and machine
+learning,” IEEE Access, vol. 11, pp. 72 343–72 356, 2023.
+[6] S. Chadaga, X. Wu, and E. Modiano, “Power failure cascade prediction
+using graph neural networks,” in 2023 IEEE International Conference
+on Communications, Control, and Computing Technologies for Smart
+Grids (SmartGridComm).
+IEEE, 2023, pp. 1–7.
+[7] N. M. Sami and M. Naeini, “Machine learning-based cascade size
+prediction analysis in power systems,” in 2023 North American Power
+Symposium (NAPS).
+IEEE, 2023, pp. 1–6.
+[8] Y. Zhu, Y. Zhou, W. Wei, P. Li, and W. Huang, “GNNs’ generalization
+improvement for large-scale power system analysis based on physics-
+informed self-supervised pre-training,” IEEE Transactions on Power
+Systems, 2025.
+[9] M. Jia, Z. Cui, and G. Hug, “Enhancing llms for power system simu-
+lations: A feedback-driven multi-agent framework,” IEEE Transactions
+on Smart Grid, 2025.
+[10] A. Salehpour, I. Al-Anbagi, K.-C. Yow, and X. Cheng, “Modeling
+cascading failures in coupled smart grid networks,” IEEE Access, vol. 10,
+pp. 81 054–81 070, 2022.
+[11] K. Bhaila and X. Wu, “Cascading failure prediction in power grid using
+node and edge attributed graph neural networks,” in 2024 International
+Joint Conference on Neural Networks (IJCNN).
+IEEE, 2024, pp. 1–7.
+[12] M. Abedi, M. R. Aghamohammadi, and M. T. Ameli, “SVM based
+intelligent predictor for identifying critical lines with potential for cas-
+cading failures using pre-outage operating data,” International Journal
+of Electrical Power & Energy Systems, vol. 136, p. 107608, 2022.
+[13] M. Fekri, J. Nikoukar, and G. B. Gharehpetian, “Vulnerability risk
+assessment of electrical energy transmission systems with the approach
+of identifying the initial events of cascading failures,” Electric Power
+Systems Research, vol. 220, p. 109271, 2023.
+[14] S. He, Y. Zhou, Y. Yang, X. Li, Y. Liu, and T. Liu, “Vulnerable sequence
+identification for sequential cascading failure analysis in power grid,”
+IEEE Transactions on Industrial Informatics, 2025.
+[15] D. Liu, X. Zhang, and K. T. Chi, “A tutorial on modeling and analysis of
+cascading failure in future power grids,” IEEE Transactions on Circuits
+and Systems II: Express Briefs, vol. 68, no. 1, pp. 49–55, 2020.
+[16] R. A. Shuvro, P. Das, M. M. Hayat, and M. Talukder, “Predicting
+cascading failures in power grids using machine learning algorithms,”
+in 2019 North American Power Symposium (NAPS).
+IEEE, 2019, pp.
+1–6.
+[17] A. Varbella, B. Gjorgiev, and G. Sansavini, “Geometric deep learning
+for online prediction of cascading failures in power grids,” Reliability
+Engineering & System Safety, vol. 237, p. 109341, 2023.
+[18] J. Qi, “Utility outage data driven interaction networks for cascading
+failure analysis and mitigation,” IEEE Transactions on Power Systems,
+vol. 36, no. 2, pp. 1409–1418, 2020.
+[19] Y. Yang, Y. Zhou, J. Wu, Z. Xu, S. He, X. Guan, and T. Liu, “An event-
+triggered hybrid system model for cascading failure in power grid,” IEEE
+Transactions on Automation Science and Engineering, vol. 19, no. 3, pp.
+1312–1325, 2022.
+[20] A. Ortega, P. Frossard, J. Kovaˇcevi´c, J. M. Moura, and P. Vandergheynst,
+“Graph signal processing: Overview, challenges, and applications,” Pro-
+ceedings of the IEEE, vol. 106, no. 5, pp. 808–828, 2018.
+[21] N. M. Sami and M. Naeini, “GSP and statistical analysis of single
+line failure impact and spread in power systems,” in 2024 56th North
+American Power Symposium (NAPS).
+IEEE, 2024, pp. 1–6.
+[22] S. Biswas and M. Naeini, “Learning graph signal indicators for cascad-
+ing failure prediction in power systems,” in 2025 North American Power
+Symposium.
+IEEE, 2025.
+[23] Y. Cheng, H. Zhao, X. Zhou, J. Zhao, Y. Cao, and C. Yang, “GAIA–
+a large language model for advanced power dispatch,” arXiv preprint
+arXiv:2408.03847, 2024.
+[24] H.
+Jin,
+K.
+Kim,
+and
+J.
+Kwon,
+“Gridmind:
+LLMs-powered
+agents for power system analysis and operations,” arXiv preprint
+arXiv:2509.02494, 2025.
+[25] J. P. Matos-Carvalho, S. F. Stefenon, V. R. Q. Leithardt, and K.-C. Yow,
+“Time series forecasting based on optimized LLM for fault prediction
+in distribution power grid insulators,” arXiv preprint arXiv:2502.17341,
+2025.
+[26] H. Lin and M. Yu, “A novel distributed pv power forecasting approach
+based on time-LLM,” arXiv preprint arXiv:2503.06216, 2025.
+[27] J. Su, N. Zhang, Y. Zhao, and H. Chen, “Clb-ber: An approach to
+electricity consumption behavior analysis using time-series symmetry
+learning and LLMs,” Symmetry, vol. 17, no. 8, p. 1176, 2025.
+[28] M. Gao, S. Zhou, W. Gu, Z. Wu, H. Liu, and A. Zhou, “A general
+framework for load forecasting based on pre-trained large language
+model,” arXiv preprint arXiv:2406.11336, 2024.
+[29] F. Amjad, T. Korotko, and A. Rosin, “Review of LLMs applications in
+electrical power & energy systems,” IEEE Access, 2025.
+[30] J. Li, D. Li, Y. Yang, H. Xi, W. Yu, Y. Xiao, and Q. Yang, “Zero-shot
+load forecasting for integrated energy systems: A large language model-
+based framework with multi-task learning,” Neurocomputing, p. 131288,
+2025.
+[31] Y. Zhang, Z. Zhao, D. Zhang, and J. Dai, “Optimization of large
+language models with multimodal data training for fault diagnosis in
+wind turbine systems,” in 2025 International Conference on Power
+Electronics and Electric Drives (PEED).
+IEEE, 2025, pp. 172–176.
+[32] L. Jing and A. Rahman, “Fault diagnosis in power grids with large
+language model,” arXiv preprint arXiv:2407.08836, 2024.
+[33] M. Xian, T. Wang, S. Zhang, F. Xu, and Z. Ma, “A knowledge-
+informed large language model framework for us nuclear power plant
+shutdown initiating event classification for probabilistic risk assessment,”
+Proceedings of the Institution of Mechanical Engineers, Part O: Journal
+of Risk and Reliability, p. 1748006X251386900, 2024.
+[34] J. Tang, Y. Yang, W. Wei, L. Shi, L. Su, S. Cheng, D. Yin, and C. Huang,
+“Graphgpt: Graph instruction tuning for large language models,” in
+Proceedings of the 47th International ACM SIGIR Conference on
+Research and Development in Information Retrieval, 2024, pp. 491–
+500.
+[35] J. Kang, J. Zhang, Y. Feng, and L. Zhuo, “Togcn-llm: Tri-optimization
+graph convolutional network with llm for group activity recognition,”
+ACM Transactions on Multimedia Computing, Communications and
+Applications, vol. 22, no. 6, pp. 1–31, 2026.
+[36] B. Su, H. Chen, J. Ying, R. Ou, Z. Liu, and K. Sun, “Toward automated
+circuit schematic design for power electronics: A hierarchical agent for
+component prediction,” IEEE Transactions on Industrial Electronics,
+2026.
+[37] M. de Jong, J. Viebahn, and Y. Shapovalova, “Graph neural networks
+for transmission grid topology control: Busbar information asymmetry
+and heterogeneous representations,” Applied Energy, 2025.
+[38] T. Wu, A. Scaglione, S. Miguel, and D. Arnold, “Universal graph
+learning for power system reconfigurations: Transfer across topology
+variations,” 2025.
+[39] B. Sun and K. Saenko, “Deep coral: Correlation alignment for deep
+domain adaptation,” in European Conference on Computer Vision Work-
+shops, 2016.
+[40] J. Liang, D. Hu, and J. Feng, “Do we really need to access the source
+data? source hypothesis transfer for unsupervised domain adaptation,” in
+Proceedings of the 37th International Conference on Machine Learning,
+2020, pp. 6028–6039.
+[41] A. Kumar, T. Ma, and P. Liang, “Transferable calibration with lower bias
+and variance in domain adaptation,” in Advances in Neural Information
+Processing Systems, vol. 33, 2020.
+[42] X. Wu, D. Wu, and E. Modiano, “An influence model approach to failure
+cascade prediction in large scale power systems,” in 2020 American
+Control Conference (ACC).
+IEEE, 2020, pp. 4981–4988.
+[43] A.-L. Barab´asi, Network Science.
+Cambridge University Press, 2016.
+[44] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang,
+W. Chen, et al., “LoRA: Low-rank adaptation of large language models.”
+ICLR, vol. 1, no. 2, p. 3, 2022.
+[45] Y. Shi, Z. Huang, S. Feng, H. Zhong, W. Wang, and Y. Sun, “Masked
+label prediction: Unified message passing model for semi-supervised
+classification,” in Proceedings of the Thirtieth International Joint Con-
+ference on Artificial Intelligence, 2021, pp. 1548–1554.

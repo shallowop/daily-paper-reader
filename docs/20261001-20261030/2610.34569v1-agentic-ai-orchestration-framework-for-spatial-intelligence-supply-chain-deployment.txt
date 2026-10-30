@@ -1,0 +1,1105 @@
+Agentic AI Orchestration Framework for Spatial Intelligence:
+Supply Chain Deployment
+Constantinos Papantoniou∗
+Anassa.ai
+USA
+Brian Hilton†
+Research Scientist
+USA
+Abstract
+Industrial spatial decisions are assembled across systems that share
+neither a reference frame nor an owner, and analysts spend substan-
+tial effort reconciling those systems rather than reasoning about
+space. This paper presents ANASSA, a reference architecture inte-
+grating structured reasoning, multi-agent workflow orchestration,
+authoritative spatial grounding, and feedback-driven execution, and
+reports its instantiation in an operating supply-chain deployment.
+The architecture places typed data contracts at agent boundaries,
+validates spatial claims against a certified authoritative foundation,
+and enforces two blocking human-in-the-loop approvals inside a
+six-step cognitive loop. The deployment covers multi-hazard risk as-
+sessment on an ocean-and-inland freight lane, including cold-chain
+excursion detection over container telemetry. Across a three-month
+proof of concept (POC) with three implementation iterations, three
+deployment outcomes are reported: 25% improvement in data qual-
+ity, 50% reduction in spatial workflow runtime, and 60% lower deci-
+sion latency relative to the preceding manual workflow. Absolute
+deployment-scale quantities and baseline counts are confidential;
+reported percentages are observed relative changes. These are un-
+controlled deployment observations, not controlled experiments.
+We therefore specify instrumentation and ablation protocols for
+mechanism-level evaluation.
+CCS Concepts
+• Information systems →Geographic information systems;
+• Computing methodologies →Artificial intelligence; Multi-
+agent systems.
+Keywords
+Agentic GIS, spatial reasoning, multi-agent orchestration, geospa-
+tial AI, spatial big data, supply chain, cold chain, governance, human-
+in-the-loop
+Research Status
+This full paper has been accepted for publication in the proceedings of
+GeoIndustry 2026, the 5th ACM SIGSPATIAL International Workshop on
+Spatial Big Data and AI for Industrial Applications. It will be presented
+in person on November 3, 2026, 11:30–11:45 a.m., in Riverside, California
+(Session 3: Agentic & Explainable GeoAI). The paper will be available in the
+ACM Digital Library once the workshop proceedings are published.
+∗Corresponding author: Constantinos Papantoniou · contact@anassa.ai. ORCID: 0000-
+0003-2115-2567. LinkedIn: https://www.linkedin.com/in/constantinos-papantoniou/
+†ORCID: 0009-0005-1836-9927. LinkedIn: https://www.linkedin.com/in/brian-hilton-
+ph-d/
+1
+Introduction
+Modern geospatial operations face persistent coordination chal-
+lenges across organizational boundaries. Spatial data is distributed
+through disconnected GIS platforms, satellite feeds, IoT sensors,
+field devices, cloud databases, and legacy infrastructure, each oper-
+ating largely in isolation [14]. Human analysts must extract, trans-
+form, route, and reconcile data across fragmented systems, diverting
+effort from spatial reasoning and decision support [7, 10]. Agentic
+AI increasingly allows coordination tasks to be delegated to systems
+capable of planning, memory, and tool orchestration [16, 18].
+Recent work combines multi-agent architectures with retrieval-
+augmented generation to address the inability of text similarity
+alone to represent topology, proximity, and spatial dependency
+[6, 9, 10]. Other systems constrain reasoning with explicit workflow
+graphs encoding spatial entities and transformation dependencies
+[1, 2]. Execution benchmarks show that agents can handle moder-
+ately complex workflows but degrade on multi-step tasks requiring
+precise parameter inference and tool sequencing [5, 8, 17, 19].
+This paper introduces ANASSA (Autonomous Neural Agents for
+Spatial Systems Architecture), an autonomous orchestration layer
+for geospatial intelligence, and reports its instantiation in an op-
+erating supply-chain deployment. Building on prior research [14],
+ANASSA extends the GeoBlockchain coordination model [13] from
+blockchain-based to AI-agent-based orchestration, distributing rea-
+soning, planning, execution, and validation across autonomous
+agents under human-in-the-loop governance. The architecture ad-
+dresses the limitations above by integrating spatial reasoning with
+execution-aware orchestration, embedding feedback-driven adap-
+tation through a continuous cognitive loop, and incorporating gov-
+ernance for hallucination management.
+This paper makes three contributions. First, it specifies ANASSA
+as a unified architecture of eleven components across four layers,
+in which every boundary between agents is a typed data contract
+rather than an ad hoc handoff. Second, it instantiates that architec-
+ture in an operating supply-chain deployment—multi-hazard risk
+assessment on an ocean-and-inland freight lane, including cold-
+chain excursion detection over container telemetry—and reports
+three deployment outcomes together with an explicit account of
+what those observations do and do not support. Third, it specifies
+the instrument set and ablation protocol required to convert un-
+controlled deployment observations into attributable, controlled
+evidence, and identifies design principles for agentic GIS that follow
+from the deployment.
+The evidentiary status of this work should be stated at the outset.
+The outcomes reported in Section 5 are observations from operating
+arXiv:2610.34569v1  [cs.AI]  25 Oct 2026
+
+
+Papantoniou and Hilton
+Table 1: Properties explicitly specified in cited systems. Y =
+explicitly specified; P = described but not operationally spec-
+ified; N = not specified; – = not applicable to the benchmark
+purpose.
+System
+Dec. Contracts Ground. Gov.
+Eval.
+GeoAgent [6]
+Y
+N
+P
+N
+bench.
+GeoFlow [2]
+Y
+P
+N
+N
+bench.
+Spatial-Agent [1]
+Y
+P
+P
+N
+bench.
+GeoAgentic-RAG [9]
+Y
+N
+P
+N
+bench.
+Mansourian [10]
+Y
+N
+N
+N
+bench.
+GeoBenchX [8]
+–
+–
+reject
+–
+bench.
+GeoAgentBench [19]
+–
+–
+verify
+–
+bench.
+ANASSA
+Y
+Y
+Y
+Y
+deploy.
+Figure 1: Types of GIS workflows.
+the platform against a pre-existing manual workflow, not controlled
+experiments, and they do not establish which architectural mecha-
+nism produced the improvement. Sections 5.2, 5.3, and 7 state the
+threats to validity, the instrument set, and the ablations that would.
+2
+ANASSA Framework
+Agentic GIS systems improve automation, workflow generation,
+and natural-language interaction [6, 9, 10], but robust spatial rea-
+soning, execution reliability, and evaluation remain fragmented.
+Multi-agent architectures improve decomposition yet remain sensi-
+tive to ambiguous spatial constraints and long dependency chains
+[1, 9, 17, 19]; structured reasoning approaches enforce logical con-
+sistency but do not fully integrate execution feedback [1, 2].
+Classifications are based on properties explicitly documented
+in the cited publications; the cited references provide the basis for
+external verification.
+Figure 1 shows the progression from manual GIS to LLM/LMM-
+augmented GIS and then to agentic GIS, where reasoning, multi-
+agent execution, feedback, and validation form a closed loop.
+2.1
+Architecture Components
+ANASSA is organized into eleven numbered architectural com-
+ponents (C1–C11) structured across four layers (Figure 2). The
+Governance and Output layer (C7, C10) validates framework out-
+puts and governs all agent and workflow behavior. The Operational
+layer (C1–C4, C6) defines participants, industry sectors, deployment
+paths, the technical system-of-systems backbone, and multimodal
+spatial data. The Cognitive Engine (C5) runs the six-step Geospa-
+tial AI Cognitive Loop. The Foundation layer (C8) provides trusted
+authoritative data and knowledge that all other components draw
+from, while C9 and C11 represent the continuous downward and
+upward process flows that close the loop. The layer assignment is
+summarized in Table 2.
+Table 2: Architectural layers and components.
+Layer
+Components
+Function
+Governance/Output
+C7,C10
+Validates
+outputs
+and
+governs
+agents/workflows
+Operational
+C1–C4,C6
+Participants, sectors, deployment, system-
+of-systems, spatial data
+Cognitive Engine
+C5
+Continuous sensing, reasoning, planning,
+decision, execution, learning
+Foundation
+C8,C9,C11
+Trusted data/knowledge and process-flow
+connections
+Two numbering schemes are kept separate throughout. Architec-
+tural layers are the four groupings of Table 2, and each component
+belongs to exactly one. Infrastructure levels C4-L0 through C4-L4
+are internal to Component 4: C4-L0 is the Orchestrator, C4-L1 the
+multi-model language gateway, C4-L2 the specialized geospatial
+agents, C4-L3 the GIS platform and protocol integration surface,
+and C4-L4 the AI infrastructure. The Orchestrator is therefore Level
+0 of an Operational-layer component, not a fifth architectural layer.
+A third scheme, the agent coordination levels A0–A4, is introduced
+in Section 3.3. Each component is implemented as a coordinated set
+of specialized agents under C4-L0, which decomposes participant
+intent into agent tasks, sequences execution, monitors outputs, and
+synthesizes results into trusted intelligence. After each cycle, the
+Learning Agent may update authorized operational parameters
+and generate governance-rule proposals; it cannot autonomously
+weaken or bypass A3 controls. The “Neural” in the acronym refers
+to the LLM- and LMM-based reasoning agents at C4-L1 and C4-
+L2. ANASSA proposes no novel neural architecture and makes no
+claim about model internals; the contribution is the coordination,
+contract, and governance structure surrounding those models.
+2.2
+Geospatial AI Cognitive Loop
+Component C5 is the core of ANASSA: a continuous six-step rea-
+soning and action cycle that transforms spatial data into spatial
+intelligence and intelligence into action (Table 3). The six steps
+are S1 Sensing, S2 Reasoning, S3 Planning, S4 Decision and Hal-
+lucination Validation, S5 Execution, and S6 Learning. All six are
+coordinated by the Orchestrator (C4-L0) and grounded in authori-
+tative data from C8. The cycle is feedback-driven rather than linear.
+Outputs from S5 do not terminate the workflow; they are captured
+at S6 and fed back into the system, enabling authorized operational
+parameters and agent capabilities to adapt while governance-policy
+changes remain subject to explicit approval. This closed-loop design
+distinguishes ANASSA from pipeline-based agentic GIS systems,
+which typically treat execution as a terminal stage and rely on
+offline retraining for adaptation [9, 19].
+Two mandatory human-in-the-loop gates appear at S3 (Planning)
+and S4 (Decision and Hallucination Validation). At S3, participants
+review and approve the generated workflow before any geospatial
+operation is executed, preventing inappropriate model or tool se-
+lection from propagating downstream. At S4, participants approve
+or reject the cross-validated outputs before publication. Both gates
+are blocking rather than advisory in the deployment reported here,
+and both record approver identity and timestamp. These gates re-
+flect the framework’s position that the highest-stakes geospatial
+
+
+Agentic AI Orchestration Framework for Spatial Intelligence: Supply Chain Deployment
+Figure 2: ANASSA high-level architecture.
+Table 3: Geospatial AI Cognitive Loop (C5).
+Step
+Agent
+Function
+HITL
+S1
+Sensing
+Receives prepared data from C6, de-
+tects spatial events and anomalies war-
+ranting cognitive processing, and re-
+ports status to the Orchestrator
+No
+S2
+Reasoning
+Applies spatial intelligence to establish
+context and pattern, and selects mod-
+els, tools, and workflows
+No
+S3
+Planning
+Generates geospatial workflows and
+solution strategies aligned to partici-
+pant needs and industry requirements
+(C1, C2)
+Blocking
+S4
+Decision/validation
+Evaluates options and validates out-
+puts against authoritative ground
+truth, checking every spatial claim
+against C8
+Blocking
+S5
+Execution
+Deploys through C3 infrastructure,
+publishes maps and dashboards, trig-
+gers downstream workflows, and noti-
+fies stakeholders
+No
+S6
+Learning
+Captures outcomes and feeds improve-
+ments to all components, updating Or-
+chestrator coordination rules
+No
+decisions must remain under explicit human accountability. Section
+6 examines the cost this imposes on machine-pace orchestration,
+which is the subject of RQ4.
+2.3
+Governance and Hallucination Management
+Component C7 functions as the governance backbone of ANASSA
+and is positioned as a framework-wide overlay connecting to every
+other component. Its design is informed by the CPMAI method-
+ology [3], which structures the AI project lifecycle from problem
+definition through production operation. Governance is organized
+across seven pillars: business and problem governance (G1), data
+governance and sovereignty (G2), AI model and agent governance
+with hallucination management (G3), human-in-the-loop gover-
+nance (G4), trust and auditability (G5), ethical AI and responsible
+use (G6), and operationalization and continuous improvement (G7).
+A distinctive feature of the framework is explicit management of
+geospatial hallucinations as a primary governance concern. Fab-
+ricated coordinates, invented boundaries, and false spatial claims
+can produce incorrect maps used for high-stakes decisions, gener-
+ate jurisdictional disputes, and in safety-critical contexts endanger
+lives. The Claim Validation Agent in C7 tests every spatial claim in
+a candidate output against the certified ground truth maintained in
+C8. Claims that do not match a certified assertion are not silently
+dropped and not silently published: they are delivered with the out-
+put on an explicit unverified-claim list. This mechanism is specified
+as contract K5 and is the subject of RQ2.
+3
+Research Questions and Use Case
+The central research question motivating this work is: how can
+agentic GIS systems integrate spatial reasoning, workflow orchestra-
+tion, and execution feedback to enable robust and scalable geospa-
+tial analysis in real-world environments? This paper investigates
+that question through a single instantiated use case: multi-hazard
+supply-chain risk assessment on an operating ocean-and-inland
+freight lane. The use case requires no new sensing infrastructure; it
+takes existing telemetry, network, and hazard streams as its starting
+
+
+Papantoniou and Hilton
+point and examines what the orchestration and spatial reasoning
+layer contributes on top of them. The four research questions below
+are scoped to what this deployment can and cannot answer, and
+Section 6 reports the evidence obtained against each.
+RQ1 Coordination. Do typed contracts replacing analyst me-
+diated handoffs reduce coordination effort, measured by analyst
+time and systems touched per analysis? RQ2 Grounding. Does
+validating spatial claims against certified authoritative data reduce
+spatial reference and unsupported claim errors and detect them
+earlier? RQ3 Fusion and reproducibility. Does versioned fusion
+of telemetry, network state, and asynchronously updating hazards
+enable auditable decisions requiring multiple sources? RQ4 Gover-
+nance under machine pace. Can blocking HITL gates preserve
+accountability without eliminating the decision-latency advantage
+of orchestration?
+3.1
+Use-Case Requirements and Failure Model
+A logistics planner evaluating supply-chain vulnerability must com-
+bine warehouse locations, transport routes, and environmental risk
+such as flood zones, which requires spatial joins, distance anal-
+ysis, and risk overlay across multiple steps. Existing LLM-based
+systems can generate such workflows but fail when an interme-
+diate output is missing or a dependency breaks, and the failure
+can be silent: the workflow produces a plausible but unsupported
+result rather than an error. Under ANASSA the Orchestrator mon-
+itors execution, detects the missing layer, and replans, because
+every transition is a typed contract with a declared precondition. A
+missing coordinate reference system, unresolved owner, expired re-
+striction, ungrounded facility, or trajectory gap therefore becomes
+a contract violation at the point of handoff rather than a silent
+degradation downstream. The use case exercises execution relia-
+bility, adaptability, and alignment between automated reasoning
+and human-governed decision making. It does not exercise cross-
+domain generality, which Section 7 identifies as future work.
+RQ4 deliberately states a tension rather than presuming that
+governance is free. Two mandatory approvals inside a machine-pace
+loop can reduce the very latency advantage the architecture seeks
+to create. Decision latency is consequently defined from objective
+to approved decision, not merely query to generated result, so the
+cost of human review remains inside the measured interval.
+3.2
+Supply-Chain Agent Specification
+Coordination levels A0–A4 are distinct from C4 infrastructure levels.
+A0 is the Orchestrator; A1 the cognitive-loop roles; A2 domain
+specialists; A3 governance; and A4 foundation services. In this
+deployment, A4 is realized by C8 services rather than a distinct
+agent. Table 4 summarizes the eleven active roles and representative
+validation conditions.
+3.3
+Coordination Semantics
+The coordination levels define invocation authority as well as role
+grouping. A0 decomposes intent and sequences work; A1 performs
+the cognitive-loop functions; A2 supplies domain-specialist execu-
+tion; A3 governs publication and can block; A4 supplies author-
+itative foundation services. Governance agents are intentionally
+asymmetric with execution agents: A3 may stop or return work to
+the cognitive loop, while A1 and A2 cannot bypass or disable an A3
+decision. In the reported instantiation, A4 functions are provided
+by C8 services rather than a separately autonomous agent. K8 may
+update only pre-authorized operational parameters; changes to
+blocking gates, validation requirements, publication authority, or
+governance policy require explicit authorized approval.
+The validation conditions in Table 4 are part of the architecture
+rather than implementation commentary. Each condition names
+a checkable failure mode: legal ownership must resolve before
+downstream action, facilities and terminals must resolve to certified
+geometry or be marked unverified, trajectories must remain gap-
+aware, restrictions must carry validity intervals, and reallocation
+proposals must cite the observations that triggered them. These
+conditions externalize a portion of expert operating knowledge
+into machine-checkable boundaries while leaving consequential
+judgment at the HITL gates.
+4
+Implementation
+4.1
+Deployment Architecture
+The implementation is a hybrid multi-cloud deployment integrat-
+ing foundation-model reasoning, deterministic spatial services, au-
+tomated workflows, and operator dashboards. Provider-specific
+model identifiers and infrastructure configuration are deployment-
+specific and are not reported; the contribution evaluated here is
+the orchestration and governance layer rather than model-specific
+performance. Container telemetry is written to versioned storage
+through C6→C8. Certification denotes workflow-authorized ev-
+idence with known source identity, spatial reference, temporal
+validity where applicable, and recorded storage version; it does
+not imply that a source is error-free. Spatial/vector indexes are
+version-recorded and rebuilt rather than served stale.
+The workload is spatial big data rather than merely workflow
+automation. Container telemetry is a high-cardinality point stream
+keyed by consignment; active-consignment counts, observation
+rates, retention windows, and authoritative-layer version counts are
+confidential deployment-scale quantities. Tracks require gap-aware
+trajectory handling, while hazard polygons update asynchronously
+and carry validity intervals. The resulting join is spatio-temporal
+and runs against version-recorded spatial indexes. Typed contracts
+declare this join once rather than forcing analysts to reconstruct it
+per query.
+4.2
+Typed Contracts
+Every agent boundary is a typed data contract with a declared
+precondition. Table 5 specifies the eight contracts and the failure
+modes they prevent.
+K2 and K5 change when failures surface. K3 machine checks
+verify required fields, registered input/output types, dependencies,
+and CRS/temporal preconditions; S3 retains judgment over whether
+the method is operationally appropriate. K5 evaluates structured
+claims containing entity/geometry, CRS, valid time, predicate, ev-
+idence identifiers, source versions, and validation status. Source-
+level claims use identity and geometry agreement, while derived
+claims additionally require deterministic spatial and temporal pred-
+icates (for example, intersection with a hazard during overlapping
+
+
+Agentic AI Orchestration Framework for Spatial Intelligence: Supply Chain Deployment
+Table 4: Supply-chain agent roles and validation conditions.
+Level
+Agent
+Origin
+Function
+Validation condition
+A0
+ANASSA Orchestrator
+Platform
+Decomposes intent into a task graph, sequences agents,
+and enforces governance
+Every node declares an input contract; an unresolved node
+blocks rather than proceeds
+A1
+Cold-Chain Telemetry (C5-S1)
+Platform
+Ingests reefer and container telemetry from C6
+Bundle rejected if CRS is absent; a series gap is a monitoring
+failure, never interpolated
+A1
+Learning (C5-S6)
+Platform
+Updates preference models, parameters, and agent capabil-
+ities each cycle
+Every update carries a cycle identifier and lists changed
+parameters
+A2
+Administration
+Org role
+Maintains organizational, contractual, and jurisdictional
+context
+A consignment must resolve to a legal owner before down-
+stream agents act
+A2
+Supply Origin
+Org role
+Resolves supplier facility geometry and dispatch readiness
+Facility matched to a certified C8 address point, or the claim
+is unverified
+A2
+Port State
+Org role
+Maintains terminal state at load and discharge ports
+Terminal geometry from certified C8 assertions, not carrier
+free text
+A2
+Maritime Leg
+Org role
+Produces ocean corridor geometry and arrival estimates
+Gap-aware trajectories; no interpolation across a gap above
+the lane threshold
+A2
+Inland Leg
+Org role
+Routes the final haul to the distribution center
+Restrictions carry a validity interval; expired ones are not
+reused
+A2
+Inventory and Allocation
+Org role
+Reconciles arriving quantity and proposes reallocation
+Every proposal cites the observation identifiers that trig-
+gered it
+A3
+Claim Validation
+Platform
+Tests each spatial claim against certified C8 assertions
+Each claim is matched to a certified assertion or listed as
+unverified
+A3
+HITL Gate
+Platform
+Enforces the blocking approvals at C5-S3 and C5-S4
+No publication without approver identity and timestamp;
+rejection returns to S3 with a reason code
+Table 5: Supply-chain data contracts.
+Boundary
+Payload
+Precondition
+Failure mode prevented
+K1
+C6→C8
+Telemetry and hazard writes to the foundation
+Certification level assigned at write; storage ver-
+sion recorded
+Uncertified data indistinguishable from certified
+K2
+C6→C5-S1
+Telemetry bundle for sensing
+Explicit CRS on every bundle; gaps flagged as
+monitoring failures
+A missing window smoothed into a fictitious
+history
+K3
+C5-S2→C5-S3
+Candidate workflow as a task graph
+Each node declares tool, parameters, and ex-
+pected output type
+Inapplicable tool selection propagating unde-
+tected
+K4
+HITL gate at S3
+Plan approval
+Blocking; approver identity and timestamp
+recorded
+Execution of a plan no accountable human re-
+viewed
+K5
+C8→C5-S4
+Grounding assertion set
+Each claim matched to a certified assertion or
+listed as unverified
+Fabricated coordinates published as analysis
+K6
+HITL gate at S4
+Decision approval
+Blocking; rejection returns to S3 with a reason
+code
+Unaccountable publication of a high-stakes out-
+put
+K7
+C5-S5→C10
+Validated output with provenance
+Index version and query recorded
+Irreproducible audit; a result that cannot be re-
+generated
+K8
+C5-S6→C1–C7
+Learning update
+Cycle identifier attached; changed parameters
+enumerated
+Silent drift in agent behavior between cycles
+validity). Unmatched claims remain explicitly unverified. Represen-
+tative fault cases include a K2 bundle without a CRS and an expired
+Inland Leg restriction (Figure 4).
+4.3
+End-to-End Execution Trace
+The supply-chain instantiation can be read as a concrete execution
+trace through the contracts and cognitive loop rather than as a
+collection of independent agents. Figure 3 anchors the sequence
+to the selected cold-chain observation shown later in the operator
+view: Location ID 8015, Express Logistics, 93◦F, at 47.56, -26.54.
+A cycle begins when C6 receives telemetry or a hazard-layer up-
+date. K1 assigns certification state and records the storage version
+before the new observation enters C8. K2 then packages the sens-
+ing bundle with an explicit coordinate reference system and with
+gaps represented as monitoring failures rather than silently interpo-
+lated history. S1 can therefore distinguish an observed event from a
+missing observation window before the reasoning stage is invoked.
+At S2, the Reasoning function establishes spatial and operational
+context and identifies the tools and domain roles needed for the ob-
+jective. The Orchestrator converts that reasoning into a task graph
+under K3. Each node declares its tool, parameters, expected output
+type, and dependency. The first blocking gate, K4 at S3, exposes the
+candidate plan to an accountable participant before execution; rejec-
+tion returns the workflow for revision before geospatial operations
+are committed.
+Approval identity/timestamp and tool-output metadata are re-
+tained in operational logs but omitted from the anonymized trace.
+Execution then proceeds through the A2 domain roles. The Sup-
+ply Origin Agent resolves the dispatch facility against certified C8
+geometry. The Port State Agent maintains the load and discharge
+terminal states. The Maritime Leg Agent produces a gap-aware
+ocean corridor, and the Inland Leg Agent applies restrictions with
+validity intervals to the final-haul route. The Inventory and Al-
+location Agent reconciles arriving quantity and, when required,
+proposes reallocation while citing the triggering observations. Each
+
+
+Papantoniou and Hilton
+Figure 3: End-to-end ANASSA agent and human-in-the-loop
+trace for the selected cold-chain observation.
+Figure 4: Representative Inland Leg contract failure-and-
+recovery trace.
+transition fires a declared contract, so a violated precondition is
+visible at the boundary where it occurs.
+Before a consequential output can be published, K5 provides the
+grounding assertion set to S4. The Claim Validation Agent attempts
+to match each spatial claim to certified C8 evidence; unmatched
+claims are surfaced explicitly as unverified rather than being silently
+promoted to facts. K6 then applies the second blocking approval.
+Rejection returns the workflow to planning with a reason code,
+preserving both accountability and a machine-readable path for
+revision. Approved outputs pass through K7 with the query and
+spatial-index version attached to the provenance record.
+Finally, S6 closes the loop through K8. Learning updates carry
+a cycle identifier and enumerate changed parameters, preventing
+silent behavioral drift between runs. Together, these stages share
+one auditable state-transition model.
+4.4
+Multi-Agent Coordination of a Consignment
+Figure 5 shows an operator view of one consignment from Orlando
+through Miami and Rotterdam to Venlo. Supply Origin resolves
+the supplier facility, Port State maintains terminal state, Maritime
+Leg carries the ocean corridor, Inland Leg handles final haul, and
+Inventory/Allocation reconciles arrival. Figure 4 expands the Inland
+Leg role with a representative failure-and-recovery path: an expired
+restriction blocks execution and returns the workflow to S3 for
+replanning; after re-approval, execution resumes on the updated
+route.
+Each transition is a contract firing rather than a handoff between
+screens: the corridor geometry produced by the Maritime Leg Agent
+is the same versioned artifact later tested by the Claim Validation
+Agent against certified terminal geometry from C8 under K5.
+4.5
+Cold-Chain Excursion Detection
+A second view of the same lane (Figure 6) surfaces a temperature
+excursion on the ocean leg, detected by the Cold-Chain Telemetry
+Agent. Temperature is reported in degrees Fahrenheit. For the il-
+lustrated canned-food POC, 95◦F was configured as the maximum
+storage threshold and the selected 93◦F observation was surfaced as
+an early-warning condition before that maximum was reached. Sam-
+pling cadence is source-determined rather than fixed by ANASSA;
+the framework reasons over received observations and treats miss-
+ing windows as monitoring gaps rather than interpolating them.
+Event extent is derived from the valid trajectory segment associated
+with successive excursion observations, not from an inferred path
+across missing measurements [11, 12].
+4.6
+Versioning, Provenance, and Reproducibility
+The authoritative foundation is not treated as a single current-
+state database. Telemetry writes receive a certification level and
+storage version at ingestion, while hazard layers carry independent
+validity intervals. Spatial and vector indexes are version-recorded
+and rebuilt rather than silently serving stale state. Contract K7
+preserves the index version and query with the validated output.
+Consequently, the artifact used by a domain agent and the artifact
+later examined by Claim Validation can be tied to the same recorded
+state.
+This design addresses an audit problem specific to spatial deci-
+sion systems: the same nominal query can return a different answer
+after a geometry, restriction, or hazard layer changes. Here, audit
+re-issue means recovering the validated decision artifact together
+with the recorded query, spatial-index/source versions, transforma-
+tion context, and provenance chain. It does not imply bit-for-bit
+regeneration of the complete agentic reasoning process, which
+would require additional model and execution-state preservation.
+
+
+Agentic AI Orchestration Framework for Spatial Intelligence: Supply Chain Deployment
+Figure 5: Full-width operator view of multi-agent coordination for one consignment, Orlando to Venlo. The spatial waypoints
+correspond to the supply-origin, port-state, maritime-leg, inland-leg, and inventory/allocation roles.
+Figure 6: Full-width cold-chain excursion view on the ocean leg. Highlighted readings define a spatially extended early-warning
+event rather than an isolated point alarm.
+Quantitative re-query determinism was not recorded during the
+observation period; RQ3 therefore remains illustrated rather than
+experimentally supported.
+
+
+Papantoniou and Hilton
+Table 6: Deployment outcomes against the manual baseline.
+ID
+Outcome
+Measurement basis
+Change
+D1
+Data quality
+Published claims lacking supporting
+references; human-reviewed
+25% lower rate
+D2
+Runtime
+Wall-clock time per multi-hazard as-
+sessment
+50% lower
+D3
+Decision latency
+Objective to approved decision; gates
+included
+60% lower
+5
+Outcomes and Industrial Impact
+5.1
+Observed Outcomes
+Three outcomes were recorded during a three-month POC that
+progressed through three implementation iterations. The itera-
+tions reflect successive operational refinements rather than in-
+dependent experimental runs. Individual workflow-run counts,
+rejected/deferred-output counts, and workload distributions were
+not retained for controlled statistical analysis; absolute deployment
+quantities remain confidential. D1–D3 are therefore reported as
+normalized relative changes against the preceding manual work-
+flow, not as inferential estimates. For each reported reduction,
+Δ𝑀= (𝑀manual −𝑀POC)/𝑀manual × 100%.
+D1. Data quality. Human reviewers independently reviewed
+outputs. Data quality is the unsupported-claim rate: unsupported
+published claims divided by total published claims; claims surfaced
+as unverified and routed to review are tracked separately. The POC
+was associated with a 25% lower unsupported-claim rate against
+the manual workflow.
+D2. Workflow runtime. Runtime spans initiation of the multi-
+hazard analytical workflow through production of the validated
+analytical output. The POC combined environmental hazard layers,
+transport-network restrictions, and cold-chain telemetry. It was
+associated with a 50% reduction in workflow runtime relative to
+the preceding manual workflow.
+D3. Decision latency. The same deployment was associated
+with 60% lower decision latency, measured from objective to ap-
+proved decision. The two blocking approvals are inside this interval;
+D3 therefore captures the human-governed end-to-end decision
+path rather than only automated execution.
+Absolute baseline and post-deployment values are confidential.
+Table 6 therefore reports relative changes and measurement bases
+only; no undisclosed values are replaced with synthetic placehold-
+ers.
+5.2
+Threats to Validity
+D1–D3 are deployment observations from operating the platform
+against the pre-existing manual workflow as baseline. They are not
+controlled experiments, and several limits apply. The compared con-
+figurations differ in more than one mechanism at a time: ANASSA
+introduces typed contracts, authoritative grounding, and gover-
+nance gates simultaneously. The observations therefore support
+an association between the coordination layer as a whole and ma-
+terial operational improvement, but not attribution to any single
+mechanism. The three-month POC was not randomized, progressed
+through three implementation iterations, and experienced varying
+lane conditions; seasonal, volume, and iteration effects cannot be
+separated from the observed changes. The deployment covers one
+operating context, and behavior under different data-certification
+regimes, jurisdictional constraints, or organizational structures is
+unobserved. Instrumentation was incomplete during the observa-
+tion period; in particular, intervention rate and gate dwell time were
+not captured, which leaves the evidence against RQ4 partial. Finally,
+the baseline is the organization’s pre-existing manual workflow,
+not a competing agentic-GIS system. The comparison therefore
+speaks to the value of orchestration over manual coordination and
+not to ANASSA’s standing relative to GeoAgentic-RAG, GeoAgent,
+or other published agentic-GIS pipelines.
+5.3
+Instrumentation for Controlled Evaluation
+The architecture emits contract, gate, and provenance logs from
+which the next evaluation can compute: analyst time and systems
+touched (RQ1); contract violations, spatial reference errors, unsup-
+ported claims, unverified claims, and failure detection stage mea-
+sures (RQ1/RQ2); fusion coverage, re-query determinism, and audit
+completeness (RQ3); and intervention rate, gate dwell time, and
+objective-to-approved-decision latency (RQ4). Unverified-claim list
+length is especially important: if authoritative coverage is too low,
+the architecture merely relocates coordination burden to human
+review.
+5.4
+Industrial Impact
+The architecture is aimed at organizations that already hold the
+data and already have the problem at scale, and whose analysts
+spend a large share of their time reconciling systems rather than
+reasoning about space. The same contract set applies wherever a
+spatial decision is assembled across systems that share neither a
+reference frame nor an owner: last-mile delivery planning, where
+route feasibility depends on restriction attributes held by a third
+party; dynamic routing under disruption, where hazard layers and
+network state update on different cadences; and resource allocation
+across facilities, which is only as good as the derived locations
+it is computed over. What transfers is the typed boundary rather
+than the domain model, and coverage at an operator-accepted pre-
+cision floor rather than raw throughput. Two conditions govern
+whether that transfer pays. The first is foundation coverage: below
+the threshold at which the unverified-claim list stays reviewable
+at operational volume, the architecture relocates coordination bur-
+den rather than reducing it. The second is that typed boundaries
+must be declared once by someone who understands the domain,
+an up-front cost paid against recurring analyst time rather than a
+capability the platform supplies. This is a claim about applicability,
+not a demonstrated result; the architecture has been instantiated in
+one domain only.
+6
+Discussion
+The deployment partially supports RQ1 through the observed run-
+time and decision-latency reductions, but analyst time and systems
+touched were not separately recorded. RQ2 is partially supported
+by the composite data-quality improvement, but the grounding
+contribution is not isolated. RQ3 is illustrated through versioned
+artifacts and audit re-issue by construction, but quantitative fu-
+sion and determinism measures were not recorded. RQ4 is partially
+
+
+Agentic AI Orchestration Framework for Spatial Intelligence: Supply Chain Deployment
+Table 7: Instrumentation mapped to research questions.
+ID
+Instrument
+Definition
+RQ
+I1
+Analyst time
+Analyst-attributable wall-clock time, objective to approved decision
+RQ1
+I2
+Systems touched
+Distinct systems analyst accesses directly
+RQ1
+I3
+Contract violations
+Failed preconditions per thousand contract firings
+RQ1,RQ2
+I4
+Spatial-reference errors
+Outputs with absent/incorrect CRS or datum
+RQ2
+I5
+Unsupported claims
+Published claims lacking matching certified assertion
+RQ2
+I6
+Unverified-claim list
+Claims routed to human review per analysis
+RQ2,RQ4
+I7
+Detection stage
+First loop step (S1–S5) where error is caught
+RQ2
+I8
+Fusion coverage
+Multi-source decisions served at accepted precision floor
+RQ3
+I9
+Re-query determinism
+Audit re-queries identical to original result
+RQ3
+I10
+Audit completeness
+Outputs with full provenance chain to certified sources
+RQ3,RQ4
+I11
+Intervention rate
+Cycles in which a gate rejects/modifies candidate
+RQ4
+I12
+Gate dwell time
+Elapsed time from gate presentation to action
+RQ4
+I13
+Decision latency
+Objective to approved decision, gate cost included
+RQ4
+supported because blocking gates did not eliminate the observed
+latency advantage, but intervention rate and gate dwell time were
+not captured.
+6.1
+Design Principles Operationalized
+Four design principles are operationalized. First, reasoning and exe-
+cution should be coupled rather than run as separate phases; C4-L0
+realizes this by sequencing both within one task graph. Second,
+transitions should carry declared preconditions rather than merely
+structured payloads; K1–K8 make the boundary itself checkable,
+and what transfers to another domain is the typed boundary rather
+than the logistics model. Third, systems should correct errors dur-
+ing execution and record learning updates explicitly; C5-S6 and K8
+require a cycle identifier and an enumeration of changed parame-
+ters rather than silent adaptation. Fourth, authoritative grounding
+should be consulted before publication rather than used only for
+post-hoc checking; C8 and K5 force unmatched claims onto an
+explicit review list.
+These principles are paired with measurements rather than as-
+serted as causal outcomes. Analyst time and systems touched mea-
+sure reconciliation burden; spatial-reference, unsupported-claim,
+and detection-stage metrics test grounding; provenance complete-
+ness and re-query determinism test reproducibility; intervention
+rate and gate dwell time expose the operational cost of governance.
+This pairing is important because the deployment observations are
+aggregate outcomes and cannot isolate individual mechanisms.
+6.2
+Limits and Boundary Conditions
+The architecture externalizes some expert judgment as validation
+conditions but does not capture tacit competence. Examples in-
+clude recognizing when a nominally valid route is operationally
+unrealistic, deciding which anomaly warrants escalation in a spe-
+cific commercial relationship, or weighing a marginal reallocation
+against customer commitments. HITL gates preserve that expertise
+in the operating loop rather than claiming to encode it. Systemati-
+cally eliciting and representing organizational decision knowledge
+remains a prerequisite for safely raising the autonomy level.
+The framework also assumes effective integration with opera-
+tional GIS execution tools. Robust error detection, interoperability,
+and scalability under production loads are engineering problems
+that the architecture organizes but does not itself solve. Deployment-
+scale utilization and commercial cost figures are confidential. Princi-
+pal resource drivers are telemetry/index processing, spatio-temporal
+analysis, model inference, and versioned provenance storage; no
+general cost or throughput envelope is claimed. A second bound-
+ary condition is authoritative-foundation coverage. If C8 cannot
+resolve enough claims at the operator-accepted precision floor, the
+unverified-claim list grows and human review becomes the bottle-
+neck; in that regime the architecture relocates coordination burden
+instead of reducing it. Finally, the evidence is from one operating
+supply-chain context and does not establish cross-domain general-
+ity.
+7
+Future Research
+The immediate priority is attributable evaluation. A grounding ab-
+lation disables K5 and Claim Validation while retaining contracts
+and gates, measuring spatial-reference errors, unsupported claims,
+review load, and failure-detection stage. A governance ablation
+converts K4/K6 from blocking to advisory, measuring claim errors,
+intervention rate, gate dwell, and decision latency. A contract abla-
+tion replaces typed contracts with ad hoc handoffs while retaining
+grounding and gates, measuring analyst time, systems touched, and
+contract failures.
+Beyond ablation, the workflow should be evaluated against GeoA-
+gentBench [19] and GeoBenchX [8]; repeated under different data-
+certification regimes; extended with checkable representations of
+tacit decision knowledge; and studied with logistics planners to test
+whether gate and unverified-claim interfaces remain usable at oper-
+ational volume. Broader research should also address quantitative
+spatial reasoning over multi-step dependencies [4] and additional
+modalities such as remote sensing and temporal data [5, 15].
+8
+Conclusion
+ANASSA is a reference architecture for autonomous geospatial
+intelligence across distributed systems. Its operative properties are
+typed agent boundaries with declared preconditions, authoritative
+validation of spatial claims, and blocking human accountability
+at consequential decision points. In one operating supply-chain
+deployment, the architecture was associated with 25% improved
+data quality, 50% lower spatial workflow runtime, and 60% lower
+decision latency against a manual baseline. These are uncontrolled
+
+
+Papantoniou and Hilton
+Table 8: Evidence obtained against each research question.
+RQ
+Mechanism under test
+Evidence in this paper
+Status
+RQ1 Coordination
+Typed contracts K1–K3; Orchestrator task-
+graph sequencing
+D2 (50% workflow runtime reduction) and
+D3 (60% lower decision latency) against the
+manual baseline
+Partially supported. Uncontrolled and con-
+founded; I1 and I2 were not separately
+recorded
+RQ2 Grounding
+K2 CRS and gap enforcement; K5 claim val-
+idation; Claim Validation Agent
+D1 (25% data-quality improvement) at-
+tributed to interception of low-confidence
+claims
+Partially supported. The composite quality
+measure is not decomposed into I4, I5, and
+I7, so the earlier-detection claim is argued
+rather than measured
+RQ3 Fusion and reproducibility
+C8 foundation; K7 versioned provenance;
+spatio-temporal join behind typed con-
+tracts
+Section 4 walkthrough; version-recorded
+indexes support audit re-issue by construc-
+tion
+Illustrated only. No quantitative fusion or
+determinism measure (I8, I9) was recorded
+RQ4 Governance under machine pace
+K4 and K6 blocking gates
+D3 measured from objective to approved
+decision, with gate cost inside the interval
+Partially supported. The gates did not elim-
+inate the latency advantage, but I11 and I12
+were not captured, so the cost of the gates
+is not isolated
+observations; absolute deployment-scale quantities remain confi-
+dential, and no mechanism-level causal attribution is claimed. The
+specified instrumentation and ablations define the path from de-
+ployment evidence to controlled evaluation. ANASSA does not
+propose replacing human spatial expertise; it automates coordi-
+nation labor while retaining accountable human decisions where
+consequences are highest.
+Acknowledgments
+During manuscript preparation, the authors used AI tools (Claude
+by Anthropic and Microsoft Copilot) to assist in refining text and
+figure ideation. All content was reviewed and finalized by the au-
+thors.
+References
+[1] R. Bao, C. Yang, D. Yu, Z. Tang, G. Mai, and L. Zhao. 2026. Spatial-Agent: Agentic
+Geo-Spatial Reasoning with Scientific Core Concepts. arXiv:2601.16965
+[2] A. Bhattaram, J. Chung, S. Chung, R. Gupta, J. Ramamoorthy, K. Gullapalli, D.
+Marculescu, and D. Stamoulis. 2025. GeoFlow: Agentic Workflow Automation
+for Geospatial Tasks. In Proceedings of the 33rd ACM International Conference
+on Advances in Geographic Information Systems. Association for Computing
+Machinery, New York, NY, USA, 1150–1153. doi:10.1145/3748636.3763217
+[3] Cognilytica. 2019. CPMAI: Cognitive Project Management for AI Methodology.
+Cognilytica Research.
+[4] G. I. Dorobantu and A. C. Badea. 2026. Geospatial Reasoning and Awareness in
+Large Language Models: A Systematic Review. Artificial Intelligence Review 59, 4
+(2026), 111. doi:10.1007/s10462-026-11512-x
+[5] Mohammad Hashemi, Hossein Amiri, and Andreas Züfle. 2026. A Comprehensive
+Survey of Agentic AI for Geospatial Data. doi:10.20944/preprints202601.2236.v2
+Preprints.org, Version 2.
+[6] J. Hu, L. Sun, and X. Liu. 2025. GeoAgent: An Agentic AI Framework for Spatial
+Query Understanding and Interactive Geospatial Intelligence. In Proceedings of
+the 1st ACM SIGSPATIAL International Workshop on Generative and Agentic AI for
+Multi-Modality Space-Time Intelligence. Association for Computing Machinery,
+New York, NY, USA, 54–60. doi:10.1145/3764915.3770719
+[7] Ali Khosravi Kazazi and Zhenlong Li. 2026. From Tool to Collaborator: Rethinking
+GIScience as GIS Becomes Agentic and Autonomous. International Journal of
+Digital Earth 19, 1 (2026), 2687228. doi:10.1080/17538947.2026.2687228
+[8] Varvara Krechetova and Denis Kochedykov. 2025. GeoBenchX: Benchmarking
+LLMs in Agent Solving Multistep Geospatial Tasks. In Proceedings of the 1st
+ACM SIGSPATIAL International Workshop on Generative and Agentic AI for Multi-
+Modality Space-Time Intelligence. Association for Computing Machinery, New
+York, NY, USA, 27–35. doi:10.1145/3764915.3770721
+[9] C. Liang, Y. Cui, R. Shi, G. Zha, X. Yin, M. Xiao, D. Xu, X. Duan, and B. Huang.
+2026. GeoAgentic-RAG: A Multi-Agent Framework for Autonomous Geospatial
+Reasoning and Visual Insight Generation with LLM. International Journal of
+Applied Earth Observation and Geoinformation 147 (2026), 105195. doi:10.1016/j.
+jag.2026.105195
+[10] A. Mansourian and R. Oucheikh. 2026. Bridging Natural Language and GIS:
+A Multi-Agent Framework for LLM-Driven Autonomous Geospatial Analysis.
+International Journal of Digital Earth 19, 1 (2026), 2633849. doi:10.1080/17538947.
+2026.2633849
+[11] S. Mercier, S. Villeneuve, M. Mondor, and I. Uysal. 2017. Time–Temperature
+Management along the Food Cold Chain: A Review of Recent Developments.
+Comprehensive Reviews in Food Science and Food Safety 16, 4 (2017), 647–667.
+doi:10.1111/1541-4337.12269
+[12] N. Ndraha, H.-I. Hsiao, J. Vlajic, M.-F. Yang, and H.-T. V. Lin. 2018.
+Time-
+Temperature Abuse in the Food Cold Chain: Review of Issues, Challenges, and
+Recommendations. Food Control 89 (2018), 12–21. doi:10.1016/j.foodcont.2018.01.
+027
+[13] C. Papantoniou. 2021. GeoBlockchain: The Analysis, Design, and Evaluation of a
+Spatially Enabled Blockchain. Ph. D. Dissertation. Claremont Graduate University.
+CGU Theses and Dissertations 284.
+[14] C. Papantoniou and B. Hilton. 2021. Enterprise Solutions Criteria in the Age of
+GeoBlockchain: Land Ownership and Supply Chain. In Proceedings of the 54th
+Hawaii International Conference on System Sciences. University of Hawai’i at
+Manoa, Honolulu, HI, USA, 5307–5316. doi:10.24251/HICSS.2021.647
+[15] N. A. Talemi, J. Boone, and F. Afghah. 2026. Agentic AI in Remote Sensing:
+Foundations, Taxonomy, and Emerging Systems. arXiv:2601.01891
+[16] L. Wang, C. Ma, X. Feng, Z. Zhang, H. Yang, J. Zhang, Z. Chen, J. Tang, X. Chen,
+Y. Lin, W. Zhao, Z. Wei, and J. Wen. 2024. A Survey on Large Language Model
+Based Autonomous Agents. Frontiers of Computer Science 18, 6 (2024), 186345.
+doi:10.1007/s11704-024-40231-1
+[17] C.-C. Wu, S.-B. Huang, Y.-L. Song, P.-H. Lin, M. C.-L. Lin, and Y.-T. Lin. 2025.
+Democratizing Multi-Granularity Spatio-Temporal Intelligence with Multi-Agent
+Systems. In Proceedings of the 1st ACM SIGSPATIAL International Workshop on
+Generative and Agentic AI for Multi-Modality Space-Time Intelligence. Association
+for Computing Machinery, New York, NY, USA, 22–26. doi:10.1145/3764915.
+3770718
+[18] Z. Xi, W. Chen, X. Guo, W. He, Y. Ding, B. Hong, M. Zhang, J. Wang, S. Jin, E.
+Zhou, R. Zheng, X. Fan, X. Wang, L. Xiong, Y. Zhou, W. Wang, C. Jiang, Y. Zou,
+X. Liu, and T. Gui. 2023. The Rise and Potential of Large Language Model Based
+Agents: A Survey. arXiv:2309.07864 doi:10.48550/arXiv.2309.07864
+[19] Bo Yu, Cheng Yang, Dongyang Hou, Chengfu Liu, Jiayao Liu, Chi Wang,
+Zhiming Zhang, Haifeng Li, and Wentao Yang. 2026. GeoAgentBench: A Dy-
+namic Execution Benchmark for Tool-Augmented Agents in Spatial Analysis.
+arXiv:2604.13888 [cs.AI] doi:10.48550/arXiv.2604.13888
