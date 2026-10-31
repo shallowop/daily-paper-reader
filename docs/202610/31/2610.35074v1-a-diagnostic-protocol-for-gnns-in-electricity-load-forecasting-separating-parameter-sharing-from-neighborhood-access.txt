@@ -1,0 +1,1172 @@
+Title: A Diagnostic Protocol for GNNs in Electricity Load Forecasting: Separating Parameter Sharing from Neighborhood Access
+
+URL Source: https://arxiv.org/pdf/2610.35074v1
+
+Published Time: Tue, 27 Oct 2026 02:15:51 GMT
+
+Number of Pages: 40
+
+Markdown Content:
+# A Diagnostic Protocol for GNNs in Electricity Load Forecasting 
+
+# Separating Parameter Sharing from Neighborhood Access 
+
+Eloi Campagne 1,2,* Yvenn Amara-Ouali 2 Yannig Goude 2 Itai Zehavi 1,2 
+
+Argyris Kalogeratos 1
+
+> 1
+
+Centre Borelli, École Normale Supérieure Paris-Saclay, Gif-sur-Yvette, France 
+
+> 2
+
+EDF Lab, Palaiseau, France 
+
+> *
+
+Corresponding author: eloi.campagne@ens-paris-saclay.fr 
+
+Abstract. A graph neural network (GNN) forecasting a collection of load series combines two mechanisms, sharing parameters across series and reading neighboring series, and a gain over a non-graph model may come from either; telling them apart decides whether a graph is worth maintaining. We propose a model diagnostic protocol that compares the GNN with three reference models: a per-node network, a network shared across nodes without neighbors, and the same GNN without edges. Degree-preserving rewiring tests whether neighbor identity matters. After a tuned benchmark on regional load in France and on low-voltage feeders in the UK, we apply the protocol to deliberately short node histories, as when non-stationary demand leaves only recent observations relevant: the feeders, within one week, and a public dataset of client consumption series. On the feeders, sharing parameters recovers most of the error gap between node-specific models and GNNs, about two thirds against a regularized one. Adding the edges to an otherwise identical backbone brings a smaller gain, half or more of which disappears under rewiring. On the client series, the neighbor mean degrades the per-node model on the shorter window and the edges’ gain is not consistently distinguishable from zero; on the regions of France, where each node’s own history is already informative, the ranking between per-node models and GNNs changes with tuning. A synthetic study points to noisy local measurements as one regime where neighbors help. In an exploratory online aggregation, graph and non-graph forecasters appear complementary, and the weight assigned to GNNs is not proportional to their contribution. In none of the three datasets do the edges account for most of a GNN’s advantage over node-specific models, so a forecasting gain should be credited to the graph only after comparison with per-node and shared references. 
+
+Keywords. Graph neural networks, Model diagnostic protocol, Electricity load fore-casting, Spatio-temporal models, Local and global forecasting, Parameter sharing 
+
+# 1 Introduction 
+
+Electricity demand is measured across many places at once, regions or individual feeders, and these measurements are not independent: weather, calendars, and economic activity register on 
+
+1arXiv:2610.35074v1 [cs.AI] 26 Oct 2026 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+neighboring meters together. Disaggregated load data are increasingly available (Obst et al. 2021, de Vilmarest and Goude 2021), and hierarchical methods already turn them into gains on aggregate demand (Brégère and Huard 2022, Antoniadis et al. 2024). A graph neural network (GNN) adds this spatial axis to a temporal model: one shared local rule explains each node through its own features and also those of its neighbors, so a single model covers a whole set of regions or feeders. On the half-hourly datasets, the problem is to forecast the next day at every node from a window of past observations. In practice, the demand graph is not given: electrical topology, geographic proximity, and statistical similarity each suggest a different node adjacency, so building a graph is part of the modeling. A second decision is the choice of reference model. Beating a model fitted to national demand does not isolate the contribution of edges: the conclusion depends on choosing the right reference model. Any such comparison assesses the value of a prescribed node adjacency under the chosen model classes, so a negative result concerns those choices only. The question pursued in this article is therefore when a prescribed node adjacency is informative enough to earn the cost of building and maintaining it, and how much of a GNN’s gain over node-specific models is already brought by parameter sharing alone. 
+
+Contributions. We propose a diagnostic protocol, built over existing architectures, that credits a forecasting gain to a candidate node adjacency only once what parameter sharing already provides has been set aside. The protocol is designed for a practitioner who must decide whether a graph is worth deploying and maintaining. It sets three reference models against the GNN: i) a model fitted separately to each node from the same local covariates, which gives the total gap a graph has to justify; ii) a network shared across nodes on the identity adjacency, without access to neighbors, which measures the edges conditional on sharing; and iii) the GNN itself with its edges removed, which separates the edges from the change of backbone. Comparing these models along both orders of introducing sharing and neighborhood access decomposes the error gap, up to the architectural differences between the MLPs and the GNN, and rewiring the graph (while keeping the degrees unchanged) assesses whether the identity of the neighbors matters beyond their number. We work with three load datasets spanning geographic regions ( regions-fr ), feeders ( weave-uk ), and individual clients ( electricity ), and a synthetic study where the conditions are controlled. We run the protocol in full on weave-uk and electricity , where we deliberately keep each node’s history short, and answer four questions. (Q1) Does a GNN forecast load better than strong non-graph models? It depends on the dataset: in a tuned benchmark of 8 GNN architectures against statistical, boosting, foundation-model, and persistence baselines, no GNN beats a pooled gradient-boosted model on regions-fr 1,whereas on weave-uk only 2 of the 8 GNNs have a lower mean RMSE than the best baseline, the zero-shot foundation model t0-gamma, both by less than one seed std. (Q2) Where a GNN wins, does the gain come from the graph? On weave-uk , mostly not: sharing parameters across nodes explains most of it. (Q3) At equal architecture, do neighbors help? A little: against the same backbone without edges, the edges add a small consistent gain on weave-uk in the larger-dataset comparison, half or more of which the tested rewirings remove; on electricity the gain is not consistently different from zero once seed variability is included. (Q4) When do neighbors help? The synthetic study identifies noisy local measurements as one mechanism. On real data, their contribution depends on the dataset and the window, and the protocol measures it case by case. An exploratory expert aggregation, which mixes graph and non-graph forecasters online and    
+
+> 1An earlier version of the regions-fr benchmark appears in Campagne et al. (2026b).
+> 2A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.
+
+withdraws each family in turn, suggests that the two families are complementary and shows that the weight a mixture places on the GNNs is not proportional to their contribution. 
+
+Organization. Section 2 reviews related work, Section 3 places GNNs and node-specific models in one family, Section 4 describes the graphs and architectures, and Sections 5 and 6 the protocol and the results; an Appendix gives further controls. 
+
+# 2 Related Work 
+
+Generalized additive models remain the operational instrument for conditional-mean load forecasting (Fan and Hyndman 2010, 2012, Pierrot and Goude 2011), with quantile and location-scale extensions for the full distribution (Fasiolo et al. 2021, Gilbert et al. 2023). Their error grows under structural breaks: the Covid-19 crisis (Jiang et al. 2021) and the European price surge (Doumèche et al. 2026) are relevant recent cases, which motivated adaptive variants coupling online learning with filtering (de Vilmarest et al. 2024). These models address an aggregated signal, whereas decentralization produces spatially distributed ones (Williams and Short 2020). Recurrent architectures capture the temporal dependence of load series (Shi et al. 2018, Marino et al. 2016, Massaoudi et al. 2021) without representing relations between nodes, which is the gap GNNs fill; they have carried spatio-temporal forecasting in traffic (Guo et al. 2019, Chen et al. 2020) and, more recently, in power systems (Jiang et al. 2023, 2024). Two lines bear directly on the comparisons run here. MTGNN (Wu et al. 2020) and ADLGNN (Sriramulu et al. 2023) learn the node adjacency from the data instead of receiving it, and both report electricity benchmarks. The Appendix evaluates MTGNN under the same data splits and training protocol as the larger-dataset comparison. Attention and multi-scale variants pursue the same end by other means, coupling graph attention with recurrence and physical line attributes (Orji et al. 2025), filtering in the frequency domain (Mo et al. 2025), or updating the topology from temporal context (Zhu et al. 2025). Alongside them, pretrained forecasters now enter the same benchmarks, PriceFM (Yu et al. 2025) embedding a graph bias for European price forecasting and the broader family surveyed by Ferdaus et al. (2026), which is why the benchmark of Section 6.1 carries foundation models among its baselines. Hybrid designs pursue a related goal from the statistical side, Neural Additive Models (Agarwal et al. 2021) and their probabilistic variants (Thielmann et al. 2024) carrying the feature-wise decomposition of a GAM inside a neural architecture. Comparisons with aggregated or global non-graph models do not, by themselves, distinguish the value of sharing parameters from that of accessing neighbors. Closest to this question, Montero-Manso and Hyndman (2021) contrast local and global models for groups of series, Shao et al. (2022) show that node identity embeddings let a plain multilayer perceptron (MLP) rival spatio-temporal GNNs, and Cini et al. (2023) study local and global components in spatio-temporal forecasting. The latter work measures how much node-specific capacity a global model needs, supplied through node-specific parameters and embeddings. We measure which part of the gap between a node-specific model and a GNN the graph explains: we decompose the error gap from a node-specific reference model along both orders of introducing parameter sharing and neighborhood access, including a non-shared model given the neighbor mean. To our knowledge, the cited studies do not report this two-path decomposition. 
+
+# 3 Preliminaries and Background 
+
+A graph  = ( , ) on 𝑁 nodes is represented by a binary adjacency matrix 𝐀 or a weighted one 
+
+𝐖 , and 𝑣 = {𝑢 ∈  ∣ 𝑊 𝑢𝑣 > 0} is the neighborhood of node 𝑣 . A message-passing layer (Gilmer et al. 2017) updates each node’s representation from a permutation-invariant aggregate (sum, mean,  
+
+> 3A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.
+
+maximum, or attention-weighted mean) of its neighbors’ representations, so 𝐿 layers reach the 
+
+𝐿 -hop neighborhood; the general formalism is recalled in Section A of the Appendix. We denote a matrix by a bold capital letter and its elements by italic capitals, e.g. 𝐀 and 𝐴 𝑖𝑗 , and a vector by a bold lowercase letter and its elements by italic lowercase letters, e.g. 𝐲 𝑡 and 𝑦 𝑖,𝑡 . Moreover, 𝐈 is the identity matrix, 𝟏 is the all-ones vector of dimension 𝑁 , and 1{ ⋅ } is the indicator function. 
+
+3.1 GNNs and MLPs: One Family of Node-wise Models 
+
+Each node 𝑖 carries features 𝐱 𝑖 ∈ ℝ 𝑑 , and a model returns a forecast ̂ 𝐲 𝑖 ∈ ℝ ℎ. Models from an independent MLP per region to an attentional GNN differ along three design decisions: i) Parameter sharing : Either use 𝑁 node-specific models, or a single model applied to every node. The latter divides the parameter count by 𝑁 and pools the data of all nodes, at the cost of imposing the same input–output rule on nodes that may differ. ii) Neighborhood access : The support of 𝐀 induces the node adjacency, which marks the nodes whose features are involved in node 𝑖 ’s forecast. With 𝐀 = 𝐈 , only 𝑖 ’s own features are used in its forecast; on the other extreme, 𝐀 = 𝟏𝟏 ⊤ leads to full connectivity; sparse node adjacency lies between those extremes. iii) Neighborhood aggregation : a GNN aggregates neighbors symmetrically, so the aggregation is permutation-invariant, whereas an MLP reading concatenated features gives each node a fixed input slot, which is permutation-sensitive. A simple layer illustrates the sharing and access axes: 
+
+𝐇 = 𝜎(𝐗𝐖 1 +̂ 𝐀 𝐗 𝐖 2), (1) where 𝐗 ∈ ℝ 𝑁 ×𝑑 stacks the node features, ̂ 𝐀 is a normalized adjacency matrix (specifically, ̃ 𝐃 −1/2 (𝐀 + 𝐈)̃𝐃 −1/2 for the graph convolutional network (GCN), the row-normalized 𝐃 −1 𝐀 for the mean aggre-gation of SAGE), 𝐖 1 and 𝐖 2 shared weight matrices, and 𝜎 an element-wise activation function. Setting 𝐀 = 𝐈 reduces this layer to 𝐇 = 𝜎(𝐗𝐖) with 𝐖 = 𝐖 1 + 𝐖 2. For this layer, the identity adjacency 𝐈 gives the same function class as a weight-shared MLP acting on each node’s own fea-tures. This algebraic equivalence does not imply though that arbitrary MLP and residual GNN implementations have the same depth, parameterization or optimization behavior. Throughout, backbone denotes the neural architecture that surrounds the convolution, and not the graph: two models can share a backbone and differ only in their node adjacency, which is what the controls below exploit. We call no-graph GNN the backbone run with no edges between distinct nodes, so that no node reads another, and distinguish its two realizations: the identity-graph GNN 
+
+(𝐀 = 𝐈 ) and the empty-graph GNN (𝐀 = 𝟎 ). Both span the function class above, since the root term 𝐗𝐖 1 keeps each node’s own features; under a normalization that adds self-loops the two coincide, and otherwise they differ only in how that map is parameterized. The per-node MLP is recovered by lifting the sharing, replacing the common 𝐖 with node-specific weights 𝐖 𝑖 , which gives 𝐇 𝑖 = 𝜎(𝐱 𝑖 𝐖 𝑖 ). The GNN with a nontrivial neighborhood is recovered by giving 𝐀 the support of a graph, so that row 𝑖 of ̂ 𝐀𝐗 is a combination of the features of node 𝑖 ’s neighbors. Figure 1 groups the 4 resulting models by family and situates them on the two axes, the coincidence between the shared MLP and the identity-graph GNN appearing there as two readings of a single computation. Comparing a GNN on a prescribed node adjacency with the identity-graph GNN measures the contribution of the graph edges when both models share their parameters across nodes. Sharing imposes the same input–output rule on every node, and part of what the edges add may only correct that constraint, so this comparison does not separate the information carried by the neighbors from 
+
+> 4
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.                                       
+
+> Reads own features only
+> node 3 reads nothing but itself
+> Reads other nodes’ features
+> every series, or the neighborhood
+> MLP, tied to node labels GNN, one rule everywhere Per-node MLP
+> one matrix per node, own features
+> 𝑑 × 𝐻
+> Parameters: 𝑁 𝑑𝐻
+> 𝑁 copies of one block
+> 12345
+> 𝐖 3̂𝑦 3
+> All-node MLP
+> one matrix, a block per series
+> 𝑁 𝑑 × 𝐻
+> Parameters: 𝑁 𝑑𝐻
+> one copy of 𝑁 blocks
+> 12345
+> 𝐖 ̂𝑦 3
+> Identity-graph GNN
+> 𝐀 = 𝐈 , the shared matrix
+> 𝑑 × 𝐻
+> Parameters: 𝑑𝐻
+> 𝑁 times fewer than above
+> 12345
+> 𝐖 ̂𝑦 3
+> GNN
+> 𝐀 sparse, the shared matrix
+> 2𝑑 × 𝐻
+> Parameters: 2𝑑𝐻
+> 𝑁 /2 times fewer than above
+> 12345
+> 𝐖 ̂𝑦 3
+> the features of node 3 itself another series the model reads a series it cannot reach the forecast ̂𝑦 3produced at node 3 one matrix per node predicted one 𝑑 × 𝐻 block per segment
+
+Figure 1. The four node-wise models on the sharing (rows) and access (columns) axes. Each cell shows the series reaching the forecast ̂𝑦 3, the matrix producing it and its parameter count for 𝑁 nodes, 
+
+𝑑 features, and 𝐻 hidden units; each segment is one 𝑑 × 𝐻 block. 
+
+that correction. The per-node MLP neither shares parameters nor reads neighbors, and it is our reference to compare graph-based models. 
+
+# 4 Methodology 
+
+The diagnostic protocol takes the graph construction and the GNN architecture as inputs; this section sets out those used here. A GNN is specified by the adjacency it reads and by the convolution that reads it; forecasts from several seeds or architectures are then combined. 
+
+4.1 Graph Construction and Selection 
+
+Typically, the demand graph is not given with the data: nodes are regions or feeders, and an edge must encode a dependence that drives demand, which the electrical wiring explains only in part. The spatial construction kernelizes the geodesic distance, 𝐝(𝑢, 𝑣) = exp{−𝐝𝐢𝐬𝐭(𝑢, 𝑣) 2/𝜎 2𝑏 }, with 𝜎 𝑏 
+
+being here the median pairwise distance. On regions-fr , we keep only the closest pairs, 
+
+(𝑾 𝜆 )𝑢𝑣 = 𝐝(𝑢, 𝑣) ⋅ 1{𝐝(𝑢, 𝑣) ≥ 𝜆}, 𝑢, 𝑣 ∈ , (2) where 𝜆 is the largest level that keeps the graph connected (Williams and Short 2020). As weather systems and regional activity drive demand and are shared by adjacent regions, the idea is to drop the distant pairs that would mostly dilute the neighbor mean, while keeping the graph connected. The considered data-driven constructions use the DTW distance, the Pearson correlation, and the precision matrix of the load series; DistSplines weights an edge by the 𝐿 2 distance between the two nodes’ fitted temperature-to-load splines, and GL3SR (Humbert et al. 2021) learns a smooth graph from the data. The graph is selected based on the validation RMSE. The spatial graph keeps 28 of the 132 ordered pairs of regions. The data-driven constructions are used as computed, DTW keeping 130 pairs and the others all 132 , so a convolution that reads 
+
+5A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+edge weights (GCN, ChebConv, TAGConv, APPNP) sees a different operator under each of them, whereas one that reads only the support (GraphSAGE, GAT, GATv2, TransformerConv) sees the same complete graph. 
+
+4.2 Architectures and Aggregation 
+
+Our benchmark covers GCN (Kipf and Welling 2017), GraphSAGE (SAGE) (Hamilton et al. 2017), APPNP (Gasteiger et al. 2019), GAT (Veličković et al. 2018), GATv2 (Brody et al. 2022), Transformer-Conv (Transformer) (Shi et al. 2021), ChebConv (Defferrard et al. 2016) and TAGConv (TAG) (Du et al. 2017), all inside the same residual backbone: a linear node encoder, residual blocks with layer normalization around each convolution, and a linear readout of the 48 outputs. The forecasts of several seeds or architectures are combined either uniformly or by the ML-Poly algorithm (Gaillard et al. 2014), which sets the weights 𝑝 𝑗,𝑡 of the aggregate ̂𝑦 𝑡 = ∑ 𝐾 𝑗=1 𝑝 𝑗,𝑡 𝑥 𝑗,𝑡 from past performance. A seed ensemble, which averages the forecasts of several seeds (Lakshminarayanan et al. 2017), captures the variability due to initialization and optimization only, so the spread across seeds does not measure total predictive uncertainty. 
+
+# 5 Experiments 
+
+Design. The experiments evaluate GNNs at two levels: i) The benchmark level asks how well architecture–graph pairs forecast after tuning, taken 
+
+individually , in seed ensembles , and in mixtures of architectures (Section 6.1). ii) The diagnostic level attributes a gain (Sections 6.2 to 6.4): it fits prescribed model classes under common training rules and varies parameter sharing, neighborhood access and the identity of the neighbors across training volumes and synthetic regimes, the empty-graph GNN separating the edges from the backbone and degree-preserving rewiring separating the identity of the neighbors from their number. Benchmark scores rank forecasters without attributing their gains; diagnostic scores attribute gains within the specified model classes without full hyperparameter tuning, and meet the benchmark only in Section 6.2, where tuning changes the ranking. Outside both levels, a separate exploratory analysis aggregates older GNN configurations online with non-graph forecasters (Section 6.5). Table 1 lists the blocks and their fixed or distinctive settings. 
+
+5.1 Datasets 
+
+regions-fr . The French network operator (RTE) publishes the half-hourly load of the 12 French administrative regions, from which we use the period January 2015 to December 2019 and call this dataset regions-fr . Covariates are calendar variables (time of day, weekday, day type, holidays, position in the year, daylight saving) and weather conditions (temperature, cloud cover, wind) measured at 32 stations and averaged within each region; no weather forecast is used. The target is each region’s load in MW (megawatts), and system-wide scores are computed on their sum. 
+
+weave-uk . This dataset contains the half-hourly smart-meter load of low-voltage feeders, as released by the UK data platform (Weave 2). We use 500 feeders of Scottish and Southern Electricity Networks (Campagne 2026), recorded February 14 –28 , 2024 and selected to have no missing values and to span heterogeneous load profiles. Only calendar variables and lagged load are available. 
+
+> 2https://weave.energy/
+> 6
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table 1. The experimental blocks presented in Section 6 that address the questions of Section 1.     
+
+> Block Datasets Training window Models Fixed or distinctive settings Architecture benchmark (§6.1; Q1)
+
+regions-fr ;
+
+weave-uk 1090 d; 9 d  
+
+> 8tuned GNNs, non-graph baselines, GNN and shared-MLP seed ensembles, and GNN mixtures Split and horizon within each dataset; inputs as specified Per-node reference (§6.2; Q1, Q4)
+
+regions-fr 54 –1090 dPer-node MLP ( ± neighbor mean) and all-node MLP; identity-graph and SAGE GNN SAGE and hidden width Synthetic regimes (§6.3; Q4) Synthetic denoising data Training fraction varied Same 4 node-wise models Base generator, one factor varied Larger datasets (§6.4; Q2–Q4) 
+
+electricity ;
+
+weave-uk       
+
+> 11 /60 d;
+> 30 h/ 10 dPer-node, shared, all-node MLP; per-node and shared MLP +neighbors; SAGE/ChebConv GNN, empty-graph GNN, rewired graphs Hidden width 64
+> Complementarity (§6.5; exploratory)
+
+regions-fr ;synthetic data Jan 2017 –Jun    
+
+> 2018 6GNNs, feedforward network, additive model, ML-Poly mixture Own split, 1seed per expert
+
+electricity . This dataset (Zhou et al. 2021) records the hourly consumption of 321 clients from July 2016 to July 2019 . Section 6.4 uses 319 of them: the client that the original benchmark designates as its forecasting target is left out, and so is one client whose consumption is constant over the selected period. 
+
+5.2 Experimental Settings 
+
+Sequence-to-sequence forecasting. The model maps the previous day to the next day’s load profile, ̂𝐲 𝑡∶𝑡+ℎ−1 = Φ 𝜽 (,̃ 𝐗 𝑡 ∪ 𝐲 𝑡−𝑤∶𝑡−1 ) with 𝑤 = ℎ = 48 half-hours. Training, validation and testing use nonoverlapping windows of stride ℎ, so every origin falls on a day boundary and output 𝑘 
+
+always denotes slot 𝑘 of the day (Figure C.1 in the Appendix); every model of the benchmark, graph or not, is trained and scored under this stride. Features and targets are scaled per node by min–max statistics of the training period (the MLP and gradient-boosted baselines of weave-uk standardize their targets instead), and parameters minimize the squared error with Adam (Kingma and Ba 2015). On regions-fr , the periods are 2015 –2017 for training, 2018 for validation, and 2019 for testing; on 
+
+weave-uk they are February 14 –22 , 23 –24 and 25 –28 , 2024 (Figure C.2 in the Appendix). 
+
+Evaluation metrics. With 𝑠 𝑡 = ∑ 𝑁 𝑖=1 𝑦 𝑖,𝑡 and ̂𝑠 𝑡 = ∑ 𝑁 𝑖=1 ̂𝑦 𝑖,𝑡 the observed and forecast total sums, and 𝑒 𝑡 = 𝑠 𝑡 −̂𝑠 𝑡 their difference, the two metrics used are: MAPE = 100 𝑇 
+
+> 𝑇
+
+∑
+
+> 𝑡=1
+
+||||𝑒 𝑡 
+
+𝑠 𝑡 
+
+|||| , RMSE =√1𝑇 
+
+> 𝑇
+
+∑
+
+> 𝑡=1
+
+𝑒 2𝑡 . (3) Section 6.4 adds a per-node score that removes the cancellation the sum allows. Unless otherwise stated, tables report the seed-averaged error, each seed being scored separately and the errors then averaged, with standard deviations (std: sample std, divisor 𝑛 − 1 ) in parentheses; gray shades mark the three best entries (darker is better) of each block and column, or of each row in Tables C.2-E.1; the means are ranked without testing for significance. 
+
+7A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Baselines. Bottom-local fits one model per node and bottom-global one model on the stacked samples of all nodes, each node reading its own features. The baselines are ARIMA, the additive model (per node, or on the aggregate load), per-node MLPs and shared MLPs over 10 seeds, XGBoost under both schemes, the Chronos-Bolt variant of Chronos (Ansari et al. 2024) zero-shot on the aggregate load, Chronos-2 (Ansari et al. 2025), t0-gamma (Meyer et al. 2026), and Timestral (Mistral AI 2026), in its 209 M-parameter version (Timestral-209M), which read covariates, an ARIMA with exogenous inputs (ARIMA-X), and persistence at 𝐷 − 1 and 𝐷 − 7 . The additive model follows the half-hour-specific GAM design of Fan and Hyndman (2012) and Pierrot and Goude (2011), one model per slot, and is an implementation for this benchmark, not a production model: on regions-fr 
+
+it smooths current and smoothed temperatures, position in the year, cloud cover, and wind, with weekday, holiday, day type, and weekend as factors; on weave-uk it reduces to a linear model per half-hour in the weekday and the previous day’s load. On regions-fr , ARIMA forecasts recursively over the horizon; on weave-uk one ARIMA (4, 0, 2) , its order selected on the aggregate, is fitted per half-hour on the daily subseries and forecasts 1 day ahead with frozen parameters. Chronos-Bolt (small) reads target history alone, its point forecast being the median of its quantiles, and on weave-uk its context runs from the start of training to the forecast origin; Chronos-2, zero-shot on the same summed load and origins, also reads the calendar and, on regions-fr , the weather as past and future covariates, the weather being observed values. t0-gamma and Timestral receive the same inputs and origins, with a context of at most the last 1024 steps, the most t0-gamma reads in one pass. ARIMA-X is specified in Section H of the Appendix. regions-fr models read calendar, weather, and the 48 load lags, except the additive model, whose covariates are listed above; weave-uk models read calendar and lags only. The regions-fr additive model, ARIMA, Chronos-Bolt and persistence rows are untuned and come from an earlier run on the same 2019 test days and stride. The shared MLPs and per-node MLPs are plain feedforward networks without the residual backbone of the GNNs. 
+
+Tuning. Optuna (Akiba et al. 2019) tunes every architecture with 40 trials scored on the validation RMSE of the summed forecast, the graph construction being searched jointly with the other hyper-parameters; the MLPs run 10 seeds, the gradient-boosted models and GNNs 3. The search spaces, the settings of the untuned baselines and the retained configurations are given in Section H of the Appendix. The diagnostic comparisons use prescribed model classes without full hyperparameter searches, the limited validation-based selections being specified in each block; their widths and backbones are stated there, and common width should not be read as matched total capacity. 
+
+# 6 Results 
+
+6.1 Architecture Benchmark 
+
+Individual architectures. On regions-fr , the 8 GNNs span 95 MW, from 891 MW for GCN to 986 MW for APPNP, against a seed dispersion of up to 37 MW (Table 2). None reaches the gradient-boosted model fitted on the stacked nodes, at 859 MW and 1.16% ; the per-node MLP, at 
+
+922 MW, precedes 6 of the 8, and the shared MLP, at 937 MW, only APPNP. On the 500 feeders, where each GNN learns from 9 training days, the best baseline is t0-gamma, zero-shot, at 144.6 kWh and 3.51% , the lowest MAPE of the table. Only GATv2, at 140.6 kWh, and APPNP, at 142.8 kWh, have a lower mean RMSE, both by less than one seed std, and Transformer follows at 146.2 kWh. SAGE, GCN, GAT, and ChebConv lie between 156.0 and 167.3 kWh, around Timestral at 158.1 kWh and ahead of Chronos-2 at 170.2 kWh; TAG trails at 203.7 kWh. A neighborhood is not needed to reach the level of Chronos-2: the ChebConv retained by validation has order 𝐾 = 1 , which propagates nothing, and still reaches 167.3 kWh inside the residual backbone the GNNs share, level 
+
+> 8
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table 2. Test error of the individual models: mean across seeds and std in parentheses, none for deterministic models.                                                                                                                                              
+
+> Model regions-fr ,12 regions weave-uk ,500 feeders RMSE (MW) MAPE (%) RMSE (kWh) MAPE (%)
+> Baseline models
+> ARIMA 4527 5.80 860.6 18.66
+> ARIMA-X 1333 1.77 237.9 5.90
+> GAM (aggregate) 1228 1.69 223.5 6.27
+> GAM (per node) 1200 1.67 329.4 10.70
+> Shared MLP 937 (26 )1.28 (0.06 )236.5 (15.4 )6.62 (0.32 )
+> Per-node MLP 922 (10 )1.24 (0.02 )325.2 (9.3 )9.41 (0.54 )
+> XGBoost (b-global) 859 (0.4 )1.16 (0.00 )263.5 (1.1 )7.67 (0.03 )
+> XGBoost (b-local) 913 1.20 288.0 8.51
+> Chronos-Bolt 2408 2.99 237.4 6.02
+> Chronos-2 1767 1.94 170.2 3.76
+> t0-gamma 1724 1.83 144.6 3.51
+> Timestral-209M 1864 2.00 158.1 3.75
+> Persistence–1 d 4507 5.78 272.1 6.01
+> Persistence–7 d 4656 6.03 283.6 9.42
+> Graph-based models
+> GCN 891 (26 )1.19 (0.03 )161.9 (15.5 )4.14 (0.43 )
+> SAGE 925 (11 )1.22 (0.04 )156.0 (11.7 )4.37 (0.40 )
+> GAT 899 (37 )1.18 (0.04 )166.8 (14.1 )4.52 (0.59 )
+> GATv2 923 (32 )1.21 (0.06 )140.6 (15.8 )3.56 (0.21 )
+> Transformer 931 (9)1.23 (0.02 )146.2 (14.1 )4.00 (0.34 )
+> TAG 929 (30 )1.24 (0.04 )203.7 (25.2 )5.77 (0.55 )
+> ChebConv 924 (18 )1.20 (0.04 )167.3 (5.1 )4.15 (0.14 )
+> APPNP 986 (27 )1.33 (0.05 )142.8 (5.4 )3.81 (0.14 )
+
+Table 3. Combined GNN forecasts from Ta-ble 2: seed ensembles of one architecture (top) and mixtures of the 8 architectures, each first averaged over its seeds (bottom).   
+
+> Architecture Combination
+
+regions-fr , 12 regions weave-uk , 500 feeders RMSE (MW) MAPE (%) RMSE (kWh) MAPE (%)                                                                                          
+
+> Seed ensembles, 3seeds of one architecture
+> GCN Uniform 832 1.09 153.9 3.76
+> Online 838 1.10 153.7 3.66
+> SAGE Uniform 863 1.13 147.0 3.97
+> Online 882 1.14 149.0 4.10
+> GAT Uniform 823 1.06 156.3 4.05
+> Online 841 1.08 159.7 4.33
+> GATv2 Uniform 861 1.11 134.0 3.24
+> Online 864 1.11 139.9 3.65
+> Transformer Uniform 865 1.12 139.2 3.70
+> Online 884 1.14 136.4 3.59
+> TAG Uniform 866 1.14 190.7 5.17
+> Online 874 1.15 196.5 5.69
+> ChebConv Uniform 867 1.12 156.1 3.64
+> Online 864 1.11 162.4 4.01
+> APPNP Uniform 922 1.23 139.7 3.70
+> Online 919 1.23 141.8 3.77
+> Mixtures of all 8architectures
+> All Uniform 814 1.05 144.2 3.61
+> Bottom 809 1.04 145.0 3.70
+> Top 809 1.04 145.8 3.70
+
+with Chronos-2 within its seed std. Pooling separates the two datasets. On the regions, the per-node MLP leads the shared one ( 922 
+
+against 937 MW), whereas pooling helps gradient boosting ( 859 against 913 MW); on the feeders every pooled model beats its per-node counterpart ( 236.5 against 325.2 kWh for the MLP, 263.5 
+
+against 288.0 kWh for gradient boosting). The ranking of convolutions does not carry over: APPNP is last on the regions and among the first three on the feeders, where those three lie within the seed dispersion. 
+
+Seed ensembles and mixtures. A seed ensemble averages the forecasts of the 3 seeds of one architecture, while a mixture combines the 8 architectures, each first averaged over its seeds; Bottom 
+
+mixes node by node before summation and Top mixes the summed forecasts, and online weights are updated three times (after each of the 4 days of the weave-uk test). On the regions, the seed ensemble of an architecture gains 58 –76 MW, GAT from 899 to 823 MW, and mixing the 8 architectures node by node reaches 809 MW, 82 MW below the best seed-averaged error of an individual architecture and 14 MW below the best seed ensemble (Table 3). On both datasets, several combined GNN forecasts finish ahead of every individual model of Table 2; the non-graph models were not mixed, and only the shared MLP is seed-ensembled ( 10 seeds). On the feeders, the seed ensemble improves every architecture, GATv2 from 140.6 to 134.0 kWh, but no mixture of the 8 passes that average, the best, uniform, reaching 144.2 kWh. Mixing node by node and mixing the summed forecast are level on both datasets ( 0.3 MW and 0.8 kWh), and online reweighting improves on the uniform seed ensemble for 2 of the 8 architectures on each dataset. The weave-uk benchmark tests on 4 days, so its rankings rest on 4 daily errors of one aggregate: the seed ensemble of each GNN architecture beats the 10 -seed ensemble of the shared MLP on 3 of them. 
+
+6.2 A Per-Node Reference Model for the Contribution of the Graph 
+
+Setup. On regions-fr , the 4 node-wise models (Figure 1) are also fitted at one fixed configuration, without tuning, with a common width, optimizer, and stopping rule: the MLPs have 2 hidden layers of width 64 and read features standardized on the training days, the identity-graph GNN and SAGE share the residual backbone of the benchmark at two blocks of width 64 , and all stop on validation 
+
+9A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 54 109 272 545 1090 training days (log scale) 900 1200 1600 2400 national RMSE (MW, log scale)      
+
+> Fixed configuration (width 64, untuned)
+> Per-node MLP All-node MLP Identity-graph GNN SAGE GNN
+> 825 850 875 900 925 950 national RMSE at 1090 days (MW)
+> Per-node MLP Shared (MLP / identity-graph GNN) SAGE GNN GCN GAT
+> XGBoost (tuned) graph mixture
+> Full sample: fixed (hollow) vs tuned (filled)
+
+Figure 2. regions-fr . Left: national RMSE of the 4 node-wise models at one fixed configuration (width 64 , untuned) as the training set contracts, 3 seeds (Table C.2, Appendix). Right: at the full sample, each family at the fixed configuration (hollow) and tuned (filled, Table 2), beside the tuned pooled XGBoost and the bottom-up graph mixture. 
+
+(Adam, learning rate 10 −3 , max 300 epochs, patience 75 ). The identity-graph GNN and SAGE differ only in the edges; a contrast between an MLP and a GNN also changes the architecture. Figure 2 sets them beside the tuned models of Table 2. 
+
+Findings. At the full sample, the fixed per-node MLP reaches 876 ± 3 MW, the identity-graph GNN 
+
+918 ± 7 MW, SAGE on the spatial graph 891 ± 19 MW, and the all-node MLP 921 MW, and giving the per-node MLP the mean of its neighbors’ features yields about 871 MW; none of 20 graph and convolution configurations at this capacity reaches the per-node MLP, and the per-node error gives the same ranking ( 0.1259 for the per-node MLP, 0.1272 for SAGE, 0.1326 for the identity-graph GNN, and 0.1427 for the all-node MLP). The ranking does not survive tuning: the tuned GCN and GAT, at 891 and 899 MW, lead the tuned per-node MLP at 922 MW, and selection on the 2018 validation year leaves the per-node MLP and SAGE worse on the 2019 test than their fixed configuration. Differences of 30 –45 MW between families therefore depend on the configuration. regions-fr 
+
+supports no stable ranking between node-specific models and GNNs: the tuned per-node MLP falls within the 891 –986 MW range of the tuned GNNs, all above the pooled gradient-boosted model at 
+
+859 MW and the GNN mixture at 809 MW. The 48 load lags also narrow the spread across GNN configurations, from 586 MW with calendar and weather alone to about 120 MW (validation, 1 seed; Table C.1, Appendix). At the fixed configuration, contracting the training set from 1090 to 54 days, drawn at random so that seasonal coverage stays complete, keeps the per-node MLP lowest at every volume; restricting each node to its own features and its own weights, the per-node against the all-node MLP, saves 
+
+484 MW at 54 days and 45 MW at the full sample. Since the days are sampled across the full training period, this does not establish the ranking for a contiguous short record. 
+
+6.3 Using Synthetic Data to Study the Contribution of the Graph 
+
+Setup. A denoising generator locates the regime in which the ranking can turn. A clean temperature field is drawn over a geometric graph of 𝑁 nodes with spatial correlation 𝜌 ; each node observes it through independent noise of level 𝜎 obs , and its load is a real regional temperature-to-load spline applied to the clean field. The neighbors, whose clean temperatures are correlated and whose noise is independent, can therefore denoise a node’s reading. The base configuration has 60 nodes, 𝜌 = 0.7 ,
+
+𝜎 obs = 3 , and 30% of the training set, and each plot of Figure 3 varies one factor. A node carries one 
+
+10 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 12 30 60 120 250                      
+
+> number of nodes N
+> 0.00 0.25 0.50 0.75 1.00
+> RMSE (standardized)
+> 0.2 0.4 0.6 0.8 1.0
+> fraction of the training set
+> 0.0 0.5 1.0 1.5
+> 0.0 0.2 0.4 0.6 0.8
+> correlation ρof the clean field
+> 0.0 0.2 0.4 0.6 0.8
+> RMSE (standardized)
+> 0123456
+> own-observation noise σobs
+> 0.00 0.25 0.50 0.75 1.00
+> per-node MLP all-node MLP shared MLP (identity-graph GNN) GNN (mean aggregation)
+
+Figure 3. RMSE over nodes and test snapshots, in standardized load units, of the 4 node-wise models on the synthetic denoising data, 3 seeds per point with the spread shaded; each plot varies one factor around the base configuration. 
+
+noisy reading and no load lag, so its local input is insufficient by construction. The GNN applies a shared encoder, two residual rounds of mean aggregation over 𝐃 −1 (𝐀 + 𝐈) and a shared readout at width 32 ; the identity control replaces 𝐀 + 𝐈 by 𝐈 .
+
+Findings. The GNN has the lowest or near-lowest error across the synthetic settings. From 12 to 
+
+250 nodes, it improves from about 0.38 to 0.29 while the all-node MLP degrades from 0.66 to 1.13 ,and at 5% of the training set it stays near 0.40 against 0.85 for the per-node MLP and more than 
+
+1.7 for the all-node MLP, so unrestricted access does not reproduce its gain. At 𝜌 = 0 , it draws level with the per-node MLP, the gap falling to about 0.02 , and at 𝜎 obs = 0 the identity network matches it, the neighborhood having nothing to denoise. This generator makes neighbors useful by construction when local measurements are noisy. It motivates examining larger datasets with shorter histories, but does not establish that the regions-fr load lags are sufficient or that node count alone determines the ranking. 
+
+6.4 Parameter Sharing and Neighborhood Access on Two Larger Datasets 
+
+Setup. This section runs the full diagnostic protocol on 319 electricity clients and 500 weave-uk feeders. Their training windows are short by design: they test whether sharing parameters and reading neighbors compensate for a history too short to fit each node alone, a regime that non-stationary demand makes common, since structural breaks leave only recent observations representative (Section 2). All models share hidden width 64 , the same local inputs (plus the neighbor mean where stated), horizon, and split within a cell; the target is the next hour on electricity and the next 48 half-hours, from origins sliding by one half-hour, on weave-uk ; the MLPs have 1 hidden layer, the GNNs a linear encoder, 2 residual graph-convolution blocks, and a linear readout, with SAGE or ChebConv ( 𝐾 = 3 ) selected per cell on validation, and the empty-graph GNN runs the same backbone with 𝐀 = 𝟎 , which separates the change of backbone from the edges. The graph keeps each node’s 5 strongest neighbors; writing 𝐀 kNN for this directed adjacency ( (𝐀 kNN )𝑖𝑗 = 1 if 𝑗 is among those of 𝑖 ), the GNN receives 𝐀 = 𝐀 kNN + 𝐀 ⊤
+
+> kNN
+
+, in which a mutual pair weighs twice as much as a one-way edge, and the edge increments are also reported on the simple graph max(𝐀 kNN , 𝐀 ⊤
+
+> kNN
+
+),
+
+11 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table 4. The node-wise models at hidden width 64 on the full datasets, 3 seeds, under the two system scores and the per-node error (nRMSE). The GNN uses ChebConv ( 𝐾 = 3 ) on electricity at 60 
+
+days and weave-uk at 30 hours, SAGE otherwise, as selected on validation. Equal width does not match depth or total parameter count. weave-uk window lengths include the validation portion; 
+
+electricity lengths are fitting windows, followed by 2 validation days. 
+
+electricity , 319 clients (RMSE in MW) weave-uk , 500 feeders (RMSE in kWh) Model RMSE MAPE (%) nRMSE RMSE MAPE (%) nRMSE 
+
+Short window: 11 days ( electricity ), 30 hours ( weave-uk )
+
+Per-node MLP 22.3 (0.7 ) 2.34 (0.11 ) 0.3030 (0.0002 ) 346.8 (3.8 ) 9.73 (0.14 ) 1.0509 (0.0013 )
+
+Per-node MLP + neighbors 24.1 (2.6 ) 2.72 (0.34 ) 0.3201 (0.0036 ) 323.2 (2.0 ) 8.89 (0.08 ) 0.9995 (0.0010 )
+
+Shared MLP 19.4 (1.3 ) 2.10 (0.15 ) 0.2804 (0.0014 ) 329.7 (11.0 ) 9.02 (0.31 ) 0.9074 (0.0103 )
+
+All-node MLP 26.0 (2.4 ) 2.89 (0.23 ) 0.4527 (0.0048 ) 421.8 (82.3 ) 12.45 (2.75 ) 1.0609 (0.0583 )
+
+Empty-graph GNN 23.5 (2.9 ) 2.78 (0.35 ) 0.2827 (0.0039 ) 334.9 (4.7 ) 9.26 (0.17 ) 0.8894 (0.0020 )
+
+GNN 17.9 (2.5 ) 2.23 (0.41 ) 0.2775 (0.0038 ) 348.6 (8.0 ) 9.17 (0.20 ) 0.8808 (0.0047 )
+
+Long window: 60 days ( electricity ), 10 days ( weave-uk )
+
+Per-node MLP 21.3 (1.6 ) 1.78 (0.07 ) 0.2776 (0.0009 ) 359.0 (1.6 ) 9.60 (0.02 ) 0.8956 (0.0004 )
+
+Per-node MLP + neighbors 19.8 (0.4 ) 1.76 (0.09 ) 0.2752 (0.0020 ) 343.8 (3.5 ) 9.65 (0.11 ) 0.8762 (0.0007 )
+
+Shared MLP 19.2 (1.2 ) 1.85 (0.26 ) 0.2770 (0.0011 ) 293.6 (12.5 ) 7.84 (0.15 ) 0.8013 (0.0086 )
+
+All-node MLP 28.7 (2.3 ) 3.41 (0.42 ) 0.4336 (0.0103 ) 359.6 (27.8 ) 10.77 (1.01 ) 0.8787 (0.0648 )
+
+Empty-graph GNN 21.4 (1.2 ) 2.36 (0.33 ) 0.2797 (0.0035 ) 271.0 (10.0 ) 7.63 (0.15 ) 0.7941 (0.0055 )
+
+GNN 17.6 (1.7 ) 2.03 (0.36 ) 0.2752 (0.0060 ) 250.7 (16.2 ) 6.61 (0.58 ) 0.7745 (0.0056 )
+
+with each edge stored once. The primary score is the per-node normalized RMSE (nRMSE), the root mean squared error of each node after standardizing the targets by their training standard deviation (by node and, on weave-uk , by horizon), averaged over nodes; it weights every node equally, whereas system scores weight nodes by their load and reward errors that cancel in the sum; Table 4 reports both. Targets, windows, graphs, parameter counts, and the standardization behind nRMSE are detailed in Section D of the Appendix. The models occupy 4 combinations of parameter sharing and neighborhood access, giving two paths from the per-node MLP to the GNN. We call an increment the decrease in per-node error, 
+
+𝐸( before ) − 𝐸( after ), between successive models. Write 𝑀 pn for the per-node MLP, 𝑀 sh for the shared MLP, 𝑀 gr for the GNN, and 𝑀 pn+n for the per-node model that also reads the mean features of its neighbors, and abbreviate 𝐸 ⋅ ∶= 𝐸(𝑀 ⋅). Then, 
+
+𝐸 pn − 𝐸 gr = (𝐸 pn − 𝐸 sh ) + (𝐸 sh − 𝐸 gr )= (𝐸 pn − 𝐸 pn+n ) + (𝐸 pn+n − 𝐸 gr ). (4) The first line adds the sharing increment to the conditional edge increment 𝐸 sh − 𝐸 gr ; the second adds the non-shared edge increment 𝐸 pn − 𝐸 pn+n to the remaining gap to the GNN. Moving from the shared MLP to the GNN also changes the backbone. The empty-graph GNN, 𝑀 ∅, splits that step into a backbone increment and an edge increment at constant backbone, 𝐸 sh − 𝐸 gr = (𝐸 sh − 𝐸 ∅) + (𝐸 ∅ − 𝐸 gr ).The second path has no such control: the non-shared model receives a one-hop feature mean, whereas the GNN aggregates learned representations over two layers (Figure 4). 
+
+Findings. The fixed-configuration regions-fr ranking reverses on both datasets: the per-node MLP finishes behind the GNN on the per-node error in every cell, by a margin that the bootstrap below does not separate from zero on the 60 -day electricity window, and on weave-uk it also finishes behind the shared MLP, which reads no neighbor. The system scores sometimes disagree; at 
+
+30 hours on weave-uk both go to the per-node model that reads its neighbors, whose residuals cancel more in the sum of 500 feeders. 
+
+12 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.                   
+
+> 𝑀 pn non-shared, own features
+> 0.2776 1.0509
+> per-node error
+> 𝑀 sh shared, own features
+> 0.2770 0.9074
+> per-node error
+> 𝑀 pn+n non-shared, reads neighbors
+> 0.2752 0.9995
+> per-node error
+> 𝑀 gr shared, reads neighbors
+> 0.2752 0.8808
+> per-node error
+> weight sharing error ↓ 0.0006 0.1435
+> shared GNN, neighbors already read error ↓ 0.0000 0.1187
+> neighborhood, weights non-shared error ↓ 0.0024 0.0514
+> neighborhood, weights already shared; backbone changes error ↓ 0.0018 0.0266
+> both axes together error ↓ 0.0024 0.1702
+> electricity ,60 dweave-uk ,30 h
+
+Figure 4. The two decompositions of the per-node gap on the 60 -day electricity window (blue) and the 30 -hour weave-uk window (green) of Table 4. Vertices give per-node errors; each arrow points to the better model and gives the error decrease. Both routes reach the same total, with increments differing by 0.0248 on weave-uk ; arrows into the GNN also change the backbone, so this difference is not a pure factorial interaction. 
+
+On the first path, the sharing increment is +0.0006 on the 60 -day electricity window and 
+
++0.1435 on the 30 -hour weave-uk window. The remaining shared-MLP-to-GNN gap ranges from 
+
++0.0018 to +0.0268 across the 4 conditions. At constant backbone, the edges are worth +0.0086 [+0.0052, +0.0120] and +0.0196 [+0.0166, +0.0228] on weave-uk at 30 hours and 10 days, and 
+
++0.0051 [+0.0014, +0.0083] and +0.0046 [+0.0025, +0.0065] on electricity at 11 and 60 days. These increments use the training graph, whose 𝑘 -nearest-neighbor construction stores a mutual pair twice; with each edge stored once they become +0.0069 , +0.0191 , +0.0033 , and +0.0002 , so the 
+
+60 -day electricity gain vanishes (Table F.1). Once the seeds of each model are resampled as well as the nodes, both electricity intervals include zero, whereas both weave-uk intervals stay positive (Appendix). The change of backbone accounts for the rest ( +0.0180 and +0.0072 on weave-uk ,
+
+−0.0023 and −0.0028 on electricity ), where the empty-graph GNN does slightly worse than the shared MLP. On the second path, the neighbor mean improves a per-node model by +0.0194 on 
+
+weave-uk at 10 days and +0.0514 at 30 hours, a sixth and three tenths of total gaps of +0.1211 and 
+
++0.1702 . On electricity , it is worth +0.0024 at 60 days and −0.0171 at 11 , where sharing carries 
+
++0.0226 of a total +0.0255 . Reading neighbors doubles the input width of a node-specific model, so at 11 days the price of those parameters and the neighbors’ contribution are confounded. Against the true graph stored as a simple graph, a degree-matched rewiring that pays the same price over arbitrary neighbors (Section F of the Appendix) reproduces 98% and 71% of the non-shared gain on weave-uk and 83% of the 11 -day degradation on electricity , whereas on the shared path it removes 52% and 93% of the edge gain at constant backbone on weave-uk (0.0036 of 0.0069 ,
+
+0.0178 of 0.0191 , one rewired graph per seed), so the identity of the neighbors matters there; over 10 
+
+independent rewirings at 30 hours, rewiring removes the whole gain on average (Appendix). We assess sensitivity to the composition of the observed set of nodes by resampling them. The 
+
+6 models of a cell share the split and 3 seeds; errors are averaged over seeds within each node, and nodes are drawn with replacement 5000 times, with every model scored on the same nodes in each draw. On weave-uk , the sharing, non-shared-neighborhood, shared-neighborhood, and total increments have 95% percentile intervals that exclude zero at both windows. At 30 hours, these are 
+
++0.1435 [+0.1364, +0.1510] , +0.0514 [+0.0468, +0.0564] , +0.0266 [+0.0208, +0.0328] , and +0.1702 [+0.1612, +0.1793] , respectively. On electricity , at 11 days the sharing increment is +0.0226 
+
+13 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+[+0.0124, +0.0335] and the non-shared-neighborhood increment is −0.0171 [−0.0219, −0.0127] ; at 
+
+60 days the total gap, +0.0024 [−0.0036, +0.0079] , includes zero. These intervals measure stability to that composition, conditional on the fitted models and test period; they are not interpreted as sampling intervals for a population of independent nodes. They are interpreted separately for each dataset and window. On weave-uk , most of the improvement over the per-node MLP is already obtained by the shared MLP, without neighbor inputs. Adding the neighbor mean to the non-shared model recovers 16 –30% 
+
+of the per-node-to-GNN gap; on electricity , this addition brings no consistent gain, whereas at constant backbone the edges improve the shared GNN on weave-uk , by 0.0086 and 0.0196 . On 
+
+electricity , their gain does not differ from zero once seed variability is included, and it vanishes at 60 days (each edge is stored once). The Appendix reports the GRU, learned-adjacency, width, and node-count controls. 
+
+6.5 Complementarity of Graph and Non-Graph Forecasters 
+
+An online expert aggregation asks whether graph and non-graph forecasters complement each other 3.On regions-fr , ML-Poly combines the national forecasts of 8 experts: 6 GNNs, a weight-shared feedforward network, and the additive model; each family is withdrawn in turn (Figure B.1 in the Appendix). Forecasting each half-hour from the covariates observed at that half-hour (single-step setting), the mixture reaches 970 MW, 279 MW below its best expert. Withdrawing the GNNs costs 
+
+132 MW and withdrawing the two non-graph experts 117 MW, so each family improves the mixture; removing whole architectures, however, does not isolate the contribution of their edges. On a synthetic control whose nodes depend only on their own covariates, the GNN experts’ share of the mixture’s error falls from 14% to 4% . Weights are not proportional to contribution: on a synthetic dataset forecast a day at a time, whose structure the experts cannot exploit, the GNN experts hold 
+
+0.86 of the weight, above their count share of 0.75 , yet their withdrawal costs 34 MW, 4% of the error. The analysis uses its own split, older configurations, and 1 seed per expert, and two of its GNN experts were selected on its test year, which biases their withdrawal cost upward; its figures are descriptive (Section B). 
+
+# 7 Conclusion 
+
+We proposed a diagnostic protocol that separates the two mechanisms a GNN combines, parameter sharing and neighborhood access, by setting the GNN against a per-node model, a shared model without neighbors, and the empty-graph GNN, and by rewiring the graph at matched degrees. We ran it in full on the weave-uk feeders and the electricity clients, after a tuned benchmark on 
+
+regions-fr and the feeders. (Q1) Does a GNN forecast load better than strong non-graph models? Not uniformly. On regions-fr , no GNN beats a pooled gradient-boosted model, although a bottom-up mixture of the 8 GNNs, at 809 MW, finishes ahead of every individual model of Table 2; against a per-node MLP the ranking changes with tuning, the tuned per-node MLP at 922 MW falling within the 891 –986 MW range of the tuned GNNs, whereas at a fixed configuration it has the lowest mean error at every training volume. On weave-uk , with 9 training days per feeder, the zero-shot t0-gamma is the best baseline and has the lowest MAPE of the benchmark; only GATv2 and APPNP have a lower mean RMSE, both by less than one seed std, and a ChebConv of order one, which reads no neighbor, is level with Chronos-2. The ranking of convolutions does not carry from one dataset to the other. (Q2) Where a GNN wins, does the gain come from the graph? On weave-uk , mostly not. Sharing  
+
+> 3Earlier mixtures of GCN and SAGE variants with the additive model appear in Campagne et al. (2026b).
+> 14 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.
+
+alone recovers 78 –84% of the gap from the per-node MLP to the GNN, a reference that overfits its short record and does worse than persistence at 30 hours. Against a per-node ridge, the strongest node-specific reference wherever the gap is nonzero, the shared MLP still recovers 63% and 71% of the gap on weave-uk , although this step also moves from a linear to a nonlinear model; with the model class held fixed, a shared ridge recovers 84% and 41% (Appendix). Adding the neighbor mean to a node-specific model recovers 16 –30% , and arbitrary neighbors (maintaining the node degrees) reproduce 98% and 71% of that gain. Of the remaining gap, the deeper GNN backbone accounts for 
+
++0.0180 and +0.0072 . On electricity , the share carried by sharing ranges from −50% to 111% over five 11 -day windows, while the neighbor mean degrades the per-node model in all five. (Q3) At equal architecture, do neighbors help? A little, with a small, consistent gain on weave-uk 
+
+in the larger-dataset comparison. The empty-graph GNN keeps the backbone and the parameter count of the GNN, so this comparison holds capacity fixed. On weave-uk , the edges improve the per-node error by 0.0086 and 0.0196 , about 6–21% of the sharing increment, and degree-matched rewiring removes half or more of the gain measured with each edge stored once; a shared MLP that reads the neighbor mean is not distinguishable from the GNN there. On electricity , the edge gain stays at about +0.005 or less and is not consistently different from zero once seed variability is included, and it vanishes at 60 days with each edge stored once. (Q4) When do neighbors help? The synthetic study identifies noisy local measurements as one mechanism, without establishing a general boundary between regimes. On real data, their contribution depends on the dataset and the window: the neighbor mean moves the fixed regions-fr per-node MLP from 876 to about 871 MW, recovers 16 –30% of the gap on weave-uk and degrades the per-node model on the 11 -day electricity window, while on the feeders the edge gain at constant backbone stays positive over both windows. A forecasting gain should be credited to the graph only if it survives the comparison with a per-node model, a shared model without neighbors, and the same backbone without edges. 
+
+Limitations and perspectives. In the controlled comparisons, each cell corresponds to the mean of 3 seeds, so differences of the order of the reported dispersion are not claimed as rankings. On the non-shared path, the neighbor mean is a fixed one-hop summary, not the learned aggregation of the GNN, so that path is not matched in architecture. The larger-dataset decomposition is run at one fixed width; its signs hold at widths 32 , 64 , and 128 on weave-uk and in the 11 -day electricity 
+
+cell, whereas the 60 -day cell, whose total includes zero, changes sign across widths (Appendix); configurations tuned model by model are not tested there, and on regions-fr tuning changes the ranking. On weave-uk , the node bootstrap does not cover seasonal or weather variability. The short-window comparison also retains a graph estimated from the longer training record; re-estimating it inside the 30 -hour window gives a more accurate GNN and doubles the edge gain at constant backbone (Appendix). The decomposition is measured on one week of one distribution operator and on five 11 -day windows of the electricity record ending between March and July 
+
+2019 and its last weeks ( 60 days); its shares may differ in other seasons and for longer histories, and on electricity the sharing increment already falls from +0.0226 at 11 days to +0.0006 at 60 
+
+days. Weather inputs are observed values, whereas day-ahead operation uses forecasts, which introduce noise. The synthetic study suggests that such noise could increase the value of neighbors, which these experiments do not test. Time-varying graphs and probabilistic forecasts are possible extensions. 
+
+AI use statement. In this work, we used generative AI tools to revise the manuscript, to help with translation and data visualization, to debug code and write the scripts of some additional controls and analyses, and to search for information and verify bibliographic references. We did not use them for the research content itself: the research questions, the choice of data, the synthetic data, 
+
+> 15
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+the theoretical models and conceptual frameworks, the mathematical claims, or the interpretation of results. The authors wrote the original text before its AI-assisted revision and most of the code without AI assistance, have reviewed all AI-assisted work, and take responsibility for the final content, including any text, claims or artifacts produced with the aid of generative AI. 
+
+# References 
+
+Agarwal R, Melnick L, Frosst N, Zhang X, Lengerich B, Caruana R, Hinton GE (2021) Neural additive models: Interpretable machine learning with neural nets. Advances in Neural Information Processing Systems .Akiba T, Sano S, Yanase T, Ohta T, Koyama M (2019) Optuna: A next-generation hyperparameter optimization framework. ACM SIGKDD International Conference on Knowledge Discovery and Data Mining .Ansari AF, Shchur O, Küken J, Auer A, Han B, Mercado P, Rangapuram SS, Shen H, Stella L, Zhang X, Goswami M, Kapoor S, Maddix DC, Guerron P, Hu T, Yin J, Erickson N, Desai PM, Wang H, Rangwala H, Karypis G, Wang Y, Bohlke-Schneider M (2025) Chronos-2: From univariate to universal forecasting. arXiv preprint arXiv:2510.15821 .Ansari AF, Stella L, Turkmen C, Zhang X, Mercado P, Shen H, Shchur O, Rangapuram SS, Pineda Arango S, Kapoor S (2024) Chronos: Learning the language of time series. Transactions on Machine Learning Research .Antoniadis A, Gaucher S, Goude Y (2024) Hierarchical transfer learning with applications to electricity load forecasting. International Journal of Forecasting 40(2):641–660. Battaglia PW, Hamrick JB, Bapst V, Sanchez-Gonzalez A, Zambaldi V, Malinowski M (2018) Relational inductive biases, deep learning, and graph networks. Preprint arXiv:1806.01261 .Brégère M, Huard M (2022) Online hierarchical forecasting for power consumption data. International Journal of Forecasting 38(1):339–351. Brody S, Alon U, Yahav E (2022) How attentive are graph attention networks? International Conference on Learning Representations .Campagne É (2026) Graph neural networks for electricity load forecasting. https://doi.org/10.5281/zenodo. 21977576 , dataset. Campagne É, Amara-Ouali Y, Goude Y, Kalogeratos A (2026a) GraphToolbox: A configurable Python framework for graph neural network forecasting. IEEE International Conference on Tools with Artificial Intelligence (ICTAI) , to appear. arXiv:2609.24609. Campagne E, Amara-Ouali Y, Goude Y, Kalogeratos A (2026b) Leveraging graph neural networks to forecast electricity consumption. Machine Learning and Principles and Practice of Knowledge Discovery in Databases .Chen K, Chen F, Lai B, Jin Z, Liu Y, Li K, Wei L, Wang P, Tang Y, Huang J, Hua XS (2020) Dynamic spatio-temporal graph-based CNNs for traffic flow prediction. IEEE Access 8:185136–185145. Cini A, Marisca I, Zambon D, Alippi C (2023) Taming local effects in graph-based spatiotemporal forecasting. 
+
+Advances in Neural Information Processing Systems .de Vilmarest J, Browell J, Fasiolo M, Goude Y, Wintenberger O (2024) Adaptive probabilistic forecasting of electricity (net-)load. IEEE Transactions on Power Systems 39(2):4154–4163. de Vilmarest J, Goude Y (2021) State-space models win the IEEE DataPort competition on post-Covid day-ahead electricity load forecasting. Preprint arXiv:2110.00334 .Defferrard M, Bresson X, Vandergheynst P (2016) Convolutional neural networks on graphs with fast localized spectral filtering. Advances in Neural Information Processing Systems .Doumèche N, Goude Y, Rubrichi S, Allioux Y (2026) Human spatial dynamics for electricity demand forecasting. 
+
+IEEE Transactions on Power Systems 41(3):1882–1891. Du J, Zhang S, Wu G, Moura JM, Kar S (2017) Topology adaptive graph convolutional networks. Preprint arXiv:1710.10370 .Fan S, Hyndman RJ (2010) Forecast short-term electricity demand using semi-parametric additive model. 
+
+Australasian Universities Power Engineering Conference .
+
+16 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Fan S, Hyndman RJ (2012) Short-term load forecasting based on a semi-parametric additive model. IEEE Transactions on Power Systems 27(1):134–141. Fasiolo M, Wood SN, Zaffran M, Nedellec R, Goude Y (2021) Fast calibrated additive quantile regression. 
+
+Journal of the American Statistical Association 116(535):1402–1412. Ferdaus MM, Dam T, Sarkar MR, Uddin M, Anavatti SG (2026) Foundation models for clean energy forecasting: A comprehensive review. Renewable and Sustainable Energy Reviews 226:116452. Fey M, Lenssen JE (2019) Fast graph representation learning with PyTorch Geometric. International Conference on Learning Representations Workshop on Representation Learning on Graphs and Manifolds .Fey M, Sunil J, Nitta A, Puri R, Shah M, Stojanovič B, Bendias R, Barghi A, Kocijan V, Zhang Z (2025) PyG 2.0: Scalable learning on real world graphs. Temporal Graph Learning Workshop at the ACM SIGKDD Conference on Knowledge Discovery and Data Mining .Gaillard P, Stoltz G, Van Erven T (2014) A second-order bound with excess losses. Conference on Learning Theory .Gasteiger J, Bojchevski A, Günnemann S (2019) Predict then propagate: Graph neural networks meet person-alized PageRank. International Conference on Learning Representations .Gilbert C, Browell J, Stephen B (2023) Probabilistic load forecasting for the low voltage network: Forecast fusion and daily peaks. Sustainable Energy, Grids and Networks 34:100998. Gilmer J, Schoenholz SS, Riley PF, Vinyals O, Dahl GE (2017) Neural message passing for quantum chemistry. 
+
+International Conference on Machine Learning .Guo S, Lin Y, Feng N, Song C, Wan H (2019) Attention based spatial-temporal graph convolutional networks for traffic flow forecasting. AAAI Conference on Artificial Intelligence .Hamilton WL, Ying Z, Leskovec J (2017) Inductive representation learning on large graphs. Advances in Neural Information Processing Systems .Humbert P, Le Bars B, Oudre L, Kalogeratos A, Vayatis N (2021) Learning Laplacian matrix from graph signals with sparse spectral representation. Journal of Machine Learning Research 22(195):1–47. Jain S, Wallace BC (2019) Attention is not explanation. Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies .Jiang H, Dong Y, Dong Y, Wang J (2024) Power load forecasting based on spatial–temporal fusion graph convolution network. Technological Forecasting and Social Change 204:123435. Jiang J, Han C, Wang J (2023) BUAA_BIGSCity: Spatial-temporal graph neural network for wind power forecasting in Baidu KDD CUP 2022. Preprint arXiv:2302.11159 .Jiang P, Van Fan Y, Klemeš JJ (2021) Impacts of COVID-19 on energy demand and consumption: Challenges, lessons and emerging opportunities. Applied Energy 285:116441. Kingma DP, Ba J (2015) Adam: A method for stochastic optimization. International Conference on Learning Representations .Kipf TN, Welling M (2017) Semi-supervised classification with graph convolutional networks. International Conference on Learning Representations .Lakshminarayanan B, Pritzel A, Blundell C (2017) Simple and scalable predictive uncertainty estimation using deep ensembles. Advances in Neural Information Processing Systems .Marino DL, Amarasinghe K, Manic M (2016) Building energy load forecasting using deep neural networks. 
+
+Annual Conference of the IEEE Industrial Electronics Society .Massaoudi M, Abu-Rub H, Refaat SS, Chihi I, Oueslati FS (2021) Deep learning in smart grid technology: A review of recent advancements and future prospects. IEEE Access 9:54305–54325. Meyer L, Sole C, Xiang H, Li N, Franceschino L, Quera-Bofarull A, Scholl MP, Fainberg J, Négiar G (2026) 𝑡 0:A time-series foundation model for forecasting with context. arXiv:2609.24559. Mistral AI (2026) Timestral. https://huggingface.co/mistralai/Timestral-209M , model card, accessed October 2026. Mo S, Yao Z, Yang C, Wang H, Fan S, Liu R, Mo Y (2025) MRGNN: Multi-resolution graph neural network for electricity load forecasting. Energy Reports 13:4624–4634. 
+
+17 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Montero-Manso P, Hyndman RJ (2021) Principles and algorithms for forecasting groups of time series: Locality and globality. International Journal of Forecasting 37(4):1632–1653. Moran PA (1950) Notes on continuous stochastic phenomena. Biometrika 37(1/2):17–23. Obst D, de Vilmarest J, Goude Y (2021) Adaptive methods for short-term electricity load forecasting during Covid-19 lockdown in France. IEEE Transactions on Power Systems 36(5):4754–4763. Orji U, Güven Ç, Stowell D (2025) Enhanced load forecasting with GAT-LSTM: Leveraging grid and temporal features. Preprint arXiv:2502.08376 .Pierrot A, Goude Y (2011) Short-term electricity load forecasting with generalized additive models. Intelligent System Applications to Power Systems Conference .Shao Z, Zhang Z, Wang F, Wei W, Xu Y (2022) Spatial-temporal identity: A simple yet effective baseline for multivariate time series forecasting. ACM International Conference on Information and Knowledge Management .Shi H, Xu M, Li R (2018) Deep learning for household load forecasting—A novel pooling deep RNN. IEEE Transactions on Smart Grid 9(5):5271–5280. Shi Y, Huang Z, Feng S, Zhong H, Wang W, Sun Y (2021) Masked label prediction: Unified message passing model for semi-supervised classification. International Joint Conference on Artificial Intelligence .Sriramulu A, Fourrier N, Bergmeir C (2023) Adaptive dependency learning graph neural networks. Information Sciences 625:700–714. Thielmann AF, Kruse RM, Kneib T, Säfken B (2024) Neural additive models for location scale and shape: A framework for interpretable neural regression beyond the mean. International Conference on Artificial Intelligence and Statistics .Veličković P, Cucurull G, Casanova A, Romero A, Liò P, Bengio Y (2018) Graph attention networks. International Conference on Learning Representations .Williams S, Short M (2020) Electricity demand forecasting for decentralised energy management. Energy and Built Environment 1(2):178–186. Wu Z, Pan S, Long G, Jiang J, Chang X, Zhang C (2020) Connecting the dots: Multivariate time series forecasting with graph neural networks. ACM SIGKDD International Conference on Knowledge Discovery and Data Mining .Ying Z, Bourgeois D, You J, Zitnik M, Leskovec J (2019) GNNExplainer: Generating explanations for graph neural networks. Advances in Neural Information Processing Systems .Yu R, Gu C, Stiasny J, Wen Q, Dilov WS, Qi L, Cremer JL (2025) PriceFM: Foundation model for probabilistic electricity price forecasting. Preprint arXiv:2508.04875 .Zhou H, Zhang S, Peng J, Zhang S, Li J, Xiong H, Zhang W (2021) Informer: Beyond efficient transformer for long sequence time-series forecasting. AAAI Conference on Artificial Intelligence .Zhu J, Yan Y, Zhao L, Heimann M, Akoglu L, Koutra D (2020) Beyond homophily in graph neural networks: Current limitations and effective designs. Advances in Neural Information Processing Systems .Zhu L, Gao J, Zhu C, Deng F (2025) Short-term power load forecasting based on spatial-temporal dynamic graph and multi-scale Transformer. Journal of Computational Design and Engineering 12(2):92–111. 
+
+18 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+> 𝑉 𝓁
+> 𝐸 𝓁
+> 𝑈 𝓁
+> 𝑉 𝓁+1
+> 𝐸 𝓁+1
+> 𝑈 𝓁+1
+> 𝜙 𝑣
+> 𝜙 𝑒
+> 𝜙 𝑢
+> 𝜌 𝑉 𝓁 →𝐸 𝓁
+> 𝜌 𝐸 𝓁 →𝑉 𝓁
+> 𝜌 𝐸 𝓁 →𝑈 𝓁
+> Message passing layer
+
+Figure A.1. Example of a message-passing layer in a GNN. 𝑉 𝓁 , 𝐸 𝓁 , and 𝑈 𝓁 respectively refer to node, edge, and global level at layer 𝓁 . 𝜙 and 𝜌 are respectively update and propagation functions. 
+
+# A Message Passing Formalism 
+
+Message passing generalizes convolution to irregular domains (Gilmer et al. 2017). In the framework of Battaglia et al. (2018), a message-passing layer operates at three interconnected levels, node 𝑉 𝓁 , edge 
+
+𝐸 𝓁 , and global 𝑈 𝓁 , jointly updated through propagation and update functions, as Figure A.1 shows. The propagation operators 𝜌 define how information is aggregated across the graph, for instance from nodes to edges 𝜌 𝑉 𝓁 →𝐸 𝓁 , from edges to nodes 𝜌 𝐸 𝓁 →𝑉 𝓁 , or from both to the global representation 
+
+𝜌 𝑉 𝓁 →𝑈 𝓁 , 𝜌 𝐸 𝓁 →𝑈 𝓁 . The update functions Φ = (𝜙 𝑣 , 𝜙 𝑒 , 𝜙 𝑢 ) then transform these aggregated messages into new latent representations for nodes, edges, and the global graph state, respectively 𝑉 𝓁+1 =𝜙 𝑣 (𝑉 𝓁 , 𝜌 𝐸 𝓁 →𝑉 𝓁 , 𝑈 𝓁 ), 𝐸 𝓁+1 = 𝜙 𝑒 (𝐸 𝓁 , 𝜌 𝑉 𝓁 →𝐸 𝓁 , 𝑈 𝓁 ) and 𝑈 𝓁+1 = 𝜙 𝑢 (𝑈 𝓁 , 𝜌 𝑉 𝓁 →𝑈 𝓁 , 𝜌 𝐸 𝓁 →𝑈 𝓁 ). A classical example is GCN, where the propagation operator aggregates neighboring node features through the normalized adjacency matrix ̃ 𝐀 , and the update function is a linear transformation followed by a nonlinearity: 
+
+𝐡 (𝓁+1) 𝑣 = 𝜎 ( ∑ 
+
+> 𝑢∈ 𝑣 ∪{𝑣}
+
+̃𝐴 𝑢𝑣 𝐡 (𝓁) 𝑢 𝐖 (𝓁) 
+
+)= 𝜎(𝜌 𝐸 𝓁 →𝑉 𝓁 (𝐡 (𝓁) ) 𝐖 (𝓁) ) , 
+
+where 𝜌 𝐸 𝓁 →𝑉 𝓁 corresponds to the normalized neighborhood aggregation, and 𝜙 𝑣 (⋅) = 𝜎(⋅ 𝐖 (𝓁) ) defines the update function. In this work, we use node-level interactions only: edge and global states are not used, and each GNN layer updates node representations by aggregating from neighboring nodes. 
+
+# B Expert Aggregation Analysis 
+
+Synthetic datasets. To evaluate GNN forecasting under controlled spatial and temporal depen-dencies, we generate synthetic datasets in which the presence and strength of inter-node structure are known. These data do not provide a performance bound for the real datasets. They test whether a model uses the dependency inserted by the generator. We generate node-level temperature and load series that mimic real-world variability. Let 
+
+𝑇 gen  
+
+> 𝑗
+
+(𝑡) and 𝐿 gen  
+
+> 𝑗
+
+(𝑡) denote the generated temperature and load at node 𝑗 and time 𝑡 , with 𝑇 gen  
+
+> 𝑗
+
+(𝑡) = 𝑎𝑡 + 𝑏 𝑗 (cos 𝜔 1𝑡 + cos 𝜔 2𝑡) , where 𝑎 is a linear trend coefficient, 𝜔 1 and 𝜔 2 encode daily and yearly cycles, and 𝐛 = (𝑏 𝑗 )1≤𝑗≤𝑁 ∼  (̂𝝁,̂ 𝐂) with empirical mean ̂ 𝝁 and covariance ̂ 𝐂 estimated from observed temperatures. Temperatures are rescaled to match observed regional minima and maxima. Loads are then derived via a cubic spline mapping 𝐿 gen  
+
+> 𝑗
+
+(𝑡) =̃ 𝑓 𝑗 (𝑇 gen  
+
+> 𝑗
+
+)(𝑡) + 𝜀 𝑗 (𝑡) , with ̃ 𝑓 𝑗 fitted to the observed data and 𝜺(𝑡) ∼  (𝟎, 𝚺) drawn independently over time. Two covariance structures are 
+
+19 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+considered. The first, 𝚺 = 𝐃 𝜀 , is diagonal and leaves the regions independent. The second couples them through the spatial graph by a conditional autoregression: with ̃ 𝐖 𝜆 = 𝐃 −1/2 𝐖 𝜆 𝐃 −1/2 the symmetrically normalized adjacency and 𝐃 the degree matrix, 
+
+𝚺 = 𝐃 1/2 𝜀 𝐑 𝜌 𝐃 1/2 𝜀 , 𝐑 𝜌 ∝ (𝐈 − 𝜌̃ 𝐖 𝜆 )−1 , (B.1) where 𝐑 𝜌 is rescaled to unit diagonal so the marginal noise level of each region stays at 𝐃 𝜀 and only the correlations change. The scalar 𝜌 ∈ [0, 1) is the coupling coefficient: it sets how much of a node’s residual its neighbors account for, and 𝜌 = 0 is the independent case. 
+
+Single-step regression setup. This employs a direct regression approach, commonly adopted in electricity load forecasting when the emphasis is placed on exogenous explanatory factors. Electricity demand at each time step 𝑡 is forecast based solely on exogenous covariates observed at the same time. The model learns a mapping Φ𝜽 ∶ ( ,̃ 𝐗 𝑡 ) ↦̂ 𝐲 𝑡 , with ̃ 𝐗 𝑡 ∈ ℝ 𝑁 ×𝑑 representing normalized features for all 𝑁 nodes and 𝑑 covariates. The features include calendar indicators, weather-related variables, and regional characteristics, allowing the model to capture spatial dependencies encoded in the graph structure . It is an analysis tool, not an operational forecaster. The model parameters 
+
+𝜽 are optimized by minimizing the MSE between predicted and observed loads. Expert aggregation measures the complementarity of graph and non-graph experts, on condition that the measurement separates what the edges carry from the diversity any two model families produce on any data. The same protocol runs on two synthetic datasets. The generator above produces a temperature field per region and a load obtained by passing it through the region’s own spline. In the first dataset, the residual noise is independent across regions, so a node’s load depends on its own covariates alone. In the second, the residuals follow the conditional autoregression above carried by the spatial graph, at coupling 𝜌 = 0.9 , so residuals are correlated across neighbors but independent over time, and no expert observes its neighbors’ current residuals. In neither synthetic dataset does a neighborhood carry information an expert can use; the two differ only in whether residual errors cancel in the national sum. Crossing the 3 datasets with the 2 forecasting settings gives the 6 cells of Figure B.1 and Table B.1. We observe that 8 experts forecast the 12 nodes in every cell: 6 GNNs, a weight-shared feedforward network reading each node’s own covariates, and the operationally inspired additive model fitted per node and per half-hour. This analysis predates the benchmark of Table 2 and uses its own split and configurations. GCN, SAGE, GAT, and ChebConv use the configurations of an earlier tuning of this dataset: GCN on the spatial graph with one layer of 170 channels, SAGE on the correlation graph with two layers of 401 channels, GAT on GL3SR with three layers of 364 channels and two heads, and ChebConv on DistSplines with one layer of 249 channels and 𝐾 = 3 . GatedGraph and LEConv have no tuned entry there; they were taken from a separate screening of 48 operators that ranked them first and second by MAPE on the 2019 test year, with a feature set that also contains the 
+
+48 temperatures of the target slots. Their selection therefore used the year on which this analysis is scored, so their errors, weights, and withdrawal costs in this section are optimistic relative to the 6 other experts and are read descriptively. Both are fixed at two layers of 256 channels on the dynamic time warping graph, a width chosen on the validation months. All 8 read the meteorological variables of the additive model, the position in the year, the day type, and the period. The sequence-to-sequence cells add the 48 past loads of each node and commit a whole day at a time, whereas the single-step cells carry no lagged load and update the weights at every half-hour. Training covers January 2017 to June 2018 and validation the 6 months that follow, 1 seed per architecture. Take regions-fr in the single-step setting first. The additive model and the ChebConv network are level at the head of the individual experts, 1249 and 1254 MW, GCN follows at 1273 MW, GAT at 
+
+1298 MW, SAGE at 1308 MW, GatedGraph at 1314 MW, LEConv at 1363 MW, and the weight-shared     
+
+> 20 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.
+> Figure B.1. Weights ML-Poly plays over the test year 2019 . The two left columns are
+
+regions-fr and the synthetic dataset whose residual covariance follows the spatial graph (unobservable by the experts); the third has none, its residuals being independent across nodes. Single-step forecasting is above and sequence-to-sequence forecasting below. The 6 GNN experts are summed into one plum band, the feedforward network appearing in blue and the additive model in orange. The dashed line marks 0.75 ,the share the 6 hold among the 8 by count alone, so a band sitting on it reports an allocation that cannot separate its experts and not an accuracy the edges bought. The strip beneath each plot carries the departure from that share, plum where the mixture buys the GNN experts more than counting them would give and gray where it buys them less. 
+
+feedforward network trails at 1428 MW. ML-Poly reaches 970 MW, 279 MW below the best of its experts and 174 MW below the uniform average, so the aggregation gains more than anything separating the experts from one another. Withdrawing the 6 GNNs costs 132 MW, the additive model and the feedforward network alone stopping at 1102 MW; withdrawing the two non-graph experts costs 117 MW, the 6 GNNs alone stopping at 1088 MW. Each family is worth about two thirds of the 179 MW that separate the best and the worst individual expert. The weights place that contribution in the year: the GNN experts take the whole weight in June and 0.88 of it in April, hold above half from February to August, and fall to 0.21 in October and 0.32 in December. Each GNN keeps the adjacency selected for it during hyperparameter search, so the convolution and the graph construction move together here and this run ranks neither on its own. 
+
+> 21
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table B.1. National root mean squared error in MW over the test year, and what each family of experts is worth inside the mixture. The 4 cells above the rule have spatially correlated loads, the two below independent ones given their own covariates; ‘seq-to-seq’ abbreviates the sequence-to-sequence setting. The last two columns give the error ML-Poly loses when the 6 GNNs are withdrawn from the pool, and when the feedforward and the additive model are, in MW and as a share of the mixture’s own error. The datasets sit at different load levels, so the shares compare across rows where the MW values do not.                                                 
+
+> Dataset Setting Best expert Uniform ML-Poly Without the GNN experts Without the two others
+> regions-fr single-step 1249 1144 970 +132 (14% )+117 (12% )seq-to-seq 1047 893 844 +162 (19% )+90 (11% )Synthetic structured single-step 917 838 799 +79 (10% )+43 (5% )seq-to-seq 800 784 766 +34 (4% )+1 (0% )Synthetic independent single-step 658 656 624 +23 (4% )+24 (4% )seq-to-seq 604 576 574 +19 (3% )+4 (1% )
+
+The independent synthetic control answers the question the first cell leaves open. Where a node’s load is a function of its own temperature, the GNN experts are worth 4% and 3% of the mixture’s error, against 14% and 19% on regions-fr , so their share divides by 3.7 in the single-step setting and by 5.7 in the other. Adaptive weighting also has less to arbitrate: ML-Poly improves on the uniform average by 32 MW in the synthetic single-step cell and by 2 MW in the sequence-to-sequence one, where the same gaps on regions-fr are 174 and 49 MW. Adding the spatial covariance raises the GNN experts’ contribution in the single-step setting from 23 to 79 MW, or from 4% to 10% of the mixture’s error, and their mean weight rises from 0.48 to 
+
+0.76 . Since no expert observes its neighbors’ residuals, this rise reflects how residuals that no longer cancel in the national sum reweight the experts’ errors, not information read from the neighbors. The sequence-to-sequence cell behaves differently: the GNN experts hold 0.86 of the weight, yet their withdrawal costs only 34 MW ( 4% ), close to the 19 MW ( 3% ) of the independent control. The structured dataset thus separates a high weight assigned to accurate GNN architectures from their smaller marginal contribution. Between the two settings on real data, the balance tips. Adding the 48 past loads of each node raises the GNN share from 14% to 19% and lowers the other family’s from 12% to 11% , so the day-ahead task, which gives every node its own recent history, is where the GNN experts contribute most. The additive model loses its lead there, dropping to 1075 MW behind SAGE at 1047 MW: its per-half-hour form has no way to use a lag block that the networks read jointly. A reader who stops at the bands will conclude the opposite of what the withdrawals indicate, since the GNN experts hold 0.73 of the weight on the dataset without structure, more than the 0.61 
+
+they hold on regions-fr , while being worth 19 MW there against 132 MW. Weight mass is not contribution, and two mechanisms separate them. The first is counting. GNNs make up 6 of the 8 experts, so an allocation unable to tell them apart returns their count share ( 0.75 ), which the dashed line of Figure B.1 marks in every cell. That is the situation of the unstructured sequence-to-sequence cell: its 8 errors lie within 47 MW of one another and its mean weights run from 0.083 to 0.187 around the uniform 0.125 , so the band settles on the line and reports indifference. Where the errors do separate, the allocation leaves the line, falling to 0.48 in the unstructured single-step cell, whose experts spread over 100 MW. The second is that a GNN on a structureless dataset is not necessarily disadvantaged. Nothing forces it to use its neighborhood: the aggregation can drive that weight to zero, and the network then behaves as a per-node model reading its own covariates, which is exactly what this dataset favors. 
+
+22 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. GGraph 
+
+> ARA 3.59% BFC 3.98% BRE 3.40% CVL 3.96% GES 3.17% HDF 3.30% IDF 3.70% NOR 3.65% NAQ 3.39% OCC 4.75% PDL 3.11% PAC 3.23%
+> GAM
+> ARA 3.17% BFC 3.43% BRE 3.05% CVL 3.96% GES 2.78% HDF 3.03% IDF 2.83% NOR 2.83% NAQ 2.66% OCC 3.42% PDL 2.75% PAC 3.45%
+> ML-Poly, node by node
+> ARA 2.84% BFC 3.10% BRE 2.48% CVL 3.58% GES 2.40% HDF 2.38% IDF 2.41% NOR 2.34% NAQ 2.31% OCC 3.13% PDL 2.19% PAC 2.51%
+> 2.50 2.75 3.00 3.25 3.50 3.75 MAPE (%)
+
+Figure B.2. Mean absolute percentage error of each region’s own forecast over the test year, single-step setting. Left, GatedGraph, the most accurate of the 6 GNN experts region by region; center, the additive model; right, ML-Poly run region by region, each region carrying its own mixture and its own weights. The color scale is shared. Regions carry their official codes: ARA Auvergne-Rhône-Alpes, BFC Bourgogne-Franche-Comté, BRE Bretagne, CVL Centre-Val de Loire, GES Grand Est, HDF Hauts-de-France, IDF Île-de-France, NAQ Nouvelle-Aquitaine, NOR Normandie, OCC Occitanie, PAC Provence-Alpes-Côte d’Azur, PDL Pays de la Loire. 
+
+It forecasts well, and its weight follows from that accuracy; on that dataset the 4 best individual forecasters are GNNs. It cannot, however, supply information absent from its neighbors. Weights describe the fitted mixture, while the withdrawal columns of Table B.1 measure the contribution of the GNN family to that mixture. Removing entire experts does not isolate the contribution of their edges. The individual errors of that cell bear the second mechanism out: SAGE reaches 604 MW, GAT and GatedGraph 607 MW, ChebConv 608 MW, ahead of the feedforward network at 633 MW and the additive model at 651 MW. Everything above scores the national sum, where a region’s overshoot cancels another’s shortfall, and no expert optimizes that sum. The neural experts minimize a squared error taken node by node, each node standardized by its own training moments, so the 12 regions of regions-fr weigh equally in the objective whatever their load; the additive model is fitted region by region on its own scale. Keeping the regions apart at evaluation reads the forecasts on the criterion they were trained for, and it changes the ranking, as Figure B.2 shows. The two levels do not order the GNN experts alike. Nationally ChebConv leads them at 1254 MW, 
+
+5 MW behind the additive model, and GatedGraph trails it by 60 MW. Region by region the ranking reverses: GatedGraph reaches 3.60% against 4.17% for ChebConv, and the additive model keeps the lead at 3.11% , the 4 remaining networks lying between 4.36% and 4.47% , and the feedforward network at 4.55% . The networks’ regional errors cancel in the sum to an extent the additive model’s do not, so the national metric credits a network with an accuracy its regions do not show. Provence-Alpes-Côte d’Azur is the worst-served region for 4 of the 6 GNNs, 5.75 –5.86% , Bourgogne-Franche-Comté for ChebConv, Occitanie for GatedGraph, and Centre-Val de Loire for the additive model at 3.96% .Running ML-Poly inside each region, the bottom-up scheme of Table 3 applied to this pool, gives the best regional accuracy, 2.64% on average and 3.58% on its worst region, below every expert in every region. Summing its 12 forecasts yields 971 MW nationally against 970 MW for the mixture built on the national series directly, so weighting region by region costs nothing on the sum and saves half a point of relative error inside it. The disagreement between the two levels belongs to the single-step setting. In the sequence-to-sequence cell, the two rankings agree: the additive model leads region by region at 2.53% , SAGE follows at 2.62% as it does nationally, and the 6 remaining experts lie between 2.77% and 2.91% . The node-level mixture reaches 2.15% there and 844 MW nationally, again level with the national-level 
+
+23 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.        
+
+> 𝑖 1𝑖 2. . . 𝑖 𝑇
+> 𝑓 1𝑓 2. . . 𝑓 𝑇
+> 𝑡
+> 𝑤=48 ℎ=48
+
+Figure C.1. Sequence-to-sequence evaluation protocol ( 48 half-hourly steps, stride ℎ = 48 ). Input windows 𝑖 𝑘 (blue) each feed a forecast window 𝑓 𝑘 (orange), and consecutive forecast windows are contiguous, so each prediction spans 𝑤 = 48 lags into ℎ = 48 future steps. Training, validation and testing all use this stride, so every forecast origin falls on a day boundary and output 𝑘 always denotes slot 𝑘 of the day. A stride of one would place the origin at an arbitrary half-hour and force a single 
+
+48 -output head to represent 48 phase-shifted mappings, which is a different learning problem and a different test set; every model of the benchmark, graph or not, is trained and scored under the stride of this figure; Section 6.4 states its own protocol.           
+
+> regions-fr
+> Train Val Test
+> Jan ’15 Jan ’18 Jan ’19 Jan ’20
+> weave-uk
+> Train Val Test
+> Feb 14 Feb 23 Feb 25 Feb 28 (end)
+
+Figure C.2. Temporal splits for training, validation, and testing on regions-fr and weave-uk .
+
+mixture. Centre-Val de Loire is the worst-served region for all 9 forecasters in that cell, the region whose load is smallest and whose relative error the national sum weights least. 
+
+# C Forecasting Protocol, Feature Sets, and Training Volume 
+
+The role of the 48 load lags is measured by removing them. The comparison covers 4 feature sets on regions-fr (Table C.1), each scored by the lowest validation error reached over 18 GNN configurations ( 6 convolutions at three widths), on 1 seed as a screening pass. Adding load lags to calendar and weather reduces the best validation RMSE by 276 MW; adding target-slot temperatures alone reduces it by 8 MW. The spread across 18 configurations falls from 
+
+586 to 120 MW with load lags, and to 119 MW with both additions. The homogeneity of the GNN architectures observed in Table 2 is consistent with a dependence on the feature set: the lags narrow the spread between configurations by a factor of 5. Table C.2 gives the values shown in the left plot of Figure 2, and Figure C.3 reads them as increments over the per-node MLP. 
+
+# D Setup of the Larger-Dataset Comparison 
+
+This section details the setup of the comparison of Section 6.4 on 319 electricity clients and 500 
+
+weave-uk feeders. All models use hidden width 64 and the same local inputs (plus the neighbor mean where stated), horizon, and split within a dataset and window. The MLPs have 1 hidden layer, whereas the GNNs use a linear encoder, 2 residual graph-convolution blocks, and a linear readout. The convolution, SAGE or ChebConv with 𝐾 = 3 , is selected per cell on validation: ChebConv on the 60 -day electricity and 30 -hour weave-uk windows, SAGE on the other two. Thus width is common, but depth, parameter count, and aggregation differ. The per-node MLP holds 265,727 
+
+parameters on electricity and 3,416,000 on weave-uk , and 490,303 and 5,240,000 once it reads the 
+
+24 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table C.1. Validation RMSE in MW on regions-fr , by feature set. The middle column is the best of 18 GNN configurations ( 6 convolutions at three widths), and the right column is the gap between the best and the worst of those. It uses 1 seed, so the column reads as a screening pass and not as a ranking.             
+
+> Features Best Best to worst Calendar and weather 1141 586 +temperatures of the target slots 1133 367 +48 load lags 𝟖𝟔𝟓 120
+> Both blocks 𝟕𝟔𝟖 119
+
+Table C.2. National RMSE (MW) on regions-fr as the training set contracts, SAGE convolution, days drawn at random, 3 seeds.                                                  
+
+> Training days Per-node MLP All-node MLP Identity-graph GNN SAGE GNN
+> 54 (5% )1948 (69 )2432 (269 )2038 (103 )2080 (112 )
+> 109 (10% )1412 (28 )1687 (105 )1763 (101 )1738 (55 )
+> 272 (25% )1090 (41 )1179 (25 )1292 (17 )1206 (41 )
+> 545 (50% )958 (5)1014 (29 )1113 (31 )983 (27 )
+> 1090 (100% )876 (3)921 (3)918 (7)891 (19 )
+
+neighbor mean; the shared MLP holds 833 and 6,832 . The GNN holds 17,729 with SAGE or 25,921 
+
+with ChebConv on electricity , and 23,728 or 31,920 on weave-uk , as does the empty-graph GNN. Finally, the empty-graph GNN ( 𝐀 = 𝟎 ) runs the same backbone and convolution, so it propagates nothing; it separates the change of backbone from the edges. On electricity , the target is the next hour, read from lags 1, 2, 3, 24 , 25 , 48 , and 168 and a cyclical encoding of hour and weekday, over fitting windows of 11 and 60 days followed by 2 validation days and 4 test days, which end the record (July 2019 ); one-step hourly targets do not overlap across these boundaries. On weave-uk , the target comprises the next 48 half-hours, read from 48 load lags, the cyclical instant, and the weekday. Unlike the benchmark, origins slide by one half-hour. The two pre-test windows contain 481 and 60 origins, approximately 10 days and 30 hours; the last fifth is reserved for validation, leaving 385 and 48 fitting origins. The test contains 145 origins spanning 3
+
+days, with overlapping 48 -step targets. Training and test origins are built separately from 14 –24 and 
+
+25 –28 February 2024 , respectively, so no fitting or validation target falls in the test period; within the training record, the targets of the last 47 fitting origins overlap those of the first validation origins, which affects only validation-based choices (epoch, convolution, and ridge penalties); test targets remain separate. 
+
+electricity graphs retain each node’s 5 strongest training correlations and both edge directions. On weave-uk , the graph is taken from a cache built from the full training series, restricted to the retained nodes and reduced to at most 5 neighbors per node before symmetrization. This cached graph is used for both window lengths, so the 30 -hour condition restricts model-fitting data but not graph-estimation data. The per-node + neighbors model receives the mean features of the same in-neighbors. electricity is recorded hourly and summed over clients, corresponding to an average aggregate load of about 680 MW over the test window; weave-uk is summed over feeders. The system scores let errors of opposite sign cancel across clients or feeders. We therefore also report a per-node normalized RMSE (nRMSE). Targets are standardized using training means and stds, separately for each node and, on weave-uk , each forecast horizon. For each node, we take the root mean squared standardized error over test origins and horizons, then average over nodes. An nRMSE of 1 denotes an error on the scale of the training stds; forecasting the training mean need 
+
+25 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 54 109 272 545 1090 
+
+> training days
+> 900 1200 1600 2400
+> national RMSE (MW)
+> the four node-wise models
+> Per-node MLP Identity-graph GNN SAGE GNN All-node MLP
+> 54 5% 109 10% 272 25% 545 50% 1090 100%
+> training days
+> 0100 200 300 400 500
+> cost over the per-node reference (MW)
+> 484 45
+> what each restriction costs
+> access restriction, from All-node MLP edges, from SAGE GNN weight sharing, from Identity-graph GNN
+
+Figure C.3. Table C.2 read against the training window, on a logarithmic day axis. Left: the national error of the 4 node-wise models, the per-node MLP leading at every volume. Right: the same table as increments over that reference model, so a curve is the price of one restriction and a higher value is a costlier one. The access restriction falls from 484 to 45 MW as the window opens and the edge cost from 132 to 15 MW; weight sharing costs 42 –351 MW with no monotone trend. 
+
+not achieve 1 on a test period with different moments. We take nRMSE as the primary score of the decomposition as it weights every node equally, whereas system scores weight nodes by their load and reward errors that cancel in the sum. Table 4 reports both, and on weave-uk at 30 hours they disagree: by system RMSE the per-node MLP with the neighbor mean leads and the GNN trails the shared MLP. 
+
+# E Node-Count Sweep 
+
+weave-uk can be thinned to examine how sharing and neighborhood access vary with node count. We draw subsets of 10 , 40 , 160 , and 500 feeders and build the same 5-nearest graph inside each draw (Table E.1). SAGE remains the reference convolution; ChebConv is included as a control for the choice of convolution. On the 10 -day window, sharing improves nRMSE at every size, by 0.061 at 10 
+
+feeders and 0.094 at 500 . Conditional on sharing, SAGE improves on the shared MLP by 0.004 at 10 
+
+nodes, 0.001 at 40 , 0.024 at 160 , and 0.027 at 500 . The edge gain is therefore small in the two smaller sampled subsets and larger in the two larger ones. On the 30 -hour window, sharing improves nRMSE by 0.094 at 10 feeders and about 0.14 from 40 
+
+onwards. The conditional SAGE gain does not order with node count on that window at all: 0.040 
+
+at 10 feeders, 0.003 at 40 , 0.037 at 160 , and 0.031 at 500 . The 10 -day window is therefore the only one of the two in which the edge gain grows with node count, and even there the sweep does not locate a threshold, several of its differences being comparable with the reported dispersion. The two windows normalize by different training moments, so increments compare within a window and only their sign compares across windows. The all-node MLP, which 12 regions could only place at a single size, degrades at 500 feeders on the 30 -hour window. Over 10 days, it stays ahead of the per-node reference model at every size, by 
+
+0.017 –0.062 , without ever reaching the shared MLP. Over 30 hours, its advantage holds near 0.13 up to 160 feeders, then turns into a loss of 0.010 at 500 , where its spread across draws ( 0.058 ) exceeds that of every other model. Using every series at once stops reducing the error once the dataset is large and each record short, while reading the retained neighbors still improves performance. 
+
+26 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table E.1. weave-uk as the dataset is thinned, three draws of nodes and 1 seed each, the same 
+
+5-nearest graph rebuilt inside every draw. The per-node error is computed after standardizing targets separately by node and horizon using training moments, then taking the root mean squared error over test origins and horizons and averaging over nodes. A value of 1 denotes an error on the training-standard-deviation scale, not a test-set mean-forecast baseline. This score and MAPE compare across node counts, whereas a raw RMSE grows with the number of feeders summed and is given at 500 of them in Table 4, whose fixed width of 64 this table shares. The stds over the draws in parentheses; at 500 feeders the draw is the whole dataset, so the three repetitions of that row vary the fit alone. Gray shades mark the top three models of each row, darkest being the best. The GNN improves on the per-node reference model at every sampled size. Its gain over the shared MLP grows with node count on the 10 -day window and does not order with node count on the 30 -hour one; the limited repetitions do not identify a threshold on either.                                                                                                                                                                                                        
+
+> Window Nodes MLP GNN Per-node Shared All-node SAGE ChebConv
+> Per-node error, nRMSE
+> 30 h10 1.0790 (0.0194 )0.9846 (0.0578 )0.9333 (0.0135 )0.9444 (0.0170 )0.9632 (0.0049 )
+> 30 h40 1.0216 (0.0161 )0.8746 (0.0298 )0.8952 (0.0100 )0.8719 (0.0405 )0.8637 (0.0304 )
+> 30 h160 1.0733 (0.0190 )0.9315 (0.0302 )0.9402 (0.0244 )0.8949 (0.0256 )0.8994 (0.0164 )
+> 30 h500 1.0509 (0.0013 )0.9074 (0.0103 )1.0609 (0.0583 )0.8760 (0.0015 )0.8808 (0.0047 )
+> 10 d10 0.9005 (0.0285 )0.8400 (0.0479 )0.8481 (0.0281 )0.8362 (0.0483 )0.8450 (0.0520 )
+> 10 d40 0.8877 (0.0422 )0.8189 (0.0605 )0.8412 (0.0516 )0.8178 (0.0652 )0.8216 (0.0645 )
+> 10 d160 0.9152 (0.0130 )0.8295 (0.0116 )0.8535 (0.0192 )0.8053 (0.0064 )0.8111 (0.0066 )
+> 10 d500 0.8956 (0.0004 )0.8013 (0.0086 )0.8787 (0.0648 )0.7745 (0.0056 )0.7862 (0.0103 )
+> MAPE (%)
+> 30 h10 12.05 (0.93 )12.96 (2.40 )11.21 (0.21 )11.94 (0.26 )11.88 (0.45 )
+> 30 h40 12.12 (1.11 )10.81 (0.72 )10.77 (0.78 )11.27 (1.18 )10.70 (0.90 )
+> 30 h160 10.09 (0.57 )9.45 (0.97 )9.55 (0.14 )9.19 (0.45 )9.04 (0.25 )
+> 30 h500 9.73 (0.14 )9.02 (0.31 )12.45 (2.75 )9.26 (0.21 )9.17 (0.20 )
+> 10 d10 11.40 (0.26 )10.07 (0.76 )11.35 (0.22 )10.09 (0.61 )10.27 (0.30 )
+> 10 d40 9.52 (0.96 )8.81 (1.03 )10.45 (0.92 )9.01 (1.58 )9.26 (1.37 )
+> 10 d160 9.88 (0.44 )8.52 (0.41 )10.29 (0.91 )7.90 (0.37 )7.97 (0.20 )
+> 10 d500 9.60 (0.02 )7.84 (0.15 )10.77 (1.01 )6.61 (0.58 )7.52 (0.60 )
+
+# F Further Controls on the Decomposition 
+
+The main comparison fixes hidden width at 64 , while depth and parameterization differ across model classes. The following check examines sensitivity to width; it does not remove those architectural differences. Repeating the 4 cells at widths 32 and 128 leaves every weave-uk increment with its sign at all three widths, and the totals within 0.013 of one another, while the share the non-shared neighborhood recovers rises with capacity, from 27% to 31% at 30 hours and from 12% to 19% at 10 
+
+days. A larger model extracts slightly more from the same neighbors. On the electricity clients, the 11 -day cell is equally stable, its non-shared neighborhood costing between −0.0156 and −0.0171 
+
+across the three widths, while the 60 -day cell changes the sign of both its sharing arrow and its total from one width to the next. The shared MLP reads the lag block as a flat vector, whereas a recurrent model would read it as a sequence, and no recurrent baseline appears elsewhere in this paper. A shared GRU over the lags, joined to the calendar features at its final state and emitting the targets of the cell, enters the same protocol at the same width. It reaches 0.3322 and 0.2816 on the electricity clients at 11 and 60 
+
+days and 0.9099 and 0.8068 on the feeders at 30 hours and 10 days, so it trails the shared MLP in all 4
+
+cells. Only on the 11 -day electricity window does that margin ( 0.0518 ) exceed its own dispersion 
+
+27 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+across seeds ( 0.0035 ); in the other three the two models are level within that spread, and the GNN stays ahead of both everywhere. The tested GRU provides no clear improvement over the shared MLP under this protocol; this does not establish that recurrent modeling is generally unhelpful. The recurrence is also the least stable model in the comparison: its spread on the 60 -day electricity 
+
+window ( 0.0095 ) is 4 times the per-node-to-GNN gap of that cell. The GNN of the decomposition receives a fixed graph. A model that learns its own adjacency may use the neighborhood differently. MTGNN (Wu et al. 2020) enters the same 4 cells under the same datasets, splits, seeds, and optimizer, fitted twice against itself: once with its graph learner active and once with the message passing switched off, so that the pair differs in the learned graph and in nothing else. Its capacity is cut from the published defaults until the parameter count sits below the per-node reference model of the same cell. The learned graph is worth +0.0127 on the feeders at 
+
+30 hours, +0.0072 at 10 days, +0.0068 on the electricity clients at 11 days and −0.0059 at 60 . The 
+
+60 -day electricity estimate is the largest relative to its seed dispersion ( −0.0059 , paired std 0.0036 ,
+
+3 seeds), and it is a degradation. The 4 estimates average +0.0052 with a std of 0.0079 ; these are descriptive summaries, since windows within a dataset are not independent replications. Against the models of Table 4 the learned-adjacency network reaches the GNN in no cell: 0.8857 against 
+
+0.8808 at 30 hours, 0.7962 against 0.7745 at 10 days, and on the electricity clients it trails the shared MLP as well. This MTGNN comparison provides no clear improvement over the fixed-GNNs under the tested protocol. The all-node MLP provides a further comparison with unrestricted access to all series. It also changes the parameterization: a common hidden layer feeds the outputs for all nodes, whereas the per-node MLP has a separate hidden layer for each node. On electricity , the per-node model improves nRMSE by 0.1497 at 11 days and 0.1560 at 60 relative to the all-node MLP. On weave-uk ,it improves nRMSE by 0.0100 at 30 hours but loses 0.0169 at 10 days. Thus unrestricted access is not consistently beneficial, and these comparisons do not isolate information access from the way that information is represented. 
+
+Homophily and what remains to predict. In graph learning, homophily is the tendency of adjacent nodes to carry similar features or targets. Neighbor aggregation is naturally suited to such graphs, whereas low homophily can make conventional message passing ineffective (Zhu et al. 2020). For the continuous load target 𝐱 𝑡 , similarity over the graph can be measured by Moran’s 𝐼 (Moran 1950): 
+
+𝐼 (𝐱 𝑡 ) = 𝑁 𝑆 0
+
+∑𝑖,𝑗 𝑊 𝑖𝑗 (𝑥 𝑖,𝑡 − 𝑥 𝑡 )(𝑥 𝑗,𝑡 − 𝑥 𝑡 )∑𝑖 (𝑥 𝑖,𝑡 − 𝑥 𝑡 )2 . (F.1) Here, 𝑊 𝑖𝑗 is the adjacency weight and 𝑆 0 = ∑ 𝑖,𝑗 𝑊 𝑖𝑗 . We compute 𝐼 at every evaluation time and report its temporal mean. A positive 𝐼 value suggests that adjacent nodes tend to lie on the same side of the cross-sectional mean; a value near the random-label baseline (approx. zero for these node counts) suggests that adjacency does not organize the values. The target is homophilous by this measure: mean Moran’s 𝐼 reaches +0.555 on electricity and 
+
++0.192 on weave-uk . The same conclusion appears without a graph statistic: the mean temporal correlation of pairs joined by an edge is 0.870 , against 0.529 for arbitrary pairs, on electricity ,and 0.386 , against 0.134 , on weave-uk . Target homophily alone does not imply that neighbors improve a forecast, because two loads can share seasonal variation already visible in each node’s own history. To test what remains after that history is used, we fit one ridge model per node on its own features and apply Moran’s 𝐼 to its residuals. The values fall to +0.079 and +0.063 . Adjacent loads are therefore similar, while their unexplained errors are aligned only weakly in magnitude (Moran’s 𝐼 ≤ 0.08 ) though far from random under the residual-energy test ( 𝑧 ≥ 10 , Table F.1): the neighbor mostly repeats information already supplied by the node’s own past. 
+
+> 28
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table F.1. Paired degree-preserving rewiring control, averaged over 3 seeds, against the true graph stored as a simple graph. Forecast columns report rewired minus true performance, so positive values are degradations; the last forecast column gives the edge increment at constant backbone on that simple graph. Structural columns show how the residual-alignment score and two-hop neighborhood size change when only the edge identities are randomized.                                                 
+
+> Dataset and window Forecast change: rewired −true Edge gain Graph diagnostic: true →rewired RMSE MAPE points nRMSE nRMSE 𝑧 residual Two-hop nodes
+> electricity ,11 d+2.82 MW +0.31 +0.0046 +0.0033 23.3 → 1.5 39.5 → 72.8
+> electricity ,60 d−3.29 MW −0.35 −0.0082 +0.0002 21.0 → 1.9 43.7 → 76.3
+> weave-uk ,30 h−33.6 kWh −0.40 +0.0036 +0.0069 13.1 → 1.6 135.1 → 144.0
+> weave-uk ,10 d+24.3 kWh +1.21 +0.0178 +0.0191 10.3 → 0.7 135.1 → 144.0
+
+A graph of the same degrees, joining arbitrary pairs. The edge increments of Section 6.4 measure the value of receiving the 5 neighbors each node selects (about 10 after symmetrization); they do not determine whether the identities of those series matter. We isolate edge identity by replacing the true graph  with a graph ′ obtained by degree-preserving double edge swaps. Two edges (𝑎, 𝑏) and (𝑐, 𝑑) are replaced by (𝑎, 𝑑) and (𝑐, 𝑏) whenever the result remains simple, and this operation is repeated 10| | times. The true graph stores mutual nearest neighbors twice ( 18% of directed entries on electricity , 6% on weave-uk ), whereas the rewired graph is simple, so the comparison is made against the true graph stored as a simple graph; the vertex set, edge count, degree sequence, model, features, targets, splits, initialization, and training budget then remain unchanged. Only the assignment of neighbors changes: the retained neighbors of a node are replaced by as many nodes, constrained by the same degree sequence. Before comparing forecasts, we check that this rewiring has removed the residual alignment described above. Let 𝐫 𝑡 ∈ ℝ 𝑁 be the observed residual vector of the per-node ridge and 𝐋  the normalized Laplacian of the graph  being checked, either the true graph  or its rewired counterpart 
+
+′. Define its residual energy by 
+
+𝑠  (𝐫) = ∑𝑡 𝐫 ⊤𝑡 𝐋  𝐫 𝑡 
+
+∑𝑡 𝐫 ⊤𝑡 𝐫 𝑡 
+
+. (F.2) This quantity is small when residuals connected by an edge of  are similar. To calibrate it, let Π be the uniform distribution over permutations of the node labels and let 𝐫 𝜋 denote the same residual series reassigned to nodes by 𝜋 ∼ Π . The graph  remains fixed during these permutations. With 
+
+𝜇  = 𝔼 𝜋∈Π [𝑠  (𝐫 𝜋 )] and 𝜎  = sd 𝜋∈Π (𝑠  (𝐫 𝜋 )) , the standardized residual-alignment score is 
+
+𝑧  = 𝜇  − 𝑠  (𝐫) 𝜎 
+
+. (F.3) A large positive 𝑧  suggests that the observed residual assignment is smoother along the fixed graph 
+
+ than random assignments; 𝑧  near zero suggests that its edges do not align with the residuals beyond chance. We compute this score separately on  and on ′. The permutations serve only to define the reference distribution and cannot change any topological quantity. The two-hop count instead compares the topologies of  and ′ themselves, which is why it changes after rewiring even though it would remain constant under every residual permutation. The diagnostics confirm that the control changes more than the names of the endpoints. Rewiring drives 𝑧 from 10.3 –23.3 on the true graphs to 0.7 –1.9 , close to the random-label reference. At the same time, the two-hop neighborhood grows on electricity (from about 40 to 73 nodes), where the random edges act as shortcuts, and barely on weave-uk (135 to 144 nodes). The rewired graph retains the degree of every node but largely removes the preference for joining residual series that move together. 
+
+29 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Rewiring costs +0.0044 of per-node error on average. The 12 paired runs comprise three fits in each of 4 dataset-window conditions: +0.0046 and −0.0082 on electricity at 11 and 60 days, 
+
++0.0036 and +0.0178 on weave-uk at 30 hours and 10 days. The 4 cell means have std 0.0106 .Windows within a dataset use overlapping data, so these 4 values are descriptive comparisons, not independent replications for an inferential test. The MAPE points the same way on average ( +0.19 
+
+of a point), its 4 cell values running from −0.40 to +1.21 . The system RMSE cannot be pooled at all, the two datasets carrying different units. The sign turns on the metric as much as on the dataset: on weave-uk at 30 hours rewiring improves both system scores and degrades the per-node one. Next to the edge increment at constant backbone on the same simple graph, rewiring costs 52% on 
+
+weave-uk at 30 hours and 93% at 10 days, exceeds the whole increment on electricity at 11 days, and at 60 days the rewired graph does better than the true one. On the shared path, the identity of the neighbors therefore matters in some cells, and the control does not reduce the edge increment to aggregation alone. The same substitution applies to the non-shared path, comparing true and rewired neighbors at the same parameter count (Section 6.4). Giving the per-node model the rewired neighbor mean reproduces 98% and 71% of the gain obtained with the true mean, on the simple graph, on weave-uk :
+
++0.0505 against +0.0515 at 30 hours and +0.0140 against +0.0197 at 10 days. On electricity , the corresponding increments are −0.0023 against +0.0026 at 60 days and −0.0147 against −0.0177 at 11 
+
+days. The advantage of the true graph over the rewired graph ranges from −0.0030 to +0.0057 across these 4 conditions. On the 11 -day electricity window, both true and rewired neighbors worsen the forecast. This is consistent with a cost from the enlarged input or estimation problem, but does not identify parameter count as the sole cause. On weave-uk , most of the improvement survives rewiring; the true neighbor identities account for only 2% and 29% of the original non-shared gains in this control. 
+
+Stronger node-specific references and seed-level intervals. The per-node MLP of Table 4 carries thousands of weights per node for a few dozen training origins. Table F.2 sets it beside references that cannot overfit in the same way, on the same cells, splits, inputs, and score: a ridge regression per node, its penalty chosen node by node on the validation window, a ridge shared by all nodes, and persistence at the same slot of the previous day. The per-node ridge beats the per-node MLP in 3 of the 4 cells, and on weave-uk at 30 hours the per-node MLP does worse than persistence. Against the stronger of the two node-specific references, the shared MLP still recovers 
+
+79% of the gap to the GNN on electricity at 11 days (July window; Table F.4 shows how this share varies across windows), and 63% and 71% on weave-uk at 30 hours and 10 days; at 60 days on 
+
+electricity the total gap does not differ from zero. That step also changes the model class. Within the linear class, sharing recovers 84% and 41% of the gap on weave-uk and degrades the per-node ridge on electricity , so the electricity share comes from the nonlinear model more than from sharing. The intervals of Section 6.4 resample nodes after averaging, within each node, the separately scored errors of the 3 seeds of each model, so they ignore seed variability. Resampling the seeds of each model before the nodes widens them. The edge increment at constant backbone keeps a positive interval on weave-uk , [+0.0029, +0.0146] at 30 hours and [+0.0119, +0.0277] at 10 days, and includes zero on electricity , [−0.0013, +0.0111] at 11 days and [−0.0023, +0.0109] at 60 days. On weave-uk , every other increment keeps its sign except the backbone change at 10 days; on 
+
+electricity every edge-related increment includes zero except the degradation the neighbor mean causes at 11 days. Re-estimating the graph inside the 30 -hour weave-uk window, from its training origins alone, gives the GNN an nRMSE of 0.8722 against 0.8808 with the graph of the longer record, over the same 
+
+> 30
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table F.2. Per-node error (nRMSE) of the decomposition’s models beside stronger node-specific references, on the cells of Table 4. Ridge regressions are fitted in closed form on the same standardized inputs; the per-node ridge selects its penalty node by node on the validation window, the shared ridge on the pooled validation error. Persistence repeats the same slot of the previous day. The last two rows give the share of the gap between the stronger node-specific reference and the GNN that the shared MLP and the shared ridge recover.                                          
+
+> electricity weave-uk
+> Model 11 d60 d30 h10 dPersistence 0.5573 0.5768 0.9776 0.9600
+> Per-node MLP 0.3030 𝟎.𝟐𝟕𝟕𝟔 1.0509 0.8956
+> Per-node ridge 𝟎.𝟐𝟗𝟎𝟗 0.2839 𝟎.𝟗𝟓𝟏𝟗 𝟎.𝟖𝟔𝟔𝟐
+> Shared ridge 0.2980 0.2942 0.8922 0.8286
+> Shared MLP 0.2804 0.2770 0.9074 0.8013
+> GNN 0.2775 0.2752 0.8808 0.7745
+> Share recovered by the shared MLP 79% –63% 71%
+> Share recovered by the shared ridge < 0 –84% 41%
+
+Table F.3. Per-node error (nRMSE) of the MLP family crossed on sharing and neighbor access, beside the GNN, on the cells of Table 4; 3 seeds, same inputs, graph, width, and training routine. The neighbor mean is that of the per-node MLP with neighbors.                                  
+
+> electricity weave-uk
+> Model 11 d60 d30 h10 dPer-node MLP 0.3030 0.2776 1.0509 0.8956
+> Per-node MLP +neighbors 0.3201 0.2752 0.9995 0.8762
+> Shared MLP 0.2804 0.2770 0.9074 0.8013
+> Shared MLP +neighbors 0.2933 0.2886 0.8941 0.7707
+> GNN 0.2775 0.2752 0.8808 0.7745
+
+3 seeds and with mutual pairs stored twice as in the main table ( 0.8735 with each edge stored once), and the per-node MLP with the neighbor mean 0.9980 against 0.9995 . The empty-graph GNN reads no graph, so the edge increment at constant backbone rises from +0.0086 to +0.0172 : the graph of the longer record, if anything, understates the edge gain at 30 hours. The rewiring control of Table F.1 draws one rewired graph per training seed, so the draw and the initialization are confounded. At 30 hours on weave-uk , we drew 10 independent rewirings of the graph with each edge stored once and crossed each with the 3 training seeds. The true graph reaches an nRMSE of 0.8825 , below every rewired graph, which range from 0.8862 to 0.8954 with a mean of 0.8905 ; on average rewiring removes 116% of the edge gain at constant backbone, 53 –188% 
+
+depending on the draw, and 7 of the 10 rewired graphs do worse than the empty-graph GNN. On the non-shared path, the same rewirings reproduce 96 –99% of the gain the neighbor mean brings to the per-node MLP, so that gain does not depend on which neighbors are averaged. The shared MLP of Table 4 reads no neighbor. Giving it the neighbor mean completes a factorial design within the MLP family (Table F.3). On weave-uk , sharing improves the per-node error in both orders, by +0.1436 without neighbors and +0.1054 with them at 30 hours, and by +0.0943 and 
+
++0.1054 at 10 days, all with seed-and-node intervals clear of zero. The shared MLP with the neighbor mean reaches 0.8941 and 0.7707 , against 0.8808 and 0.7745 for the GNN; the differences, +0.0133 [−0.0070, +0.0302] and −0.0038 [−0.0101, +0.0016] , include zero. On electricity , the neighbor mean degrades the shared MLP, by 0.0129 and 0.0116 , as it degrades the per-node one at 11 days. The 11 -day electricity cell ends with the record. Repeating it on 4 disjoint windows ending 
+
+31 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.    
+
+> Table F.4. Increments of per-node error on the 11 -day
+
+electricity cell over 5 disjoint windows, 3                               
+
+> seeds; seed-and-node 95% intervals in brackets. The first row is the window of Table 4.
+> Window end Total gap Sharing (share) Neighbors, unshared Edges, same backbone Jul 2019 +0.026 +0.023 (89% )−0.017 +0.005 [−0.001, +0.011]
+> Jun 2019 +0.017 +0.014 (80% )−0.013 −0.001 [−0.005, +0.002]
+> May 2019 +0.046 −0.023 (−50% )−0.011 +0.004 [+0.000, +0.007]
+> Apr 2019 +0.028 +0.031 (111% )−0.012 +0.001 [−0.004, +0.006]
+> Mar 2019 +0.017 +0.004 (23% )−0.022 −0.001 [−0.005, +0.002]
+
+30 , 60 , 90 , and 120 days earlier (Table F.4) leaves two results unchanged and moves a third. The neighbor mean degrades the per-node model in all 5 windows, by 0.0107 –0.0215 , with intervals below zero, and the edge increment at constant backbone stays between −0.0014 and +0.0051 . The share of the per-node-to-GNN gap carried by sharing ranges from −50% to 111% : in the window ending in May 2019 the shared MLP does worse than the per-node MLP while the GNN does better, so the advantage of the GNN there comes primarily from its backbone. On the same CPU, fitting the GNN of a cell takes 42 –365 seconds per seed on average, against 
+
+2–14 for the shared MLP, so the GNN takes 12 –35 times longer to train than the shared MLP. 
+
+# G Descriptive Analysis of Learned Representations 
+
+The main text compares the graph with its per-node reference model and decomposes the observed gaps. This block describes what the fitted GNNs encode. It does not supply further evidence for the graph’s predictive contribution. In the single-step regression framework, we inspect localized graph explanations; in the sequence-to-sequence setting, we compare latent representations and analyze the attention mechanisms emerging from temporal and spatial dependencies. Beyond forecasting accuracy, a trained model can be inspected with interpretability tools to probe which spatial and feature-level factors it relies on. We treat these tools as a complementary analysis and read their output with caution, since post-hoc explanations remain indicative (Jain and Wallace 2019). 
+
+GNNExplainer. GNNExplainer (Ying et al. 2019) identifies the subgraphs and node features that influence a model’s decision the most. The method optimizes the mutual information between the forecast and a compact explanatory subgraph, distinguishing relevant from irrelevant connections. In practice, this produces a mask over the adjacency matrix and feature space, which reads as the regional links and the covariates used by the prediction. For electricity demand, GNNExplainer indicates which of the links encoded in the input graph a forecast relies on, for instance between climatic zones with similar load behaviors; it cannot reveal a relation that the graph does not contain. 
+
+Attention-based interpretability. Attention mechanisms in GATs assign learnable weights to neighbors during message passing. These coefficients describe how the fitted layer combines its inputs and can vary over time; they are not, by themselves, measures of predictive importance (Jain and Wallace 2019). We first project sequences of attention matrices with principal component analysis (PCA) or uniform manifold approximation and projection (UMAP) to identify recurrent temporal patterns. We then test predictive importance directly by retaining edges according to their attention rank and measuring the resulting forecast error under a fixed downstream model. 
+
+Single-step regression setup. To interpret GNNs trained on regions-fr , we use GNNExplainer (Ying et al. 2019), which identifies the subgraph most influential for a prediction. For each month, daily explanatory subgraphs are aggregated by summing and normalizing their edge masks over 
+
+> 32
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 012345678910 11  
+
+> January
+> 012345678910 11
+> February
+> 012345678910 11
+> March
+> 012345678910 11
+> April
+> 012345678910 11
+> May
+> 012345678910 11
+> June
+> 012345678910 11
+> July
+> 012345678910 11
+> August
+> 012345678910 11
+> September
+> 012345678910 11
+> October
+> 012345678910 11
+> November
+> 012345678910 11
+> December
+> 0.28 0.30 0.32 0.34 0.36
+> Edge importance (mean edge_mask) Explanation Graph (model) GATConv
+
+Figure G.1. Explanation graphs for the GAT convolutional layer on regions-fr .
+
+all half-hour intervals. The learned mask 𝐌 defines the relevance-weighted subgraph 𝐖 𝜆 ⊙ 𝜎(𝐌) ,where ⊙ is the Hadamard product and 𝜎 maps the mask values to [0, 1] 𝑁 ×𝑁 . Figure G.1 reports these monthly aggregates for GATConv on the real regional dataset. The resulting subgraphs show recurrent spatial patterns. Connections along the Atlantic seaboard and among Hauts-de-France, Normandie, and Île-de-France receive high relevance in several months. These masks describe which edges the fitted GATConv uses for its predictions; they do not by themselves establish that the connected regions contain information absent from each region’s own history, which is the predictive question examined in the main text. 
+
+Sequence-to-sequence forecasting setup. The shared MLP and the SAGE GNN can be compared before the readout, where both return a 64 -dimensional representation for each pair formed by a test day and a region. They have the same encoder architecture, depth and width; the shared MLP is the identity-adjacency model and SAGE alone aggregates the spatial graph. Figure G.2 projects the same 
+
+1452 pairs into each space. Each t-SNE is fitted separately, so its axes, orientation, and distances to the other plot carry no meaning; the plots show only the neighborhood geometry internal to one model. The visual similarity is borne out in the original spaces. After each latent coordinate is standard-ized over the test observations, linear CKA is 0.945 . Region centroids account for 12.1% of the shared MLP’s latent variance and 9.9% of SAGE’s, while the 4 periods account for 25.9% and 26.1% . The neighborhood therefore changes the representation less than the seasonal position common to both models, and slightly reduces the separation between regions. On these 12 richly observed nodes, SAGE does not learn a new spatial organization absent from the shared MLP; this agrees with the small predictive increment assigned to the edges in Section 6.2. 
+
+Does latent proximity follow geographic proximity? A t-SNE projection cannot answer this directly because it preserves local neighborhoods selectively and distorts global distances. Figure G.3 therefore returns to the standardized 64 -dimensional spaces. For each of the 66 pairs of regions, it averages their Euclidean latent distance over the same 362 test days and compares that value with the great-circle distance between the regional reference points used to build the spatial graph. No geographic ordering is detectable: Spearman’s 𝜌 is 0.148 for the shared MLP and 0.126 for SAGE, with permutation 𝑝 -values of 0.375 and 0.459 . Some close pairs do have close representations, including Auvergne-Rhône-Alpes and Bourgogne-Franche-Comté, but this relation does not extend across the 66 pairs. The regional colors in Figure G.2 must consequently be read as identities, not as 
+
+33 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. t-SNE 1 t-SNE 2 colored by region 
+
+Shared MLP 
+
+> t-SNE 1 t-SNE 2
+
+SAGE GNN 
+
+> Region
+> ARA BFC BRE CVL GES HDF IDF NAQ NOR OCC PAC PDL
+> t-SNE 1 t-SNE 2 colored by period
+> t-SNE 1 t-SNE 2  Test period
+> Jan--Mar Apr--Jun Jul--Sep Oct--Dec
+
+Figure G.2. t-SNE projections of the final 64 -dimensional latent representations of the matched shared MLP and SAGE GNN on the regions-fr test set. Every third test day and all 12 regions are retained, giving 1452 identical observations in each plot; the upper row colors them by region and the lower row by quarter of the test period. The projections are fitted separately with perplexity 40 and a fixed seed, so only within-plot neighborhoods are read. 200 400 600 800 Geographic distance (km) 345678Mean same-day latent distance    
+
+> ARA BFC
+> CVL IDF
+> CVL NOR
+> HDF NOR
+> IDF NOR
+> Spearman = 0.148
+> permutation p= 0.375
+
+Shared MLP       
+
+> 200 400 600 800 Geographic distance (km)
+> ARA BFC
+> CVL IDF
+> CVL NOR
+> HDF NOR
+> IDF NOR
+> Spearman = 0.126
+> permutation p= 0.459
+
+SAGE GNN 
+
+Figure G.3. Geographic distance against mean same-day latent distance for all 66 pairs of regions, in the original standardized representation spaces. The dashed line is a linear visual guide; the reported statistic is Spearman’s rank correlation, with a two-sided 𝑝 -value obtained from 9999 permutations of the region labels to preserve the dependence among pairwise distances. The 5 pairs separated by less than 200 km are labeled. 
+
+34 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. t-SNE 1 t-SNE 2 colored by graph cluster 
+
+> Shared MLP
+> t-SNE 1 t-SNE 2
+> SAGE GNN
+> Graph cluster
+> Cluster 1 Cluster 2 Cluster 3 Cluster 4 Cluster 5 Cluster 6 Cluster 7 Cluster 8
+> t-SNE 1 t-SNE 2 colored by test period
+> t-SNE 1 t-SNE 2  Test period
+> First quarter Second quarter Third quarter Fourth quarter
+
+Figure G.4. t-SNE projections of the final 64 -dimensional states of the shared MLP and SAGE GNN on weave-uk at 500 feeders. All feeders and every 12th test origin are retained, giving 6500 identical observations per plot; the upper row colors them by 8 spectral clusters of the fixed graph and the lower row by quarter of the test window. The projections are fitted separately with perplexity 50 and a fixed seed, so only within-plot neighborhoods are read. 
+
+evidence that the latent space reproduces the map. The adjacency makes that reading conservative rather than fragile. SAGE is taken here on the spatial graph; Table H.1 tunes it on the DTW graph, precisely because geography is then the one structure message passing pushes the representation toward: two regions joined by an edge exchange states at every layer, so a latent space ordered by distance would be the expected outcome and not a surprise. It does not order itself that way, and calendar, weather, and each region’s load history still determine most of that geometry. 
+
+weave-uk at 500 feeders. The same extraction is applied to the shared MLP and SAGE fits of the 
+
+500 -feeder, 10 -day cell in Table E.1. Both expose their final 64 -dimensional state before the 48 -output readout, yielding 145 × 500 = 72500 matched pairs of a test origin and a feeder. Spectral clustering of the fixed adjacency, computed once, gives 8 clusters that provide a readable graph label where 
+
+500 feeder identities would not. Figure G.4 projects both spaces with these labels. Here the coordinate-standardized spaces differ more than on regions-fr : linear CKA is 0.847 
+
+against 0.945 there. Feeder centroids explain little variance in either model, 2.9% for the shared MLP and 3.1% for SAGE, and the 4 test periods explain 8.0% and 6.3% . After the same standardization, the mean squared distance between retained graph neighbors, divided by the corresponding distance to random feeders, falls from 0.631 in the shared MLP to 0.475 in SAGE. Linked feeders thus have more similar representations in SAGE. The associated predictive comparison is from 0.8013 to 0.7745 in per-node error (Table E.1). Since the weave-uk backbones also differ, neither the representation difference nor the prediction gap can be attributed solely to message passing. In the multi-step setting, we read the internal attention mechanisms of GAT-based architectures 
+
+35 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. −2 −1 0 1      
+
+> Principal component 1
+> −1.5 −1.0 −0.5 0.0 0.5 1.0
+> Principal component 2 (a) PCA
+> 2.5 5.0 7.5 10.0 12.5 15.0 17.5
+> UMAP 1
+> −2 0246810 12
+> UMAP 2 (b) UMAP
+> 1 Jan 1 Apr 1 Jul 1 Oct 31 Dec
+> Position in the year
+
+Figure G.5. Two projections of the GAT attention matrices on regions-fr , first layer and first head, one point per half-hour of the test year and colored by its position in that year. The partial separation of successive periods places the attention matrices along the seasonal cycle, which moves temperature, daylight, and activity together. 
+
+to gain insight into how temporal and spatial dependencies are encoded. For each time step, the model computes a full attention matrix describing how the layer weights inter-regional inputs for forecasting the next day’s load. To analyze the latent structure of these matrices, we apply PCA and UMAP, which respectively capture linear variance and nonlinear manifold structure. As shown in Figure G.5, both projections order the matrices by season, winter, summer, and transitional periods occupying distinct regions. The season moves temperature, daylight, and activity together, so the projection does not say which of them the attention follows. A third synthetic generator, distinct from the denoising generator of Section 6.3 and from the generator of Section B, serves to study attention mechanisms. It produces 𝑁 node-level time series formed by a smooth trend, a periodic component, and strong high-frequency noise to prevent trivial per-node fitting. Node interactions are introduced by multiplying the input matrix 𝐗 ∈ ℝ 𝑁 ×𝑇 with a coupling matrix 𝐀 ∈ ℝ 𝑁 ×𝑁 . Three variations are generated: single coupling , where a fixed, sparse, full-rank matrix 𝐀 is applied at all time steps; explicit switching , where two distinct matrices 𝐀 1
+
+and 𝐀 2 are alternated according to a binary switching signal provided as an additional input; and 
+
+ambiguous switching , where the same alternation occurs, but two categorical inputs encode the active coupling only jointly, mimicking latent factors that are not directly observable. The supervised task is to reconstruct the original signals, so that predictive performance relies on the inter-node dependencies encoded in 𝐀 .We also inspect attention on synthetic data with known coupling matrices. With a single coupling, the weights are stable over time but do not reproduce the true adjacency. When two coupling modes alternate and the active mode is supplied as a binary input, the projected attention vectors form two clusters (Figure G.6). When the mode is only implied by two categorical inputs, the first layer mixes the modes and the later layers separate them progressively. The attention matrices therefore encode the active regime in this generator. This projection does not establish that they recover the physical adjacency or that the largest coefficients identify the most useful edges; Section G.1 tests the latter claim directly. 
+
+G.1 Selection by Attention Weights 
+
+The projections above show that attention moves with the temporal regime. They do not show that the edges carrying the largest coefficients improve the forecast. That narrower claim is tested here 
+
+36 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. −0.5 0.0 0.5            
+
+> Principal component 1
+> −0.6 −0.4 −0.2 0.0 0.2 0.4 0.6
+> Principal component 2 (a) explicit coupling, layer 2
+> −0.4 −0.2 0.0 0.2 0.4
+> Principal component 1
+> −0.4 −0.2 0.0 0.2 0.4
+> Principal component 2 (b) implicit coupling, layer 0
+> −1 01
+> Principal component 1
+> −0.75 −0.50 −0.25 0.00 0.25 0.50 0.75
+> Principal component 2 (c) implicit coupling, layer 1
+> −1.0 −0.5 0.0 0.5 1.0
+> Principal component 1
+> −0.75 −0.50 −0.25 0.00 0.25 0.50
+> Principal component 2 (d) implicit coupling, layer 2
+> Coupling mode A1 Coupling mode A2
+
+Figure G.6. PCA of the attention matrices on the synthetic dataset with two coupling modes 𝐀 1 and 
+
+𝐀 2, colored by the mode in effect. In (a), the mode is handed to the model as a binary input and the two clusters separate at once. In (b) to (d), it is only implied by the joint value of two binary inputs, and the separation is built layer by layer: the first layer mixes the two modes, the second splits them partially, the third recovers them. 
+
+by deleting edges and measuring what the forecast loses, on the weave-uk 500 -feeder, 10 -day cell of Table E.1. A GATv2 is fitted on the full retained graph, which holds 4712 distinct directed edges (5000 with mutual pairs counted twice), about 10 in-neighbors per node, and each edge receives one score: its attention coefficient averaged over the 145 test origins. Averaging over the test origins makes the ranking retrospective: it describes the fitted model and is not a selection rule fixed before evaluation. Those scores cannot be compared across target nodes. Attention is normalized separately over the edges entering each node, so a mechanism close to uniform gives about 1/𝑑 𝑖 to every edge entering a node of in-degree 𝑑 𝑖 , and the score then reports the degree rather than the edge. Two measurements place the fitted model in that regime. Dividing the entropy of the attention entering a node by log 𝑑 𝑖 gives 1 when the node weighs its neighbors equally and 0 when it loads one of them; averaged over the 500 feeders of weave-uk , that ratio is 0.989 , 0.990 , and 0.991 on the 3 seeds. The coefficients themselves correlate at 0.94 with 1/𝑑 𝑖 . One threshold applied to all 5000 scores would therefore keep the neighborhoods of low-degree nodes and empty those of high-degree ones, comparing degree profiles instead of edges. Figure G.7 contrasts that selection with the within-node selection used below. Every node keeps a fixed share of its incoming edges: the highest-ranked, the lowest-ranked, or a draw that ignores the ranking. The three variants of a row therefore have the same in-degree at every node and differ only in the identity of the retained edges. GATv2 is used only to rank the edges. It is not retrained on the pruned graphs. For each subgraph, 
+
+37 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al.     
+
+> Global ranking: degree is confounded
+> 𝑖 𝑗
+> 𝑑 𝑖 = 3 𝑑 𝑗 = 6 𝛼 ≈ 1/3 𝛼 ≈ 1/6
+> one threshold keeps the low-degree node and empties the other
+> Within-node pruning: edge identity is isolated
+> 𝑖 𝑗
+> 𝑑 𝑖 = 3 𝑑 𝑗 = 6
+> the same share is retained at every node
+
+Figure G.7. Why pruning is performed separately for every target node. A global ranking mostly separates node degrees because attention is normalized over each incoming neighborhood. Within-node pruning fixes the retained degree and changes only the identity of the retained edges. Green edges are kept. 
+
+Table G.1. Direct test nRMSE, lower is better, of the per-node MLP augmented by the mean features of its retained neighbors. Values are averaged over 3 seeds. Each value in parentheses gives the relative change from the row above to the row below, 100(𝐸 below − 𝐸 above )/𝐸 above . Red positive values denote an increase in error; green negative values denote an improvement. GATv2 ranks the edges on the full retained graph; it does not produce the errors in the table. The full-graph and no-neighbor values are repeated across the three columns because edge ranking is irrelevant when all or no edges are retained. Seed dispersion is 0.0003 –0.0033 .                                    
+
+> Edges kept Count Highest attention Random Lowest attention All edges 5000 0.8763 0.8763 0.8763
+> One half 2412 0.8768 (+0.06% )0.8835 (+0.82% )0.8912 (+1.70% )One quarter 1235 0.8862 (+1.07% )0.8938 (+1.17% )0.9079 (+1.87% )One tenth 654 0.8931 (+0.78% )0.9031 (+1.04% )0.9218 (+1.53% )No neighbors 00.8956 (+0.28% )0.8956 (−0.83% )0.8956 (−2.84% )
+
+we instead fit one MLP per feeder. The reference MLP receives that feeder’s own features and reaches 0.8956 nRMSE, the per-node value Tables 4 and E.1 report for this cell. The evaluated MLP receives the same features plus one additional vector, the mean of the retained neighbors’ features. Since both models remain node-specific, their comparison changes neighborhood access without introducing parameter sharing or a learned aggregation. Table G.1 reports the test nRMSE of this second model directly; lower values indicate better forecasts. The full retained neighborhood improves nRMSE from 0.8956 to 0.8763 . Keeping the best-ranked half leaves that performance almost unchanged at 0.8768 ; a random half reaches 0.8835 , and the least-ranked half 0.8912 . The same ordering holds at one quarter and one tenth. Thinning eventually removes too much information: the best tenth reaches 0.8931 , close to the no-neighbor reference, while the random and least-ranked tenths perform worse than that reference. The non-shared rewiring control (preceding section) gives the comparison at full density, about 
+
+10 in-neighbors: from the 0.8956 reference, arbitrary neighbors reach 0.8816 against 0.8762 for the true graph ( 0.8763 in Table G.1). At half density, a random half of the true edges reaches 0.8835 
+
+and the attention-selected half 0.8768 . Under this fixed mean-summary protocol, generic neighbor averaging explains most of the improvement and the attention ranking accounts for a smaller additional difference. 
+
+Architecture-dependent control. The test in Table G.1 deliberately fixes how the subgraphs are used: whatever the retained edges, each feeder receives the arithmetic mean of its neighbors’ features. It therefore measures whether the GATv2 ranking selects useful inputs when the downstream model 
+
+38 A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+and its neighbor summary are held constant. The ordering is clear under this controlled protocol: highest-ranked edges outperform random edges, which outperform lowest-ranked edges. A final test determines whether the same ordering persists when a GNN is trained end to end on each pruned topology. SAGE is trained from scratch on the highest-ranked, random and lowest-ranked quarter-graphs and reaches respectively 0.7811 , 0.7790 , and 0.7817 nRMSE. Random pruning is numerically best, but the largest gap ( 0.0027 ) is of the same order as the seed dispersion ( 0.0020 ); these runs therefore do not establish a reliable ordering among the three graphs. This result does not invalidate Table G.1: it limits its scope. The attention scores identify useful neighbors for the fixed mean-summary experiment, but they do not define a subgraph that every architecture will rank in the same way after retraining. 
+
+# H Hyperparameters of the Benchmarked Architectures 
+
+Optuna (Akiba et al. 2019) tunes the depth, width, batch size, and learning rate of every architecture, with the order of ChebConv and TAGConv, the heads of GAT, GATv2, and TransformerConv, and the steps 𝐾 and teleportation probability 𝛼 of APPNP. Each architecture trains for 300 epochs and the epoch with the lowest validation loss is restored. On both datasets, the graph is searched jointly with the other hyperparameters, among the 6 constructions on regions-fr (spatial, DTW, correlation, precision, DistSplines, GL3SR) and, on weave-uk , among correlation, DTW, and precision graphs in which each node keeps its 5 most similar nodes before symmetrization, for mean degrees 6.4 –
+
+9.6 . The TPE sampler (seed 42 ) runs 40 trials per architecture, each trained for 200 epochs with patience 40 and scored on the validation RMSE of the summed forecast, over depths 1–3, widths 
+
+32 –256 , and learning rates 10 −4 –10 −2 (both log-scaled), batch sizes {8, 16, 32} on the regions and 
+
+{2, 4, 8} on the feeders, heads {1, 2, 4} , orders 𝐾 ≤ 4 (TAG) and 𝐾 ≤ 5 (ChebConv), and APPNP steps 
+
+𝐾 ∈ {2, 4, 6, 8, 10} with 𝛼 ∈ {0.05, 0.1, 0.15, 0.2, 0.3} . On both datasets, the two MLPs and the pooled XGBoost receive the same 40 -trial search; XGBoost (b-local) keeps fixed settings (learning rate 0.1 ,depth 4, 120 trees), and the additive model and ARIMA are not tuned. ARIMA-X fits one model per half-hour on the daily national subseries of regions-fr , with weather, heating and cooling degree terms, holidays, weekday, and position in the year as exogenous inputs; its ARMA orders are selected by AIC on 2015 –2017 , and its exogenous design is chosen among 4 on the 2018 validation year (from 1960 MW with linear weather terms to 1506 MW), then re-estimated on 2015 –2018 and applied 1 day ahead with frozen parameters, its weather inputs being the observations averaged over the regions. On weave-uk , whose 9 training days leave 9 points per half-hour and which has no weather, a single ARIMA-X runs on the half-hourly summed load with daily Fourier terms and a weekend indicator, forecasting 48 steps from each origin with frozen parameters (retained: order (3, 1, 2) , 6 harmonics); its order is selected by AIC on the training days, its design among 3
+
+on the validation days, and it is re-estimated on both before the test. Chronos-2, t0-gamma, and Timestral are used zero-shot under a scheme fixed in advance, one 48 -step median forecast of the summed load at each daily origin. t0-gamma was scored in 2 settings fixed before scoring, without post-processing (reported) and with the 4 adjustments its model card recommends ( 1747 MW and 
+
+149.0 kWh); Timestral keeps its package defaults. Variants run as side information score worse on the test: on weave-uk , one model per feeder ( 224.9 kWh) and the 500 feeders read as one multivariate series ( 198.3 kWh); on regions-fr , the 12 regions read as one multivariate series ( 1769 MW). The MLPs run 10 seeds, the gradient-boosted models and GNNs 3. The retained configurations are listed in Table H.1 of the Appendix. The diagnostic comparisons use prescribed model classes without full hyperparameter searches, the limited validation-based selections being specified in each block. Their widths and backbones are stated in each experimental block; common width should not be read as matched total capacity. 
+
+> 39
+
+A Diagnostic Protocol for GNNs in Load Forecasting Campagne et al. 
+
+Table H.1. Hyperparameters of the GNN models for regions-fr and weave-uk in the sequence-to-sequence forecasting setup. The Graph column gives the construction of Section 4.1 retained by validation; on regions-fr the dense constructions share one (near-)complete support, which SAGE, GAT, GATv2, and Transformer read identically (Section 4.1). 
+
+Dataset Model Graph Batch size Layers Width Learning rate 
+
+regions-fr 
+
+GCN Space 8 3 68 2 ⋅ 10 −3 
+
+SAGE DTW 8 2 196 1 ⋅ 10 −3 
+
+GAT Space 8 2 75 2 ⋅ 10 −3 
+
+GATv2 Space 8 3 155 6 ⋅ 10 −4 
+
+Transformer Correlation 8 2 88 2 ⋅ 10 −3 
+
+TAG Space 8 3 98 4 ⋅ 10 −3 
+
+ChebConv Space 8 2 105 6 ⋅ 10 −4 
+
+APPNP GL3SR 8 2 189 7 ⋅ 10 −4 
+
+weave-uk 
+
+GCN Correlation 2 1 86 3 ⋅ 10 −3 
+
+SAGE Correlation 2 1 126 7 ⋅ 10 −3 
+
+GAT Precision 2 3 76 4 ⋅ 10 −3 
+
+GATv2 Precision 2 1 102 9 ⋅ 10 −3 
+
+Transformer DTW 4 2 115 1 ⋅ 10 −3 
+
+TAG Precision 2 3 123 1 ⋅ 10 −3 
+
+ChebConv Precision 8 1 54 6 ⋅ 10 −3 
+
+APPNP Precision 2 3 94 1 ⋅ 10 −2 
+
+Architecture-specific hyperparameters. regions-fr : GAT and GATv2 use 1 attention head and Transformer 4; TAG uses 
+
+𝐾 = 4 ; ChebConv uses 𝐾 = 2 ; APPNP uses (𝐾 , 𝛼) = (4, 0.05) . weave-uk : GAT uses 4 heads, GATv2 2, and Transformer 1;TAG uses 𝐾 = 2 ; ChebConv uses 𝐾 = 1 ; APPNP uses (𝐾 , 𝛼) = (2, 0.05) . With 𝐾 = 1 , ChebConv performs no propagation on weave-uk .
+
+Table H.1 lists, for each of the 8 convolutions of Table 2 and each dataset, the graph construction and the hyperparameters retained by validation in the sequence-to-sequence setup. 
+
+# I Code and Data Availability 
+
+The scripts and configurations that run the experiments of this article are available on Github 4.They build on the GraphToolbox (Campagne et al. 2026a), an open-source Python package for GNN forecasting that implements data preprocessing, graph construction, and training, itself built on the PyTorch Geometric library (Fey and Lenssen 2019, Fey et al. 2025). The processed datasets (regions-fr and weave-uk ) and the synthetic benchmarks are deposited on Zenodo (Campagne 2026). 5
+
+> 4https://github.com/eloicampagne/gnn4elf
+> 5https://doi.org/10.5281/zenodo.21977576
+
+40

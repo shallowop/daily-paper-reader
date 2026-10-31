@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-30</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-31</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 12 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 10 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>1</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>10</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-30 23:39:59 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-31 22:43:15 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今天共筛出 12 篇论文，精读 1 篇、速读 11 篇，核心关注供应链过度反应、冷链优化建模与 LLM 智能体落地三类议题。</p>
-<p>最值得看的是 9.0 分的《When Protection Hurts》，它提出供应链过度反应背后的“细胞因子风暴”理论，并用这一理论解释保护性举措反而可能加剧风险；其次是 Cholesky-谱二阶锥方法在冷链分配中的隐藏凸性，以及 AutoVend 对 LLM 长程自主运营的评测。</p>
-<p>普通读者可先读精读论文的“机制—后果”链条，再挑一篇自己业务相关的速读摘要对照，重点留意模型假设与真实场景之间的差距。</p>
+<p>今日速读10篇、精读0篇，重点集中在AI驱动的仓储物流数字孪生优化、面向可靠金融AI的上下文工程与三引擎架构两个方向。最值得关注的是：《AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization》和《Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI》均获7.0分，分别指向物流自动化优化与金融AI工程化落地。普通读者可先读这两篇摘要，把握“数字孪生与上下文工程”两条主线，再按兴趣延伸到《The Generalised Kessler Syndrome and the Persian Gulf》。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -80,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">1 篇</strong>
+    <strong class="dpr-home-dashboard-count">0 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="When Protection Hurts: A Cytokine Storm Theory of Supply Chain Overreaction">When Protection Hurts: A Cytokine Storm Theory of Supply Chain Overreaction</span></li></ul>
+<p class="dpr-home-dashboard-empty">今日暂无推荐。</p>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>1</strong></span></div>
+
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -93,12 +91,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">11 篇</strong>
+    <strong class="dpr-home-dashboard-count">10 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Hidden Convexity in Multi-Retailer Cold-Chain Allocation: A Cholesky-Spectral Second-Order Cone Programming Approach">Hidden Convexity in Multi-Retailer Cold-Chain Allocation: A Cholesky-Spectral Second-Order Cone Programming Approach</span></li><li><span class="dpr-home-dashboard-paper-title" title="AutoVend: Benchmarking LLM Agents on Long-Horizon Autonomous Vending Operations">AutoVend: Benchmarking LLM Agents on Long-Horizon Autonomous Vending Operations</span></li><li><span class="dpr-home-dashboard-paper-title" title="Harnessing Language Models as Optimization Modeling Agents">Harnessing Language Models as Optimization Modeling Agents</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization">AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization</span></li><li><span class="dpr-home-dashboard-paper-title" title="Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI">Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI</span></li><li><span class="dpr-home-dashboard-paper-title" title="The Generalised Kessler Syndrome and the Persian Gulf">The Generalised Kessler Syndrome and the Persian Gulf</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>11</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>10</strong></span></div>
 </section>
 </div>
 

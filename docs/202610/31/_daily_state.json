@@ -1,0 +1,169 @@
+{
+  "date": "20261031",
+  "date_label": "",
+  "generated_at": "2026-10-31 22:43:15 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.38101v1",
+      "route": "202610/31/2610.38101v1-ai-driven-digital-twin-framework-for-warehouse-logistics-automation-optimization",
+      "title": "AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "强化学习与数字孪生用于仓储物流优化",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.39230v1",
+      "route": "202610/31/2610.39230v1-beyond-llm-wrappers-context-engineering-and-the-three-engine-architecture-for-reliable-financial-ai",
+      "title": "Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "融合知识图谱、确定性优化引擎与多智能体大模型层的三引擎架构",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.40129v1",
+      "route": "202610/31/2610.40129v1-the-generalised-kessler-syndrome-and-the-persian-gulf",
+      "title": "The Generalised Kessler Syndrome and the Persian Gulf",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "将级联失效理论推广到供应链，刻画故障传播与库存耗竭",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.33623v1",
+      "route": "202610/31/2610.33623v1-graph-dependent-pooling-adaptive-granularity-in-hierarchical-graph-neural-networks",
+      "title": "Graph-dependent pooling: adaptive granularity in hierarchical graph neural networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "层次化图神经网络池化方法",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.35074v1",
+      "route": "202610/31/2610.35074v1-a-diagnostic-protocol-for-gnns-in-electricity-load-forecasting-separating-parameter-sharing-from-neighborhood-access",
+      "title": "A Diagnostic Protocol for GNNs in Electricity Load Forecasting: Separating Parameter Sharing from Neighborhood Access",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向GNN预测模型的诊断协议",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.35681v1",
+      "route": "202610/31/2610.35681v1-supply-chain-information-sharing-among-competitors-profit-based-participation-under-market-shocks",
+      "title": "Supply Chain Information Sharing among Competitors: Profit-Based Participation under Market Shocks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "市场冲击下的供应链信息共享协调",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.35972v1",
+      "route": "202610/31/2610.35972v1-multiple-leak-localization-in-water-distribution-networks-through-graph-neural-networks",
+      "title": "Multiple Leak Localization in Water Distribution Networks through Graph Neural Networks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "基于网络拓扑的图神经网络多故障定位",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.38046v1",
+      "route": "202610/31/2610.38046v1-conformal-predictive-distributions-for-contextual-order-fulfillment-optimization",
+      "title": "Conformal Predictive Distributions for Contextual Order Fulfillment Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "面向订单履约的上下文优化与不确定性决策",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.38292v1",
+      "route": "202610/31/2610.38292v1-vendster-an-evaluation-arena-to-investigate-how-forecasting-tool-quality-affects-llm-agent-behaviors-in-buyer-vendor-negotiation",
+      "title": "Vendster: An Evaluation Arena to Investigate How Forecasting Tool Quality Affects LLM Agent Behaviors in Buyer-Vendor Negotiation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "大语言模型智能体利用预测工具进行买方-供应商谈判",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    },
+    {
+      "paper_id": "2610.39275v1",
+      "route": "202610/31/2610.39275v1-llm-assisted-optimization-for-simulation-based-redesign",
+      "title": "LLM-Assisted Optimization for Simulation-Based Redesign",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将LLM与数值求解器及仿真器结合用于优化重设计",
+      "first_seen_at": "2026-10-31 22:43:15 UTC",
+      "updated_at": "2026-10-31 22:43:15 UTC"
+    }
+  ]
+}

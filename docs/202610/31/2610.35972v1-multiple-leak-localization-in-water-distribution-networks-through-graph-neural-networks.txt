@@ -1,0 +1,424 @@
+Title: 2610.35972v1.pdf
+
+URL Source: https://arxiv.org/pdf/2610.35972v1
+
+Published Time: Wed, 28 Oct 2026 00:03:10 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+1
+
+# Multiple Leak Localization in Water Distribution Networks through Graph Neural Networks 
+
+# Arvin Ajoodani 1, Sara Nazif 1, and Pouria Ramazi 2
+
+1. School of Civil Engineering, College of Engineering, University of Tehran, Tehran, Iran 
+
+2. Department of Biological Sciences and Department of Mathematics and Statistics, University of Calgary, Calgary, Canada 
+
+# Abstract 
+
+Leak localization in water distribution networks is challenging when multiple leaks occur simultaneously, particularly under sparse monitoring. Existing data-driven methods often assume a single or predefined number of leaks or require extensive enumeration of leak combinations. This study proposes a graph neural network (GNN) model that localizes a variable number of simultaneous leaks without specifying the leak count in advance or exhaustively generating every possible combination of leak locations for training. The model is evaluated on two benchmark networks of different sizes, the 31-node Hanoi network and the larger 92-node NET3 network, under variable demand, sparse pressure-sensor coverage, variable leak magnitudes, and varying numbers of simultaneous leaks. The GNN outperforms multilayer perceptron, support vector machine, K-nearest neighbors, and random forest classifiers by up to 12% and 20% in accuracy respectively in Hanoi and NET3 networks. Consistent performance across both networks supports the scalability of the proposed approach. 2
+
+Keywords: multiple-leak localization; water distribution network; graph convolutional network; machine learning; sparse sensor coverage 
+
+# 1. Introduction 
+
+Leakage in water distribution networks (WDNs) is a major global challenge. Global physical water losses in WDNs have been estimated at approximately 32 billion m³ per year, with about half occurring in developing countries (AbuEltayef et al., 2023). These losses threaten water security and impose substantial financial and environmental costs on communities (Fang et al., 2019). Reducing avoidable distribution losses supports Sustainable Development Goal 6 by improving water-use efficiency and the reliability of urban water services (Callejas Moncaleano et al., 2021). Conventional leakage-management and model-based localization methods are sensitive to monitoring availability and hydraulic-model accuracy (Puust et al., 2010; Marzola et al., 2022). 
+
+Data-driven approaches have emerged as a promising alternative, using machine learning (ML) techniques to detect and localize leaks from hydraulic data. Recent studies have demonstrated the potential of Gaussian naive Bayes classifiers (Mazaev et al., 2022), neural networks (Sun et al., 2020), and random forests (RF) (Lučin et al., 2021) for leak localization in WDNs. However, most of these studies assumed the presence of a single leak, which does not reflect conditions in many WDNs. Aging infrastructure and continued urbanization increase pipe deterioration and leakage risk, while climatic factors such as temperature, moisture, and precipitation can contribute to water-main deterioration; together, these pressures can increase the likelihood of concurrent leaks in large WDNs (Ahmad et al., 2023; Chen et al., 2026). 
+
+A few studies have addressed multiple leak localization using data-driven approaches. For example, Rodríguez-Argote et al. (2023) employed classifiers to isolate two simultaneous leaking 3
+
+zones in a WDN, while Fang et al. (2019) used convolutional neural networks to detect multiple leaks in an experimental network. Although these studies represent important steps forward, they are designed for a fixed number of leaks or a limited set of leak-location configurations. Exhaustively generating training scenarios for every possible combination of multiple leaks becomes computationally prohibitive as the number of candidate nodes increases, and models designed for a fixed leak count may not generalize to variable leakage conditions (Romero-Ben et al., 2023). 
+
+Graph-based methods provide a way to address the two limitations identified above: handling different numbers of simultaneous leaks and using limited hydraulic measurements without testing every possible combination of leak location. WDNs are naturally suited to graph-based modeling, with nodes representing consumption nodes and edges representing the pipes that connect them. Graph neural networks (GNN) can capture spatial dependencies in graph-structured data (Xia et al., 2021) and have been applied in fields such as finance (Wang et al., 2022), biology (Zhang et al., 2021), and electrical engineering (Liao et al., 2022). This makes GNN a promising approach for leak detection and localization in WDNs (Yang et al., 2022). By incorporating network topology into message passing, GNN can learn topology-dependent hydraulic relationships relevant to leak localization (Garðarsson et al., 2022). 
+
+Several recent studies have used GNN for leak localization in WDNs. Şahin and Yüce (2023) used graph convolutional networks (GCN) to classify pipeline conditions as leak, risky, or normal and reported better results than a support vector machine (SVM). Rolle et al. (2024) evaluated GNN-based localization when only limited sensor data were available and showed that useful location information could still be obtained after reconstructing missing measurements. Li and Wu (2024) combined node information with pipe information and localized leaks at the pipe level. Their study 4
+
+was based on single-leak cases and showed that the model could still provide useful localization when the number of pressure sensors was reduced. Zhang and Fink (2026) proposed an algorithm-informed GNN that estimates the current pressure field and the pressure field expected without leakage. Leaks are then detected and localized from the difference between these two estimates. 
+
+More recent studies have started to consider simultaneous leaks under different choices of leak counts and candidate locations.. Li et al. (2025) evaluated single, double, triple, and four-leak cases. In their small simulated network, four possible leaking pipes were selected first, and all combinations of one to four leaks among these pipes were generated. Separate databases were then created for the different numbers of leaks. In the L-Town test, the abnormal class also included cases with one or two leaks occurring at the same time. Yin et al. (2026) focused specifically on two simultaneous leaks and designed the model to return two leaking pipes and their positions. Kim and Choi (2026) considered one to four simultaneous leaks using a graph attention network. They avoided generating every possible combination by sampling the training data, but the maximum number of leaks was still fixed at four. 
+
+Taken together, the previous GNN studies have three main limitations. First, many studies consider only one leak at a time. Second, studies that consider several leaks usually define the number of leaks in advance, for example exactly two leaks or a range from one to four. Third, some studies build the data around a limited set of possible leak locations and explicitly generate the combinations among them. This becomes difficult for a large WDN because the number of possible combinations increases very quickly as the number of candidate nodes increases. 
+
+The proposed model performs node-level multilabel classification, allowing the number of predicted leaks to vary among scenarios. Consequently, the number of leaks need not be specified in advance, and the training set need not exhaustively enumerate all possible combinations of 5
+
+leaking nodes. The framework is evaluated under variable demand, sparse sensor coverage, and variable leak magnitudes on the Hanoi and NET3 networks. Furthermore, K-nearest neighbors (KNN), SVM, multilayer perceptron (MLP) and RF models were additionally developed to compare the proposed method with a broader range of ML classifiers. 
+
+# 2. Methodology 
+
+The proposed methodology consists of five main stages: leakage-scenario generation, construction of model inputs and target labels, development of the GCN and conventional classifiers, model training and evaluation, and application to benchmark WDNs. 
+
+2.1 Data Generation 
+
+The data-generation procedure is summarized in Figure 1. For each leakage scenario, the number of simultaneous leaks was first selected randomly from 1 to N, where N is the number of leak-candidate consumption nodes; reservoirs and tanks are treated as hydraulic boundary components and are not considered leak candidates. The number and locations of simultaneous leaks were sampled over a broad range to expose the models to diverse multilabel configurations and reduce potential class imbalance, rather than to reproduce the real-world frequency of different leak counts (He & Garcia, 2009). After determining the number of leaks, the corresponding leaking nodes were selected randomly. 
+
+A leakage time step was then selected randomly from 1 to T, where T is the total number of time steps in the demand pattern. The selected leaks were active only during the sampled time step. This design exposed the models to leakage under different demand conditions while avoiding highly similar scenarios at consecutive time steps. Leak duration was not investigated in this study. 6 
+
+> Figure 1. Workflow for generation of leakage scenarios and construction of the hydraulic dataset.
+
+As shown in Figure 1, demand conditions were varied after selecting the leakage time step. To represent uncertainty and fluctuations in water consumption, the prescribed demand-pattern multiplier at the selected time step was multiplied by a random factor between 0.8 and 1.2. This range represents a maximum deviation of ±20% from the prescribed demand pattern, consistent with demand-uncertainty levels considered in previous WDN leakage studies 7
+
+(Tyagi et al., 2023; Li et al., 2025). The uniform distribution was selected to introduce bounded variability without systematically favoring either increases or decreases in demand. 
+
+Leakage magnitude was subsequently assigned independently to each leaking node using the EPANET 2.2 emitter formulation (Rossman et al., 2020): 
+
+𝑄 = 𝐶𝑃 𝛾 (1) 
+
+where 𝑄 
+
+, 𝐶 , 𝑃 , and 𝛾 denote the leakage discharge, emitter coefficient, pressure at the emitter (leaking node), and emitter exponent, respectively. Assuming round-shaped leakage points, the emitter exponent was set to 0.5 (Mücke et al., 2023). To simulate different leak sizes, the emitter coefficient for each leakage was randomly assigned a value in the range 0 < 𝐶 ≤ 10 . Although the emitter coefficient can theoretically take any positive value, this range was selected based on engineering judgment to produce leaks of varying sizes. 
+
+After each hydraulic simulation, total leakage discharge was calculated as the sum of the emitter discharges from all leaking nodes. To avoid excessively severe leakage scenarios, a scenario was retained only when total leakage discharge was less than 30% of the baseline total system inflow at the corresponding time step, consistent with reported leakage levels in WDNs and previous leak-scenario generation studies (Ponti et al., 2024; Ajoodani et al., 2025). If this criterion was not satisfied, the leakage conditions were regenerated and the hydraulic simulation was repeated. This procedure continued until the required dataset size was reached. 
+
+2.2 Input and Target Construction 
+
+For each scenario, the target vector y ∈ {0,1} 𝑁 contained one element for each leak-candidate node, where 𝑁 is the number of leak-candidate nodes. Each element 𝑦 𝑖 indicated the leakage status 8
+
+of node 𝑖 , with 𝑦 𝑖 = 1 for a leaking node and 𝑦 𝑖 = 0 otherwise. The input vector had the same dimension and contained one pressure-related feature for each leak-candidate node. 
+
+Only a small subset of the leak-candidate nodes was assumed to be equipped with pressure sensors, reflecting sparse monitoring conditions. Consequently, direct pressure measurements represented only part of the network-wide hydraulic state. Graph-based interpolation was therefore used to infer the hydraulic state at unobserved nodes from the available sensor measurements and network connectivity, providing a spatially complete input representation under sparse monitoring. Similar graph-based approaches have been used to reconstruct hydraulic-head or pressure fields from sparse measurements in WDNs (Hajgató et al., 2021; Irofti et al., 2022; Truong et al., 2024). 
+
+Reconstruction was performed using hydraulic head rather than pressure alone so that differences in node elevation were explicitly considered. For each sensor node 𝑖 , the observed hydraulic head was calculated as 
+
+ℎ𝑖 = 𝑝 𝑖 + 𝑧 𝑖 (2) 
+
+where ℎ𝑖 , 𝑝 𝑖 , and 𝑧 𝑖 denote the hydraulic head, pressure head, and elevation of node 𝑖 , respectively. 
+
+For the reconstruction step, network connectivity was represented by a weighted graph 𝐺 = (𝑉, 𝐸) ,where 𝑉 denotes the set of nodes and 𝐸 denotes the set of connecting pipes. Each pipe was assigned a weight inversely proportional to its length: 
+
+𝑤 𝑖𝑗 = { 1𝑙 𝑖𝑗 
+
+(𝑖, 𝑗) ∈ 𝐸 0 otherwise 
+
+(3) 
+
+where 𝑙 𝑖𝑗 is the length of the pipe connecting nodes 𝑖 and 𝑗 .9
+
+The weighted adjacency matrix 𝑊 , weighted degree matrix 𝐷 , and graph Laplacian 𝐿 were then defined as: 
+
+𝐷 𝑖𝑖 = ∑ 𝑤 𝑖𝑗 𝑗 
+
+, 𝐿 = 𝐷 − 𝑊 (4) 
+
+The observed hydraulic heads at sensor nodes were imposed as fixed boundary values, while the heads at unobserved nodes were estimated by minimizing the weighted differences between connected nodes: 
+
+ℎ = min [ 12 ∑ 𝑤 𝑖𝑗 (𝑖,𝑗)∈𝐸 
+
+(ℎ 𝑖 − ℎ 𝑗 )2] , subject to ℎ𝑖 = ℎ 𝑖 obs , 𝑖 ∈ 𝑆 (5) 
+
+where 𝑆 denotes the set of sensor nodes. 
+
+After partitioning the graph Laplacian according to sensor and unobserved nodes: 
+
+𝐿 = [ 𝐿 𝑆𝑆 𝐿 𝑆𝑈 
+
+𝐿 𝑈𝑆 𝐿 𝑈𝑈 
+
+] (6) 
+
+where 𝑈 denotes the set of unobserved nodes, the hydraulic heads at the unobserved nodes were obtained as 
+
+ĥ 𝑈 = −𝐿 𝑈𝑈 −1 𝐿 𝑈𝑆 h𝑆 (7) 
+
+The reconstructed pressure head at each unobserved node was subsequently calculated as 
+
+𝑝̂ 𝑖 = ℎ̂ 𝑖 − 𝑧 𝑖 , 𝑖 ∈ 𝑈 (8) 
+
+After converting the reconstructed hydraulic heads to pressure, the resulting network-wide nodal pressure vector was used as the input feature vector for leak localization. 10 
+
+2.3 Graph Convolutional Network 
+
+A graph convolutional network (GCN), a class of graph neural networks (GNNs), was used for node-level leak localization (Kipf & Welling, 2017). The WDN was represented as a graph in which leak-candidate consumption nodes were represented as graph nodes and pipes as edges connecting hydraulically adjacent nodes. Each node was assigned the pressure-related feature constructed in Section 2.2, allowing the GCN to use both nodal hydraulic information and network connectivity during classification. 
+
+At each graph-convolution layer, the representation of a node is updated by aggregating information from the node itself and its neighboring nodes. Figure 2 illustrates this neighborhood-aggregation process. After one layer, a node incorporates information from its immediate neighbors; with additional layers, information can propagate from progressively more distant parts of the network. For example, in Figure 2, node A first receives information from directly connected nodes B, C, D, and E, while a second layer allows information originating from nodes G, H, I, and J to influence the representation of node A through the intermediate neighboring nodes. 
+
+This topology-aware information propagation is particularly useful under sparse monitoring because hydraulic information available at a limited number of locations can influence the learned representations of other nodes through the network structure. The final node representations are then used to estimate the leakage status of each leak-candidate node, allowing multiple nodes to be identified as leaking within the same scenario. 
+
+The number of graph-convolution layers (d) and the number of hidden neurons per layer (s) were treated as tunable hyperparameters. Increasing d allows information to propagate across 11 
+
+progressively larger graph neighborhoods, whereas s controls the dimensionality of the learned node representations.  
+
+> Figure 2. Neighborhood aggregation and information propagation in the GCN model.
+
+2.4 Conventional Classifiers 
+
+MLP, SVM, KNN, and RF classifiers were developed alongside the GCN for performance comparison. All conventional classifiers used the pressure-related input features described in Section 2.2. All conventional classifiers were configured to produce one binary prediction for each leak-candidate node, consistent with the multilabel target representation used by the GCN. 
+
+The MLP is a feedforward neural network consisting of an input layer, one or more fully connected hidden layers, and an output layer. In this study, the number of hidden layers and the number of neurons per hidden layer were treated as tunable hyperparameters (Goodfellow et al., 2016). 12 
+
+The KNN classifier determines the class of a sample based on its K nearest training samples in the feature space. The number of neighbors, K, was treated as a tunable hyperparameter (Yiğit, 2013). 
+
+The SVM classifier identifies a decision boundary that maximizes the separation between classes. Its performance depends on the regularization parameter C and the selected kernel function. Accordingly, C, kernel type, and polynomial degree, when applicable, were treated as tunable hyperparameters (Patle & Chouhan, 2013). 
+
+The RF classifier combines predictions from multiple decision trees. The number of trees controls the ensemble size, whereas the maximum tree depth controls the complexity of individual trees. Both parameters were treated as tunable hyperparameters (Biau & Scornet, 2016). 
+
+2.5 Model Training and Evaluation 
+
+The GCN model was trained using the binary cross-entropy (BCE) loss function together with the Adam optimization algorithm (Kingma & Ba, 2015). For each model configuration, training continued until the predefined training-convergence criterion was satisfied. Training convergence was defined as an improvement in the training loss of less than 1% over 10 consecutive training iterations. The BCE loss was calculated over all leak-candidate nodes and training scenarios as follows: 
+
+𝐿 𝐵𝐶𝐸 = − 1𝑚𝑛 ∑ ∑ [ 𝑌 𝑖 𝑗 . log (Ŷ 𝑖𝑗 ) + (1 − 𝑌 𝑖 𝑗 ) . log (1 − Ŷ 𝑖𝑗 )] 
+
+> 𝑚 𝑗=1 𝑛 𝑖=1
+
+(9) 
+
+Where 𝑛 , 𝑚 𝑌 𝑖𝑗 , Ŷ𝑖𝑗  
+
+> ,
+
+and LBCE denote the number of nodes, the number of scenarios, the actual value of the 𝑖 𝑡ℎ node of the 𝑗 𝑡ℎ scenario, the predicted value of the 𝑖 𝑡ℎ node of the 𝑗 𝑡ℎ scenario and the loss function value, respectively. 13 
+
+For each investigated dataset size, the generated scenarios were randomly divided into development and test subsets using an 80/20 split. The 80% development subset was used for model training and hyperparameter selection, while the remaining 20% was retained as a held-out test subset. Hyperparameters were selected using five-fold cross-validation within the development subset (Arlot & Celisse, 2010). In each cross-validation iteration, four folds were used for training and the remaining fold for validation, such that each fold served once as the validation subset. The same data split and cross-validation procedure were applied to the GCN and all conventional classifiers to ensure a consistent comparison. 
+
+The mean F1-score across the five validation folds was used to select the optimal hyperparameter configuration. The selected configuration was then retrained using the complete 80% development subset and evaluated on the held-out 20% test subset. The hyperparameters considered for the GCN and conventional classifiers are presented in Table 1. 
+
+To investigate the amount of training data required for stable model performance, the complete cross-validation procedure was repeated using progressively larger datasets. Dataset enlargement was continued while the mean cross-validation F1-score showed meaningful improvement. A learning-curve plateau was considered to have been reached when the absolute increase in mean cross-validation F1-score was less than 0.01 over two consecutive dataset-size increments. This plateau was used as the stopping criterion for further scenario generation. Importantly, the held-out test subsets were not used to determine this stopping point. 
+
+Precision, recall, F1-score, and accuracy were used to evaluate node-level leak-localization performance, as defined in Equations (10)– (13) (Yacouby & Axman, 2020). 14 
+
+Precision = TP TP + FP (10) 
+
+Recall = TP TP + FN (11) 
+
+F1 − score = 2 × Precision × Recall Precision + Recall (12) 
+
+Accuracy = TP + TN TP + TN + FP + FN (13) 
+
+Here, TP denotes the number of leaking nodes correctly classified as leaking, FP the number of non-leaking nodes incorrectly classified as leaking, TN the number of non-leaking nodes correctly classified as non-leaking, and FN the number of leaking nodes incorrectly classified as non-leaking. The reported metrics were calculated for each leak-candidate node and then averaged across all nodes.                 
+
+> Table 1. Candidate hyperparameter values for each model.
+> Model Hyperparameters Candidates
+> GCN
+> d (number of graph-convolution layers) {1, 2, 3, 4, 5, 6, 7}
+> s (hidden neurons per graph-convolution layer) {8, 16, 32, 64, 128, 256}
+> MLP
+> Number of hidden layers {1, 2, 3, 4, 5, 6}
+> Number of neurons per hidden layer {16, 32, 64, 128, 256, 512}
+> KNN K{1, 2, 3, ..., 25}
+> SVM
+> C{0.1, 1, 100}
+> Kernel {linear, poly, rbf}
+> Degree (poly kernel only) {2, 3} 15
+> Model Hyperparameters Candidates
+> RF
+> Number of trees {100, 200, 300, …, 1000}
+> Maximum tree depth {10, 20, 30, 40, 60, None}
+
+2.6 Benchmark Networks and Experimental Setup 
+
+The proposed framework was evaluated using two benchmark WDNs of different sizes. The Hanoi network, originally introduced by Fujiwara and Khang (1990), consists of 31 nodes, 34 pipes, and one reservoir (Figure 3); its hydraulic and demand data were adopted from the benchmark configuration used by Lučin et al. (2021). The larger NET3 network is distributed with EPANET and contains 92 nodes, 117 pipes, two reservoirs, and three tanks (Rossman et al., 2020) (Figure 4). Using networks of substantially different sizes provides a basis for evaluating the applicability of the proposed approach to increasingly complex WDNs. 
+
+To represent sparse monitoring conditions, pressure measurements were assumed to be available at four nodes in the Hanoi network and eleven nodes in the NET3 network. Sensor locations were selected to provide spatial and hydraulic coverage of different parts of each network, including locations near water sources, terminal branches, elevated regions, and hydraulically remote areas. 
+
+For the Hanoi network, pressure sensors were assigned to nodes 2, 13, 22, and 31. Node 2 is located near the reservoir, nodes 13 and 22 are located at terminal branches, and node 31 represents a hydraulically remote part of the network. 
+
+For the NET3 network, pressure sensors were assigned to nodes 10, 15, 20, 40, 50, 60, 131, 153, 219, 243, and 253. Nodes 10 and 60 are located near the lake and river sources, respectively; nodes 15, 131, 219, 243, and 253 are located at terminal branches; and nodes 10, 20, 40, 50, and 153 represent high-elevation or local-elevation maxima. Nodes 20, 40, and 50 are also located near 16 
+
+tanks 3, 1, and 2, respectively, while node 219 has the greatest shortest-path distance to its nearest water source and therefore represents a hydraulically remote region of the network. 
+
+Figure 3. Hanoi WDN with 31 demand nodes, 34 pipes, one reservoir, and four pressure-sensor nodes. ode ensor ode eser oir ipe  
+
+> 213 22 31 17
+> Figure 4. NET3 WDN with 92 consumption nodes, 117 pipes, two reservoirs, three tanks, and eleven pressure-sensor nodes.
+
+# 3. Results and Discussion 
+
+The results are presented in two parts. First, the overall performance of the GCN and the conventional classifiers is evaluated as the number of generated scenarios increases. Second, node-level classification accuracy is examined in relation to the average shortest-path distance to pressure sensors. 
+
+3.1 Model Performance and Effect of Dataset Size 18 
+
+The GCN, RF, MLP, SVM, and KNN classifiers were evaluated on the Hanoi and NET3 networks using different numbers of generated scenarios, ranging from 2000 to 22000 for Hanoi and from 4000 to 44000 for NET3 (Figures 5 and 6). Each scenario contained a randomly selected number of simultaneous leaks, ranging from one to the total number of leak-candidate nodes, and the leaking nodes were selected randomly. 
+
+Figure 5. Performance of the GCN, RF, MLP, SVM, and KNN models as the number of scenarios increases for the Hanoi network. 0. 0. 0. 0. 0.                         
+
+> 0.
+> 1.0 0000 10000 1 000 20000 2 000
+> LK0. 0. 0. 0. 0.
+> 0.
+> 1.0 0000 10000 1 000 20000 2 000
+> LK0. 0. 0. 0. 0.
+> 0.
+> 1.0 0000 10000 1 000 20000 2 000
+> LK0. 0. 0. 0. 0.
+> 0.
+> 1.0 0000 10000 1 000 20000 2 000
+> LK
+
+19 
+
+Figure 6. Performance of the GCN, RF, MLP, SVM, and KNN models as the number of scenarios increases for the NET3 network. 
+
+The GCN outperformed the conventional classifiers across the evaluated metrics. All models used the same reconstructed pressure-related input features; however, the GCN additionally incorporated network topology during classification through graph-based neighborhood aggregation. This additional topological information explains its stronger performance relative to the conventional classifiers. 
+
+The scale of the sampled scenario space can be evaluated relative to the total number of possible leak-location combinations. For the Hanoi and NET3 networks, 
+
+𝐶 Hanoi = 2 31 − 1 = 2,147,483,647 (14) 
+
+𝐶 NET3 = 2 92 − 1 ≈ 4.95 × 10 27 (15) 0. 0. 0. 0. 0.                         
+
+> 0.
+> 1.0 0000 1 000 2 000 32000 0000
+> LK0. 0. 0. 0. 0.
+> 0.
+> 1.0 0000 1 000 2 000 32000 0000
+> LK0. 0. 0. 0. 0.
+> 0.
+> 1.0 0000 1 000 2 000 32000 0000
+> LK0. 0. 0. 0. 0.
+> 0.
+> 1.0 0000 1 000 2 000 32000 0000
+> LK20
+
+where C denotes the total number of possible leak-location combinations Accordingly, 22,000 Hanoi scenarios represent 
+
+22,000 231 − 1 × 100 ≈ 0.0010%, 
+
+of all the possible leak-location combinations, while approximately 42,000 NET3 scenarios represent only 
+
+42,000 292 − 1 × 100 ≈ 8.5 × 10 −22 %. 
+
+These results show that effective localization can be achieved using only a very small sampled fraction of the combinatorial leak-location space, supporting the scalability of the proposed formulation across the tested network sizes. 
+
+Compared with Hanoi, all models showed lower performance on the larger and more complex ET3 network. Howe er, the ’s ad antage o er the con entional classifiers became more pronounced, suggesting that topology-aware learning provides greater benefits as WDN size and complexity increase. 
+
+3.2 Node-Level Accuracy and Sensor Proximity 
+
+For the Hanoi network, the GCN achieved an overall accuracy of 0.92 on the held-out test subset of the 22,000-scenario dataset. . However, node-level accuracy ranged from 0.84 to 0.97 The relationship between each node’s average shortest-path distance (ASPD) from the pressure-sensor nodes and its classification accuracy was therefore examined (Figure 7; Table 2). As ASPD decreased, node-level classification accuracy increased. 21       
+
+> Figure 7. Classification of Hanoi network nodes according to their ASPD.
+> Table 2. Relationship between ASPD and accuracy for the Hanoi network.
+> ASPD from sensor nodes Average accuracy
+> (6500, 7100) 0.94
+> (7100, 7500) 0.91
+> (7500, 10500) 0.86
+
+The same analysis was applied to the NET3 network, where a similar pattern was observed. The reported overall accuracy for 40000 scenarios was 0.82 As ASPD decreased, node-level classification accuracy increased, as shown in Figure 8 and Table 3. 22 
+
+Figure 8. Classification of NET3 network nodes according to their ASPD. 
+
+Table 3. Relationship between ASPD and accuracy for the NET3 network. 
+
+ASPD from sensor nodes  Average accuracy 
+
+(6300, 6600)  0.87 
+
+(6600, 7300)  0.80 
+
+(7300, 18200)  0.75 23 
+
+The ASPD intervals in Tables 2 and 3 were selected to obtain approximately balanced numbers of nodes across the distance ranges, reducing the influence of highly unequal group sizes on the grouped accuracy analysis. 
+
+# Conclusion 
+
+This study developed a GCN-based framework for localizing a variable number of simultaneous leaks in WDNs under sparse monitoring. The GCN was evaluated alongside MLP, SVM, RF, and KNN classifiers and achieved consistently stronger leak-localization performance. By incorporating network topology through graph convolution, the proposed model can use spatial relationships between nodes in addition to the hydraulic information. 
+
+The proposed framework has three main features. First, it does not require the number of leaks to be specified in advance. Second, it can be trained using a sampled subset of leakage scenarios rather than exhaustively generating all possible leak-location combinations Third, it operates under sparse pressure-sensor coverage by reconstructing pressure information at unmonitored nodes using network connectivity. 
+
+The framework was evaluated under several conditions relevant to operational WDNs, including variable demand, random leak locations, variable leak magnitudes, a variable number of simultaneous leaks, and sparse pressure-sensor coverage. Considering these conditions provides a more practical assessment of model performance than evaluations based on fixed hydraulic or leakage conditions. The results for both Hanoi and NET3 therefore support the practical applicability of the proposed framework under the conditions considered in this study. Future work should investigate additional hydraulic information, such as flow measurements, and more sample-24 
+
+efficient training strategies to further improve leak-localization performance and reduce data requirements. 
+
+Data Availability Statement: Data and materials supporting the results of this paper are available upon reasonable request. 
+
+Funding: This research received no external funding. 
+
+Conflicts of Interest: No potential conflicts of interest were reported by the authors. 
+
+# References 
+
+AbuEltayef, H. T., AbuAlhin, K. S., & Alastal, K. M. (2023). Addressing non-revenue water as a global problem and its interlinkages with sustainable development goals. Water Practice & Technology, 18 (12), 3175–3202. https://doi.org/10.2166/wpt.2023.157 
+
+Ahmad, T., Shaban, I. A., & Zayed, T. (2023). A review of climatic impacts on water main deterioration. Urban Climate, 49 , Article 101552. https://doi.org/10.1016/j.uclim.2023.101552 
+
+Ajoodani, A., Nazif, S., & Ramazi, P. (2025). Towards a realistic data-driven leak localization in water distribution networks. Water, 17 (13), Article 1988. 
+
+https://doi.org/10.3390/w17131988 
+
+Arlot, S., & Celisse, A. (2010). A survey of cross-validation procedures for model selection. 
+
+Statistics Surveys, 4 , 40–79. https://doi.org/10.1214/09-SS054 
+
+Biau, G., & Scornet, E. (2016). A random forest guided tour. TEST, 25 (2), 197–227. https://doi.org/10.1007/s11749-016-0481-7 
+
+Callejas Moncaleano, D. C., Pande, S., & Rietveld, L. (2021). Water use efficiency: A review of contextual and behavioral factors. Frontiers in Water, 3 , Article 685650. https://doi.org/10.3389/frwa.2021.685650 
+
+Chen, G., Xie, H., Ma, Y., Zhu, R., & Li, B. (2026). Risk assessment methods for urban water distribution networks: A state-of-the-art review of indicator, statistical, and machine learning approaches. Applied Sciences, 16 (7), Article 3443. https://doi.org/10.3390/app16073443 
+
+Fang, Q., Zhang, J., Xie, C., & Yang, Y. (2019). Detection of multiple leakage points in water distribution networks based on convolutional neural networks. Water Supply, 19 (8), 2231– 2239.  https://doi.org/10.2166/ws.2019.105 25 
+
+Fujiwara, O., & Khang, D. B. (1990). A two-phase decomposition method for optimal design of looped water distribution networks. Water Resources Research, 26 (4), 539–549. https://doi.org/10.1029/WR026i004p00539 
+
+Garðarsson, G. Ö., Boem, F., & Toni, L. (2022). Graph-based learning for leak detection and localization in water distribution networks. IFAC-PapersOnLine, 55 (6), 661–666. https://doi.org/10.1016/j.ifacol.2022.07.203 
+
+Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep learning . MIT Press. 
+
+Hajgató, G., Gyires-Tóth, B., & Paál, G. (2021). Reconstructing nodal pressures in water distribution systems with graph neural networks [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2104.13619 
+
+He, H., & Garcia, E. A. (2009). Learning from imbalanced data. IEEE Transactions on Knowledge and Data Engineering, 21 (9), 1263–1284. https://doi.org/10.1109/TKDE.2008.239 
+
+Irofti, P., Romero-Ben, L., Stoican, F., & Puig, V. (2022). Data-driven leak localization in water distribution networks via dictionary learning and graph-based interpolation. In 2022 IEEE Conference on Control Technology and Applications (CCTA) (pp. 1265–1270). IEEE. https://doi.org/10.1109/CCTA49430.2022.9966160 
+
+Kim, R., & Choi, Y. H. (2026). Multi-leakage detection using graph attention networks and restoration prioritization in water distribution systems. Computer Modeling in Engineering & Sciences, 146 (3), 28. https://doi.org/10.32604/cmes.2026.077480 
+
+Kingma, D. P., & Ba, J. (2015). Adam: A method for stochastic optimization. In 3rd International Conference on Learning Representations (ICLR 2015) . https://arxiv.org/abs/1412.6980 
+
+Kipf, T. N., & Welling, M. (2017). Semi-supervised classification with graph convolutional networks. In International Conference on Learning Representations .https://arxiv.org/abs/1609.02907 
+
+Li, X., & Wu, Y. (2024). A convolutional graph neural network model for water distribution network leakage detection based on segment feature fusion strategy. Water, 16 (24), Article 3555. https://doi.org/10.3390/w16243555 
+
+Li, Z., Tian, Y., & Peng, S. (2025). Detection and localization of pipeline leakage of water distribution networks based on graph convolutional networks. Computer-Aided Civil and Infrastructure Engineering, 40 (31), 6656–6677. https://doi.org/10.1111/mice.70173 
+
+Liao, W., Bak-Jensen, B., Pillai, J. R., Wang, Y., & Wang, Y. (2022). A review of graph neural networks and their applications in power systems. Journal of Modern Power Systems and Clean Energy, 10 (2), 345–360. https://doi.org/10.35833/MPCE.2021.000058 
+
+Lučin, I., Čarija, Z., Družeta, ., & Lučin, B. (2021). Detailed leak localization in water distribution networks using random forest classifier and pipe segmentation. IEEE Access, 9, 155113–155122. https://doi.org/10.1109/ACCESS.2021.3129703 
+
+Marzola, I., Alvisi, S., & Franchini, M. (2022). A comparison of model-based methods for leakage localization in water distribution systems. Water Resources Management, 36 , 5711–5727. https://doi.org/10.1007/s11269-022-03329-4 26 
+
+Mazaev, G., Weyns, M., Vancoillie, F., Vaes, G., Ongenae, F., & Van Hoecke, S. (2022). Leak localization in water distribution networks by directly fitting the learning parameters of a Gaussian naive Bayes classifier. In 2022 IEEE International Conference on Big Data (Big Data) (pp. 4854–4859). IEEE. https://doi.org/10.1109/BigData55660.2022.10020580 
+
+Mücke, N. T., Pandey, P., Jain, S., Bohté, S. M., & Oosterlee, C. W. (2023). A probabilistic digital twin for leak localization in water distribution networks using generative deep learning. 
+
+Sensors, 23 (13), Article 6179. https://doi.org/10.3390/s23136179 
+
+Patle, A., & Chouhan, D. S. (2013). SVM kernel functions for classification. In 2013 International Conference on Advances in Technology and Engineering (ICATE) (pp. 1–9). IEEE. https://doi.org/10.1109/ICAdTE.2013.6524743 
+
+Ponti, A., Giordani, I., Candelieri, A., & Archetti, F. (2024). Wasserstein-enabled leaks localization in water distribution networks. Water, 16 (3), Article 412. https://doi.org/10.3390/w16030412 
+
+Puust, R., Kapelan, Z., Savic, D. A., & Koppel, T. (2010). A review of methods for leakage management in pipe networks. Urban Water Journal, 7 (1), 25–45. https://doi.org/10.1080/15730621003610878 
+
+Rodríguez-Argote, C. A., Begovich-Mendoza, O., Navarro-Díaz, A., Santos-Ruiz, I., Puig, V., & Delgado-Aguiñaga, J. A. (2023). Two-leak isolation in water distribution networks based on k-NN and linear discriminant classifiers. Water, 15 (17), Article 3090. https://doi.org/10.3390/w15173090 
+
+Rolle, R. P., Rodrigues, W. C., Tomazini, L. R., Monteiro, L. N., & Godoy, E. P. (2024). Leveraging graph-based leak localization in water distribution networks. In 2024 IEEE International Workshop on Metrology for Industry 4.0 & IoT (MetroInd4.0 & IoT) (pp. 192–197). IEEE. https://doi.org/10.1109/MetroInd4.0IoT61288.2024.10584129 
+
+Romero-Ben, L., Alves, D., Blesa, J., Cembrano, G., Puig, V., & Duviella, E. (2023). Leak detection and localization in water distribution networks: Review and perspective. Annual Reviews in Control, 55 , 392–419. https://doi.org/10.1016/j.arcontrol.2023.03.012 
+
+Rossman, L. A., Woo, H., Tryby, M., Shang, F., Janke, R., & Haxton, T. (2020). EPANET 2.2 user manual (EPA/600/R-20/133). U.S. Environmental Protection Agency. 
+
+Şahin, E., & Yüce, H. (2023). Prediction of water leakage in pipeline networks using graph convolutional network method. Applied Sciences, 13 (13), Article 7427. https://doi.org/10.3390/app13137427 
+
+Sun, C., Parellada, B., Puig, V., & Cembrano, G. (2020). Leak localization in water distribution networks using pressure and data-driven classifier approach. Water, 12 (1), Article 54. https://doi.org/10.3390/w12010054 
+
+Truong, H., Tello, A., Lazovik, A., & Degeler, V. (2024). Graph neural networks for pressure estimation in water distribution systems. Water Resources Research, 60 (7), Article e2023WR036741. https://doi.org/10.1029/2023WR036741 27 
+
+Tyagi, V., Pandey, P., Jain, S., & Ramachandran, P. (2023). A two-stage model for data-driven leakage detection and localization in water distribution networks. Water, 15 (15), Article 2710. https://doi.org/10.3390/w15152710 
+
+Wang, J., Zhang, S., Xiao, Y., & Song, R. (2022). A review on graph neural network methods in financial applications. Journal of Data Science, 20 (2), 111–134. https://doi.org/10.6339/22-JDS1047 
+
+Xia, F., Sun, K., Yu, S., Aziz, A., Wan, L., Pan, S., & Liu, H. (2021). Graph learning: A survey. 
+
+IEEE Transactions on Artificial Intelligence, 2 (2), 109–127. https://doi.org/10.1109/TAI.2021.3076021 
+
+Yacouby, R., & Axman, D. (2020). Probabilistic extension of precision, recall, and F1 score for more thorough evaluation of classification models. In Proceedings of the First Workshop on Evaluation and Comparison of NLP Systems (pp. 79–91). Association for Computational Linguistics. https://doi.org/10.18653/v1/2020.eval4nlp-1.9 
+
+Yang, L., Zhou, W., Peng, W., Niu, B., Gu, J., Wang, C., Cao, X., & He, D. (2022). Graph neural networks beyond compromise between attribute and topology. In Proceedings of the ACM Web Conference 2022 (pp. 1127–1135). Association for Computing Machinery. https://doi.org/10.1145/3485447.3512069 
+
+Yiğit, H. (2013). A weighting approach for K classifier. In 2013 International Conference on Electronics, Computer and Computation (ICECCO) (pp. 228–231). IEEE. https://doi.org/10.1109/ICECCO.2013.6718270 
+
+Yin, F., Wang, C., & Cao, J. (2026). Early two-point leak localization in water distribution networks using topology-aware deep learning. Water, 18 (16), Article 1966. https://doi.org/10.3390/w18161966 
+
+Zhang, X.-M., Liang, L., Liu, L., & Tang, M.-J. (2021). Graph neural networks and their current applications in bioinformatics. Frontiers in Genetics, 12 , Article 690049. https://doi.org/10.3389/fgene.2021.690049 
+
+Zhang, Z., & Fink, O. (2026). Algorithm-informed graph neural networks for leakage detection and localization in water distribution networks. Reliability Engineering & System Safety, 265 , Article 111494. https://doi.org/10.1016/j.ress.2025.111494

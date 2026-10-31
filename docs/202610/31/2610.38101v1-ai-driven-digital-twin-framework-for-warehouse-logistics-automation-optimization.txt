@@ -1,0 +1,166 @@
+Title: AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization
+
+URL Source: https://arxiv.org/pdf/2610.38101v1
+
+Published Time: Fri, 30 Oct 2026 00:43:51 GMT
+
+Number of Pages: 4
+
+Markdown Content:
+# AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization 
+
+‡Md Mahinur Alam* , †Kanita Jerin Tanha* , §Md Tanjin Alam , φShadman Sakib , ‡Min Gyu Kim 
+
+> †
+
+Kumoh National Institute of Technology, Gumi, South Korea, 
+
+> ‡
+
+Georgia Southern University, GA, USA, 
+
+> φ
+
+University of Maryland, Baltimore County, MD, USA, §VosuAI, kanitajerin17@kumoh.ac.kr, piash.tanjin@gmail.com, (malam4, ssakib1)@umbc.edu, mkim@georgiasouthern.edu 
+
+Abstract —In recent years, warehouse logistics optimization has increasingly focused on intelligent, data-driven systems to enhance operational efficiency. Conventional static product place-ment strategies are being progressively replaced by dynamic slotting approaches that can adapt to real-time variations in warehouse conditions. In this work, we present a novel frame-work that employs a reinforcement learning agent integrated within a FlexSim-based Digital Twin environment for real-time product placement optimization. The proposed agent continu-ously learns from streaming operational data, enabling it to reduce picking time while improving overall system throughput. The simulation environment models a four-zone warehouse layout with forklift-based material handling and leverages the Asset Administration Shell framework to ensure seamless interaction between the learning agent, physical asset, and the digital twin. Experimental evaluation demonstrates substantial performance gains, with the proposed approach achieving a 29.66% reduction in average picking time, 35.42% increase in throughput, and 18.54% decrease in travel distance. 
+
+Index Terms —Automation, digital twin, reinforcement learning (RL), warehouse logistics. 
+
+I. I NTRODUCTION 
+
+Warehouse logistics increasingly face volatile demand, labor shortages, and tight service-level constraints, making static slotting and rule-based placement strategies inadequate for sustaining low picking time and high throughput. Digital twin (DT) technology addresses this limitation by provid-ing a high-fidelity, continuously updatable virtual replica of warehouse operations that supports real-time monitoring and safe evaluation of alternative decisions without interrupting physical workflows. To ensure interoperable and consistent interactions across heterogeneous assets (e.g., racks, trans-porters, conveyors), the Asset Administration Shell (AAS) [1] further standardizes asset identity, state, and control interfaces, enabling reliable data exchange between the DT environment and intelligent optimization modules [2]. Dynamic warehouse optimization has been explored through operations research, rule-based heuristics, and learning-based methods [3]. Classical approaches include MILP-based hierar-chical frameworks for multi-AGV scheduling, which achieve notable reductions in task completion time, but depend on 
+
+*Equal Contribution Asset Administration         
+
+> Shell (AAS)
+> Digital Twin
+> Warehouse
+> Adaptive Slotting
+> Physical
+> Warehouse
+> DQN Agent
+> Reward
+> (rt= ∆T saved − λ · C move + μ · ∆KPI )
+> Q-Network
+> Q( s, a, θ )
+> Warehouse Data
+> order_id
+> rack_num
+> picking_time_seconds
+> .........
+> stock_level
+> Respons Buffer
+> (s, a, r, s' )
+> ε - Greedy
+> Policy
+> Dynamic Reslotting Plan
+> New
+> Policy πθ
+> Real-
+> time
+> Data st
+> Synthetic
+> Data st
+> Action at
+> Reward rt
+
+Fig. 1: Proposed AI-Driven Digital Twin Framework for Smart Warehouse Logistics, Physical-to-Digital Synchroniza-tion via Asset Administration Shell with Reinforcement Learn-ing Based Dynamic Reslotting Optimization. static formulations that limit real-time adaptability [4]. Simi-larly, genetic-algorithm variants such as ARGA [5] and multi-agent pathfinding decomposition methods [6] offer strong coordination capabilities, but incur significant computational overhead and do not adapt dynamically to evolving warehouse conditions. Reinforcement learning (RL) has gained prominence as a more adaptive alternative for storage assignment and routing [7]. Proximal Policy Optimization (PPO) has demonstrated a 6.3% reduction in transport costs through adaptive slot selection, outperforming classical ABC heuristics [8]. Deep Q-Network (DQN) methods have been applied to task assignment and shelf reallocation, reducing travel time and improving throughput over heuristic-based planning [9]. Other deep RL approaches using The Asprilo environment has minimized travel distance, outperforming GA, ACO, and VRP heuristics by 1.76% across various warehouse layouts [10]. Despite this advances, most RL-based solutions operate in isolated simulation environments without integration into high-fidelity digital twin systems, limiting their ability to continuously reflect real warehouse states and hinder practical deployment. To bridge this gap, we present an integrated framework that couples a DQN-based RL agent with a FlexSim-based Digital arXiv:2610.38101v1 [cs.AI] 28 Oct 2026 Twin through an AAS middleware layer, enabling real-time perception–action loops for dynamic slotting optimization. The key contributions of this paper are: (1) We propose a DQN-based dynamic slotting framework that learns demand-aware zone assignment policies from real-time warehouse states, integrating action masking, experience replay, and ϵ-greedy ex-ploration to jointly optimize picking time, travel distance, and throughput. (2) We design a hybrid CNN–BiLSTM–Attention Q-network architecture that captures spatial feature correla-tions and temporal dependencies in warehouse state sequences, and validate its effectiveness through ablation studies against alternative architectures. (3) We implement a high-fidelity FlexSim-based Digital Twin integrated with the AAS, enabling standardized asset representation, seamless bidirectional data exchange, and safe shadow evaluation of slotting policies prior to physical deployment. 
+
+Fig. 2: Digital Twin Warehouse Logistics Simulation in FlexSim Four Zone Layout with Forklift-Based Product Han-dling. II. P ROPOSED FRAMEWORK 
+
+The proposed framework tightly couples a reinforcement learning agent with a FlexSim-based Digital Twin through an Asset Administration Shell middleware layer, as illustrated in Fig. 1. IoT-instrumented physical warehouse assets are mirrored digitally via AAS, which standardizes asset identi-fication, state representation, and control interfaces, ensuring bidirectional synchronization between the physical facility and its simulated counterpart. The RL agent operates exclusively within the DT environment, issuing dynamic slotting decisions that are evaluated in simulation before deployment as adaptive reslotting plans. 
+
+A. RL Agent Formulation 
+
+At each decision step t, the warehouse state is encoded as st = [ order id , rack num , pick time , . . . , stock level ],and the agent selects a zone assignment at ∈ { A, B, C, D }
+
+for a candidate item. Invalid actions are masked at each step by setting their Q-values to −∞ before action selection, pre-venting assignments to zones that have reached rack capacity or whose current stock levels exceed a predefined thresh-old, thereby constraining exploration to operationally feasible placements. The scalar reward rt = ∆ Tsaved − λ · Cmove + μ ·
+
+∆KPI balances picking time improvement ∆Tsaved , relocation cost Cmove , and temporal change in zone-level performance 
+
+∆KPI = KPI zone (t+1) −KPI zone (t), where KPI item = P 
+
+> i
+
+wi ˜xi
+
+aggregates min-max normalized fulfillment rate ( w1=0 .35 ), stockout rate ( w2=0 .25 ), turnover ( w3=0 .25 ), and holding cost ( w4=0 .15 ). We set λ=0 .3 and μ=0 .2 via grid search over 
+
+{0.1, 0.2, 0.3, 0.5}, prioritizing picking time as the dominant signal. The agent remains robust across moderate ranges; performance degrades only when relocation penalty dominates (λ=0 .5, restricting beneficial moves) or KPI weight is exces-sive ( μ=0 .5, causing unstable early training from noisy ∆KPI estimates). The agent maximizes the expected discounted return 
+
+Gt = EP ∞ 
+
+> k=0
+
+γkrt+k
+
+ via a parameterized action-value network Q(s, a ; θ). A target network Qt(s, a ; θ−) is peri-odically synchronized to stabilize training. For each mini-batch {(sj , a j , r j , s j+1 )}Nj=1 , the temporal difference target is 
+
+yj = rj if sj+1 is terminal and yj = rj + γ Q t(sj+1 , a ′; θ−)
+
+otherwise, with mean-squared loss L(θ) = 1
+
+> N
+
+PNj=1 (yj −
+
+Q(sj , a j ; θ)) 2. Training uses Adam (η=3 ×10 −4, γ=0 .99 ,batch size 64), a 10 5-transition replay buffer with 2,000-step warm-up, hard target updates every τ =1000 steps, and ε-greedy exploration decaying linearly from 1.0 to 0.05 over 50,000 steps. Gradient clipping (norm =10 ) and weight decay (10 −5) ensure stability across 2,000 episodes. 
+
+B. Deep Q-Network 
+
+The Q-network employs a hybrid CNN–BiLSTM–Attention architecture designed to capture both spatial feature correla-tions across warehouse state variables and long-range tem-poral dependencies across decision steps. The state st is first passed through a 1D-CNN, where each layer computes 
+
+x(n) 
+
+> i
+
+= ReLU( Wn · xi−1 + bn), to extract local spatial patterns among co-located features such as rack occupancy, stock levels, and picking frequency. The resulting feature maps are fed into a BiLSTM, producing forward and backward hidden representations −→
+
+H t and ←−
+
+H t that encode both past operational trends and anticipated future demand signals with standard gating mechanisms ( ft, it, Ct, ot). To enable the agent to focus on the most operationally critical time steps, an additive Bahdanau attention mechanism [11] computes alignment scores ei = vT tanh( Wahi + ba),normalized via softmax to obtain attention weights αi =exp( ei)/ PTk=1 exp( ek). The context vector c = PTi=1 αihi
+
+is then projected through a fully connected layer to produce Q-values Q(st, a ; θ) for all four zone actions. This selec-tive attention allows the network to weight warehouse state transitions where demand shifts or congestion events most strongly influence slotting decisions, directly supporting the framework’s objective of demand-aware zone assignment. 
+
+C. Digital Twin Closed-Loop Integration 
+
+As depicted in Fig. 1, the agent-environment interaction follows a structured closed loop: the DQN agent issues a zone-assignment action at, which the action executor translates into FlexSim simulator commands via AAS. FlexSim advances 2TABLE I: FlexSim Digital Twin Warehouse Simulation Asset Configuration Parameters.                      
+
+> Parameters Values Parameters Values
+> Inbound Queues Max Content 100 Racks 16 Outbound Queues Max Content 100 Zones 4Inbound Conveyor Speed 1.75 m \sSpeed Picker Transporter 1.25 m \sOutbound Conveyor Speed 1.25 m \sAcceleration Picker Transporter 1.75 m \sOperators 2Speed Placer Transporter 1.0 m \sSinks 1Acceleration Placer Transporter 1.25 m \s
+
+Fig. 3: Ablation study comparing average picking time across Q-network architecture variants. the epoch and returns operational traces (picking durations, travel distances, queue states), from which the reward module computes rt and the next state st+1 . The transition tuple 
+
+(st, a t, r t, s t+1 ) is stored in the response buffer for minibatch sampling and network updates. This perception decision ex-ecution loop supports online iterative policy refinement in a high-fidelity environment, while the AAS layer permits shadow evaluation of candidate slotting policies before any physical deployment. 
+
+D. Warehouse Logistics Digital Twin Environment 
+
+The warehouse environment is instantiated as a high-fidelity 3D discrete-event simulation in FlexSim, serving as the interactive execution substrate for the DQN agent. The simulated facility encompasses four storage zones (A–D), each equipped with four double-sided racks, yielding 16 racks total, accommodating a 500-SKU product catalog. Zones are connected through navigable aisle networks that govern transporter routing and forklift trajectories, as visualized in the digital twin layout Fig. 2. Product flow is managed by four autonomous transporters: two Picker units (v = 1.25 m/s, a = 1.75 m/s²) responsible for retrieval to delivery movement, and two Placer units (v = 1.0 m/s, a = 1.25 m/s²) handling replenishment operations. Two inbound and two outbound queues (capacity: 100 units each) buffer product flows at the zone interfaces, while dedicated conveyors operating at 1.75 m/s inbound and 1.25 m/s outbound link storage areas to the dispatch sink. Two human operator agents and one sink node complete the material handling circuit, as summarized in Table I. Each simulation epoch is triggered by the DQN agent’s action executor, which translates zone assignment decisions into FlexSim object commands via the AAS interface layer. TABLE II: Performance comparison averaged over 5 indepen-dent runs with different random seeds.             
+
+> Metrics Static Slotting DQN-Agent Changes (%)
+> Avg. Travel Distance (units) 0.8203 ±0.012 0.6682 ±0.018 ↓18.54%
+> Avg. Picking Time (s) 169.22 ±2.41 118.32 ±3.15 ↓29.66%
+> Throughput (orders/hour) 23.35 ±0.87 31.62 ±1.04 ↑35.42%
+
+Upon epoch completion, the simulator emits operational traces picking durations, transporter trajectories, and queue states that are consumed by the reward computation module to close the agent-environment loop. This architecture enables safe shadow evaluation of slotting policies prior to any physical deployment, while maintaining continuous synchronization between the agent’s learned model and the evolving simulated state. 
+
+E. Experimental Setup 
+
+All experiments are conducted on a workstation equipped with an Intel Core i9-13900K CPU, 64 GB RAM, and an NVIDIA RTX 4090 GPU. The digital twin environment runs on FlexSim 25.1, with the DQN agent implemented in Python 3.10 using PyTorch 2.1. The agent is trained for 2,000 episodes with each episode comprising a full order cycle across the four-zone warehouse. Evaluation metrics are averaged over several independent runs with distinct random seeds to ensure reproducibility. III. P ERFORMANCE ANALYSIS 
+
+A. Overall DQN Agent Performance 
+
+As reported in Table II, our framework demonstrates con-sistent gains over the static slotting baseline (fixed zone assignment by SKU category) across all three KPIs, aver-aged over five runs with distinct random seeds. The agent reduces average picking time by 29.66% (169.22 to 118.32 s), improves throughput by 35.42% (23.35 to 31.62 orders/hour), and decreases travel distance by 18.54%, reflecting its learned ability to prioritize high-frequency items near dispatch zones while internalizing spatial efficiency. Low standard deviations across all metrics confirm policy stability under varying ini-tializations. 
+
+B. Q-Network Architecture Ablation 
+
+To validate our architectural choices, we compare the proposed CNN-BiLSTM-Attention Q-network against four ablated variants, as shown in Fig. 3. The full architecture achieves the lowest median picking time with the tightest inter-quartile range, confirming that each component is essential: without the CNN, learning variance increases significantly, substituting GRU for BiLSTM reduces temporal modeling fidelity, and removing attention weakens the agent’s ability to identify critical state transitions, and replacing CNN with MLP yields the poorest overall performance. 3DQN-Agent Static Slotting Fig. 4: FlexSim dashboard comparison between the proposed framework DQN-Agent and Static Slotting baseline across per-transporter travel distance, utilization state distribution, and warehouse throughput. 
+
+C. Runtime Operational Analysis 
+
+The FlexSim dashboard results in Fig. 4 provide deeper operational insight into how our framework’s slotting decisions propagate through the warehouse system at runtime. In terms of travel distance, the optimized configuration reduces per-transporter travel by approximately 19% across all four units, a uniform improvement that confirms the agent learns globally efficient zone assignments rather than benefiting only specific transporters or routes. The transporter utilization results are particularly revealing. Under static slotting, transporters spend up to 40% of their time idle or repositioning without a load, a direct consequence of poorly placed inventory forcing long empty traversals. The DQN-Agent resolves this inefficiency by aligning product locations with real-time demand patterns, pushing all four transporters above 98% productive utilization. This near-elimination of idle time represents a fundamental shift in how the warehouse allocates its material handling resources, transforming transporters from underutilized assets into continuous productive units. These efficiency gains compound naturally into throughput, where the framework raises source throughput from 6,629 to 8,543 units and sink throughput from 5,709 to 7,512 units. This outcome underscores a key finding of our work: intelligent slotting does not merely improve individual metrics in isola-tion but creates a cascading effect across the entire material flow pipeline, from storage assignment through transporter routing to final order delivery. IV. C ONCLUSION 
+
+This study introduces a dynamic slotting optimization framework based on DQN, integrated with a FlexSim Digital Twin for smart warehouse logistics. By unifying reinforce-ment learning with a high-fidelity simulation environment and the standardized AAS, the framework enables real-time, adaptive decision-making while maintaining consistent and interoperable asset modeling. The proposed approach is val-idated through extensive simulation, where the DQN agent consistently outperforms traditional static slotting methods by learning demand-aware and distance-efficient placement strategies. The results demonstrate significant improvements in operational efficiency, including faster picking processes, increased system throughput, and reduced travel distances. These gains are driven by the agent’s ability to prioritize high-demand items, minimize unnecessary transporter movements, and reduce idle and non-productive states. REFERENCES [1] K. J. Tanha, M. M. Alam, A. Reimbaev, and T. Jun, “Flexsim-based digital twin framework for smart warehouse monitoring and performance optimization,” Proceedings of the Korean Institute of Communication Sciences Conference , pp. 362–363, 2025. [2] M. M. Alam, R. A. N. Ugli, K. J. Tanha, and T. Jun, “Ai-enhanced digital twin systems for warehouse logistics optimization: A review of challenges with solutions and future directions,” ICT Express , 2026. [3] Y.-H. Jia, W.-N. Chen, T. Gu, H. Zhang, H. Yuan, Y. Lin, W.-J. Yu, and J. Zhang, “A dynamic logistic dispatching system with set-based particle swarm optimization,” IEEE Transactions on Systems, Man, and Cybernetics: Systems , vol. 48, no. 9, pp. 1607–1621, 2017. [4] E. Hu, J. He, and S. Shen, “A dynamic integrated scheduling method based on hierarchical planning for heterogeneous agv fleets in ware-houses,” Frontiers in neurorobotics , vol. 16, p. 1053067, 2023. [5] W. Cheng and W. Meng, “An efficient genetic algorithm for multi agv scheduling problem about intelligent warehouse,” Robotic Intelligence and Automation , vol. 43, no. 4, pp. 382–393, 2023. [6] B. Li and H. Ma, “Double-deck multi-agent pickup and delivery: Multi-robot rearrangement in large-scale warehouses,” IEEE Robotics and Automation Letters , vol. 8, no. 6, pp. 3701–3708, 2023. [7] M. R. Islam, S. M. Ali, A. M. Fathollahi-Fard, and G. Kabir, “A novel particle swarm optimization-based grey model for the prediction of warehouse performance,” Journal of Computational Design and Engineering , vol. 8, no. 2, pp. 705–727, 2021. [8] C. Waubert de Puiseau, D. T. Nanfack, H. Tercan, J. L¨ obbert-Plattfaut, and T. Meisen, “Dynamic storage location assignment in warehouses using deep reinforcement learning,” Technologies , vol. 10, no. 6, p. 129, 2022. [9] S.-C. Wu, W.-Y. Chiu, and C.-F. Wu, “Deep reinforcement learning for task assignment and shelf reallocation in smart warehouses,” IEEE Access , vol. 12, pp. 58 915–58 926, 2024. [10] S. Li, Z. Zhao, D. Wang, K. Li, G. Liu, and Q. Wang, “A reinforcement learning framework for efficient task allocation among agvs in smart warehouse,” IEEE Internet of Things Journal , vol. 12, no. 11, pp. 16 947–16 961, 2025. [11] S. Abinaya, M. Deepak, and A. S. Alphonse, “Enhanced image cap-tioning using bahdanau attention mechanism and heuristic beam search algorithm,” IEEE Access , vol. 12, pp. 100 991–101 003, 2024. 
+
+4

@@ -1,0 +1,392 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-31T22:42:23.123075+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 10,
+    "quick_skim_target": 11,
+    "quick_selected": 10
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2610.38101v1",
+      "source": "arxiv",
+      "title": "AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization",
+      "abstract": "In recent years, warehouse logistics optimization has increasingly focused on intelligent, data-driven systems to enhance operational efficiency. Conventional static product placement strategies are being progressively replaced by dynamic slotting approaches that can adapt to real-time variations in warehouse conditions. In this work, we present a novel framework that employs a reinforcement learning agent integrated within a FlexSim-based Digital Twin environment for real-time product placement optimization. The proposed agent continuously learns from streaming operational data, enabling it to reduce picking time while improving overall system throughput. The simulation environment models a four-zone warehouse layout with forklift-based material handling and leverages the Asset Administration Shell framework to ensure seamless interaction between the learning agent, physical asset, and the digital twin. Experimental evaluation demonstrates substantial performance gains, with the proposed approach achieving a 29.66\\% reduction in average picking time, a 35.42\\% increase in throughput, and an 18.54\\% decrease in travel distance.",
+      "authors": [
+        "Md Mahinur Alam",
+        "Kanita Jerin Tanha",
+        "Md Tanjin Alam",
+        "Shadman Sakib",
+        "Min Gyu Kim"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-28T00:37:21+00:00",
+      "link": "https://arxiv.org/pdf/2610.38101v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "RL and digital twin for warehouse logistics optimization",
+      "llm_evidence_cn": "强化学习与数字孪生用于仓储物流优化",
+      "llm_evidence": "强化学习与数字孪生用于仓储物流优化",
+      "canonical_evidence": "强化学习与数字孪生用于仓储物流优化",
+      "llm_tldr_en": "Presents an AI-driven digital twin framework that integrates a reinforcement learning agent in a FlexSim simulation for real-time warehouse product placement, reducing picking time and improving throughput in a four-zone layout.",
+      "llm_tldr_cn": "针对仓储物流中静态产品放置策略难以适应实时变化的问题，论文提出AI驱动的数字孪生优化框架。该方法将强化学习智能体嵌入基于FlexSim的数字孪生环境，利用流式运营数据持续学习并动态调整产品放置。在四区域仓库布局与叉车搬运场景中，框架旨在缩短拣选时间并提升系统吞吐量。其贡献为供应链物流资源分配与仿真优化提供了可落地的智能决策方法。",
+      "llm_tldr": "针对仓储物流中静态产品放置策略难以适应实时变化的问题，论文提出AI驱动的数字孪生优化框架。该方法将强化学习智能体嵌入基于FlexSim的数字孪生环境，利用流式运营数据持续学习并动态调整产品放置。在四区域仓库布局与叉车搬运场景中，框架旨在缩短拣选时间并提升系统吞吐量。其贡献为供应链物流资源分配与仿真优化提供了可落地的智能决策方法。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "optimization methods for supply chain planning and resource allocation",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.33623v1",
+      "source": "arxiv",
+      "title": "Graph-dependent pooling: adaptive granularity in hierarchical graph neural networks",
+      "abstract": "Graph Neural Networks are widely used to learn structural representations of relational data. Hierarchical graph pooling learns multi-level representations by progressively coarsening graphs; however, prior methods rely on predefined cluster numbers or fixed pooling ratios, limiting adaptability to individual graphs. We propose Graph-Dependent Pooling (GDPool), which dynamically determines pooling granularity for each graph. We analyze optimization conflicts among layer-wise objectives through gradient alignment, showing that independently supervised pooling levels can send conflicting gradients to shared parameters. GDPool uses self-attention to select graph-specific anchors representing structurally important nodes and constructs coarse graphs through soft node assignment. Experiments on metal-organic framework and molecular graph benchmarks show that GDPool consistently achieves the best predictive performance across all benchmarks. Evaluations using modularity and the effective number of clusters show that GDPool achieves consistently higher modularity than existing methods while the number of active clusters decreases monotonically with depth. Sensitivity analyses confirm stable behavior across hyperparameter and architectural choices.",
+      "authors": [
+        "Bohan Yoon",
+        "Hyejin Jang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-24T11:54:16+00:00",
+      "link": "https://arxiv.org/pdf/2610.33623v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "hierarchical graph neural network pooling method",
+      "llm_evidence_cn": "层次化图神经网络池化方法",
+      "llm_evidence": "层次化图神经网络池化方法",
+      "canonical_evidence": "层次化图神经网络池化方法",
+      "llm_tldr_en": "GDPool dynamically determines pooling granularity per graph using self-attention anchors, addressing fixed-ratio limits in hierarchical graph neural networks.",
+      "llm_tldr_cn": "现有层次化图池化依赖预设簇数或固定池化比例，难以适应不同图结构。作者提出图相关池化GDPool，用自注意力选取结构关键锚点并动态确定每图粒度，同时分析层间梯度冲突。实验表明其在图表示学习上优于固定比例方法。该工作为图神经网络处理关系型拓扑提供了自适应聚合手段。",
+      "llm_tldr": "现有层次化图池化依赖预设簇数或固定池化比例，难以适应不同图结构。作者提出图相关池化GDPool，用自注意力选取结构关键锚点并动态确定每图粒度，同时分析层间梯度冲突。实验表明其在图表示学习上优于固定比例方法。该工作为图神经网络处理关系型拓扑提供了自适应聚合手段。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "GNN",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.39230v1",
+      "source": "arxiv",
+      "title": "Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI",
+      "abstract": "Financial AI systems must support decision-bearing questions involving payments, collections, cash flow, and compliance while ensuring numerical accuracy, traceability, and auditability. Large language models (LLMs) enable natural language interaction but cannot independently guarantee reproducible calculations or evidence-grounded recommendations. We present a production-grounded architecture integrating three components: a financial knowledge graph for enterprise relationships, temporal context, and provenance; a deterministic optimization engine for financial calculations and decisions; and a multi-agent LLM layer for intent interpretation, task orchestration, explanation, and claim validation. A coordination layer, termed context engineering, selects, ranks, composes, and validates query-specific context across ERP systems, tools, and tenants.   Based on observations from 15 deployments over approximately 11 months, single-agent pipelines exhibited hallucination rates of about 7-9% (5-10% across query types), including invented invoices and unsupported financial claims. Graph-backed multi-agent validation reduced observed rates to below 1%, although these findings are observational rather than causal. ERP data quality and tenant-specific schemas remained major implementation challenges. Reusable mappings, graph templates, and validation policies coincided with a reduction in deployment time from roughly six to two weeks.   We argue that financial context engineering extends beyond text-centric retrieval-augmented generation by requiring structured relationships, temporal validity, exact numerical evidence, access controls, and validation against source records and solver outputs. We outline research challenges in evaluation, reproducibility, privacy, context quality, and cross-tenant generalization.",
+      "authors": [
+        "Pradeep Kumar GS",
+        "Ravi Tanniru"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-29T02:50:00+00:00",
+      "link": "https://arxiv.org/pdf/2610.39230v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "three-engine architecture coupling knowledge graph, deterministic optimization engine and multi-agent LLM layer",
+      "llm_evidence_cn": "融合知识图谱、确定性优化引擎与多智能体大模型层的三引擎架构",
+      "llm_evidence": "融合知识图谱、确定性优化引擎与多智能体大模型层的三引擎架构",
+      "canonical_evidence": "融合知识图谱、确定性优化引擎与多智能体大模型层的三引擎架构",
+      "llm_tldr_en": "A production architecture pairs a financial knowledge graph and a deterministic optimization engine with a multi-agent LLM layer for traceable, numerically reliable financial decisions.",
+      "llm_tldr_cn": "针对大语言模型无法独立保证可复现计算与证据可溯的金融决策问题，本文提出三引擎架构：金融知识图谱刻画企业关系与时间上下文，确定性优化引擎负责数值计算与决策，多智能体大模型层承担意图理解、任务编排与结论校验。该架构在生产环境中实现了可审计、可追溯的可靠金融AI，为语言模型与优化引擎协同决策提供了可迁移范式。",
+      "llm_tldr": "针对大语言模型无法独立保证可复现计算与证据可溯的金融决策问题，本文提出三引擎架构：金融知识图谱刻画企业关系与时间上下文，确定性优化引擎负责数值计算与决策，多智能体大模型层承担意图理解、任务编排与结论校验。该架构在生产环境中实现了可审计、可追溯的可靠金融AI，为语言模型与优化引擎协同决策提供了可迁移范式。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "Integrating language models with optimization and simulation for resilient supply chain management.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.35074v1",
+      "source": "arxiv",
+      "title": "A Diagnostic Protocol for GNNs in Electricity Load Forecasting: Separating Parameter Sharing from Neighborhood Access",
+      "abstract": "A graph neural network (GNN) forecasting a collection of load series combines two mechanisms, sharing parameters across series and reading neighboring series, and a gain over a non-graph model may come from either; telling them apart decides whether a graph is worth maintaining. We propose a model diagnostic protocol that compares the GNN with three reference models: a per-node network, a network shared across nodes without neighbors, and the same GNN without edges. Degree-preserving rewiring tests whether neighbor identity matters. After a tuned benchmark on regional load in France and on low-voltage feeders in the UK, we apply the protocol to deliberately short node histories, as when non-stationary demand leaves only recent observations relevant: the feeders, within one week, and a public dataset of client consumption series. On the feeders, sharing parameters recovers most of the error gap between node-specific models and GNNs, about two thirds against a regularized one. Adding the edges to an otherwise identical backbone brings a smaller gain, half or more of which disappears under rewiring. On the client series, the neighbor mean degrades the per-node model on the shorter window and the edges' gain is not consistently distinguishable from zero; on the regions of France, where each node's own history is already informative, the ranking between per-node models and GNNs changes with tuning. A synthetic study points to noisy local measurements as one regime where neighbors help. In an exploratory online aggregation, graph and non-graph forecasters appear complementary, and the weight assigned to GNNs is not proportional to their contribution. In none of the three datasets do the edges account for most of a GNN's advantage over node-specific models, so a forecasting gain should be credited to the graph only after comparison with per-node and shared references.",
+      "authors": [
+        "Eloi Campagne",
+        "Yvenn Amara-Ouali",
+        "Yannig Goude",
+        "Itai Zehavi",
+        "Argyris Kalogeratos"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-26T09:20:23+00:00",
+      "link": "https://arxiv.org/pdf/2610.35074v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "diagnostic protocol for GNN forecasting models",
+      "llm_evidence_cn": "面向GNN预测模型的诊断协议",
+      "llm_evidence": "面向GNN预测模型的诊断协议",
+      "canonical_evidence": "面向GNN预测模型的诊断协议",
+      "llm_tldr_en": "Proposes a diagnostic protocol that separates parameter sharing from neighborhood access in GNN electricity load forecasting, using reference models and degree-preserving rewiring to test whether graph structure truly helps.",
+      "llm_tldr_cn": "针对GNN预测多个负载序列时难以区分性能增益来自参数共享还是邻居读取的问题，论文提出模型诊断协议。该协议将GNN与逐节点网络、无邻居共享网络及去边GNN比较，并用保度重连检验邻居身份是否重要。在法国区域负载和英国低压馈线数据上的基准实验表明，该协议能判断图结构是否值得维护。其贡献为GNN预测模型提供了可迁移的验证方法，但未涉及供应链风险传播。",
+      "llm_tldr": "针对GNN预测多个负载序列时难以区分性能增益来自参数共享还是邻居读取的问题，论文提出模型诊断协议。该协议将GNN与逐节点网络、无邻居共享网络及去边GNN比较，并用保度重连检验邻居身份是否重要。在法国区域负载和英国低压馈线数据上的基准实验表明，该协议能判断图结构是否值得维护。其贡献为GNN预测模型提供了可迁移的验证方法，但未涉及供应链风险传播。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "GNN",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.40129v1",
+      "source": "arxiv",
+      "title": "The Generalised Kessler Syndrome and the Persian Gulf",
+      "abstract": "The term Kessler syndrome was coined for a runaway orbital cascade creating a high-density debris field. The idea is generalised and applied to supply chains. An additive channel enables failures to generate further failures; a subtractive channel erodes the capacity to contain and restore. When damage outpaces repair, failure becomes irreversible and the system settles into a new state. Supplies connect the theory to its application. Stocks insulate subsystems from one another, and their exhaustion exposes dependencies. For the Persian Gulf states, restrictions on maritime supplies from spring 2026 are inadequately compensated by air and road transport alternatives. This depletes inventories unevenly across products and impairs the functioning of the logistics system itself. Throughput optimisation builds fragility everywhere; the Gulf is where it is becoming visible, with the Strait of Hormuz restriction as the trigger. Formulated as a Kelly portfolio allocation under a weakest-link payoff, the optimal strategy concentrates resources on the lagging rather than the leading inputs.",
+      "authors": [
+        "Bernhard K Meister"
+      ],
+      "primary_category": "q-fin.PM",
+      "categories": [
+        "q-fin.PM"
+      ],
+      "published": "2026-10-29T14:21:42+00:00",
+      "link": "https://arxiv.org/pdf/2610.40129v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "generalises cascade failure theory to supply chains, modelling failure propagation and inventory depletion",
+      "llm_evidence_cn": "将级联失效理论推广到供应链，刻画故障传播与库存耗竭",
+      "llm_evidence": "将级联失效理论推广到供应链，刻画故障传播与库存耗竭",
+      "canonical_evidence": "将级联失效理论推广到供应链，刻画故障传播与库存耗竭",
+      "llm_tldr_en": "The paper generalises Kessler syndrome to supply chains, separating an additive failure channel from a subtractive repair channel. Stocks insulate subsystems until exhaustion exposes dependencies, and Persian Gulf maritime restrictions are shown to overwhelm air and road alternatives.",
+      "llm_tldr_cn": "论文针对供应链中故障连锁放大与修复能力被侵蚀的问题，将空间碎片领域的凯斯勒综合征推广为一般化理论。方法上区分加性失效通道与减性修复通道，并以库存作为子系统间的缓冲与依赖暴露机制。对波斯湾国家海上供应受限情景的分析显示，航空与公路替代无法充分补偿，库存被不均匀消耗并损害物流系统功能。该框架为供应链韧性评估与不可逆失效判据提供了新的理论视角。",
+      "llm_tldr": "论文针对供应链中故障连锁放大与修复能力被侵蚀的问题，将空间碎片领域的凯斯勒综合征推广为一般化理论。方法上区分加性失效通道与减性修复通道，并以库存作为子系统间的缓冲与依赖暴露机制。对波斯湾国家海上供应受限情景的分析显示，航空与公路替代无法充分补偿，库存被不均匀消耗并损害物流系统功能。该框架为供应链韧性评估与不可逆失效判据提供了新的理论视角。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "approaches for measuring and enhancing supply chain resilience under disruption",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.35681v1",
+      "source": "arxiv",
+      "title": "Supply Chain Information Sharing among Competitors: Profit-Based Participation under Market Shocks",
+      "abstract": "Sharing information can help coordinate supply chain decisions in response to market shocks. Yet, firms must weigh these benefits against the risk of strengthening competitors. We study when competing firms voluntarily join an information-sharing platform to exchange information about market shocks while retaining operational autonomy. Firms differ in information capabilities and decide whether to participate before private signals are realized, creating stochastic information asymmetry. We model participation and quantity decisions as a two-stage dynamic game with incomplete information. For two horizontal competitors, we derive closed-form equilibrium participation strategies that reveal how information power and production efficiency shape participation. Numerical analysis examines more complex supply chain networks. We find that supply chain characteristics impact participation and the level of information asymmetry is a key factor in the equilibrium platform profiles. Firms with similar information power may benefit from joining forces to reduce their competitive disadvantage against higher information power competitors. Cost-inefficient firms may be less willing to participate because their competitors can exploit shared information, and uncertainty can serve as a competitive shield by restricting the actions of more efficient competitors. However, when several competitors join the platform, a cost-inefficient firm may also choose to participate to avoid an informational disadvantage.",
+      "authors": [
+        "Batuhan Celik",
+        "Bahar Cavdar",
+        "Jennifer Pazour"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC"
+      ],
+      "published": "2026-10-26T16:18:48+00:00",
+      "link": "https://arxiv.org/pdf/2610.35681v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "supply chain information sharing coordination under market shocks",
+      "llm_evidence_cn": "市场冲击下的供应链信息共享协调",
+      "llm_evidence": "市场冲击下的供应链信息共享协调",
+      "canonical_evidence": "市场冲击下的供应链信息共享协调",
+      "llm_tldr_en": "Firms weigh coordination benefits of sharing market-shock information against strengthening competitors. Modeling participation and quantity decisions as a two-stage game with incomplete information, the authors derive closed-form equilibrium participation strategies for two horizontal competitors.",
+      "llm_tldr_cn": "共享信息有助于协调供应链应对市场冲击，但企业需权衡协调收益与强化竞争对手的风险。作者研究竞争企业在保留运营自主权的前提下何时自愿加入信息共享平台，将参与与产量决策建模为不完全信息下的两阶段动态博弈，企业能力不同且在私有信号实现前决定是否加入。针对两个横向竞争者推导出闭式均衡参与策略，揭示信息能力与生产能力如何影响参与意愿，为平台设计与激励提供依据。",
+      "llm_tldr": "共享信息有助于协调供应链应对市场冲击，但企业需权衡协调收益与强化竞争对手的风险。作者研究竞争企业在保留运营自主权的前提下何时自愿加入信息共享平台，将参与与产量决策建模为不完全信息下的两阶段动态博弈，企业能力不同且在私有信号实现前决定是否加入。针对两个横向竞争者推导出闭式均衡参与策略，揭示信息能力与生产能力如何影响参与意愿，为平台设计与激励提供依据。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "approaches for measuring and enhancing supply chain resilience under disruption",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.35972v1",
+      "source": "arxiv",
+      "title": "Multiple Leak Localization in Water Distribution Networks through Graph Neural Networks",
+      "abstract": "Leak localization in water distribution networks is challenging when multiple leaks occur simultaneously, particularly under sparse monitoring. Existing data-driven methods often assume a single or predefined number of leaks or require extensive enumeration of leak combinations. This study proposes a graph neural network (GNN) model that localizes a variable number of simultaneous leaks without specifying the leak count in advance or exhaustively generating every possible combination of leak locations for training. The model is evaluated on two benchmark networks of different sizes, the 31-node Hanoi network and the larger 92-node NET3 network, under variable demand, sparse pressure-sensor coverage, variable leak magnitudes, and varying numbers of simultaneous leaks. The GNN outperforms multilayer perceptron, support vector machine, K-nearest neighbors, and random forest classifiers by up to 12% and 20% in accuracy respectively in Hanoi and NET3 networks. Consistent performance across both networks supports the scalability of the proposed approach.",
+      "authors": [
+        "Arvin Ajoodani",
+        "Sara Nazif",
+        "Pouria Ramazi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-26T07:16:01+00:00",
+      "link": "https://arxiv.org/pdf/2610.35972v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "GNN model exploiting network topology for multi-fault localization",
+      "llm_evidence_cn": "基于网络拓扑的图神经网络多故障定位",
+      "llm_evidence": "基于网络拓扑的图神经网络多故障定位",
+      "canonical_evidence": "基于网络拓扑的图神经网络多故障定位",
+      "llm_tldr_en": "Proposes a GNN that localizes a variable number of simultaneous leaks in water distribution networks without prespecifying leak counts or enumerating combinations, validated on Hanoi and NET3 benchmarks under sparse sensing.",
+      "llm_tldr_cn": "针对供水管网中多个泄漏同时发生、监测稀疏且现有方法需预设泄漏数量或穷举泄漏组合的问题，本文提出一种图神经网络模型，可在未知泄漏数量的情况下定位多个同时泄漏。模型在31节点Hanoi与92节点NET3两个基准网络上，于变需求、稀疏压力传感器覆盖与不同泄漏强度等条件下进行评估。结果表明该GNN方法能有效利用网络拓扑信息完成多故障定位，为供应链网络等图结构系统的风险传播与中断管理提供了可迁移的技术思路。",
+      "llm_tldr": "针对供水管网中多个泄漏同时发生、监测稀疏且现有方法需预设泄漏数量或穷举泄漏组合的问题，本文提出一种图神经网络模型，可在未知泄漏数量的情况下定位多个同时泄漏。模型在31节点Hanoi与92节点NET3两个基准网络上，于变需求、稀疏压力传感器覆盖与不同泄漏强度等条件下进行评估。结果表明该GNN方法能有效利用网络拓扑信息完成多故障定位，为供应链网络等图结构系统的风险传播与中断管理提供了可迁移的技术思路。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "GNN",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.38046v1",
+      "source": "arxiv",
+      "title": "Conformal Predictive Distributions for Contextual Order Fulfillment Optimization",
+      "abstract": "Ship-to-home fulfillment requires a retailer to select a fulfillment location and carrier before the delivery time is known. These decisions often rely on static transit-time estimates, which cannot represent how delivery-time uncertainty varies across orders and fulfillment options. This paper constructs conformal predictive distributions (CPDs) using Conformal Predictive Systems (CPS) for regression and the cross Venn-Abers predictor (CVAP) for multiclass classification, and uses them in a contextual optimization model for fulfillment decisions. The model is solved by contextual sample-average approximation (C-SAA). The regret of each fulfillment decision, its expected cost above that of the best decision, is bounded by forecast error, scenario-evaluation error, and the candidate-generation gap. The forecast term depends on how well calibration residuals or class probabilities represent the current order. On more than five million proprietary order records, CVAP raises exact-day accuracy from 49.5% for the rule-based estimate to 64.1%. Paired with a decision rule that selects a quantile weighting late errors more heavily, the split CPS (SCPS) gives a point estimate that raises late-delivery detection from 3.8% to 79.4%. Residual-based CPS distributions also meet or slightly exceed nominal interval-coverage targets. In decision experiments with a JD.com simulator over six test dates, C-SAA with CVAP lowers mean total cost by 7.1% and C-SAA with the Mondrian CPS (MCPS) lowers it by 6.7%, relative to C-SAA with the original nonconformal forecast. Both cut the late-delivery rate from 5.7% to below 4.0%.",
+      "authors": [
+        "Tinghan Ye",
+        "Amira Hijazi",
+        "Pascal Van Hentenryck"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-10-27T22:59:41+00:00",
+      "link": "https://arxiv.org/pdf/2610.38046v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "contextual optimization for order fulfillment under delivery-time uncertainty",
+      "llm_evidence_cn": "面向订单履约的上下文优化与不确定性决策",
+      "llm_evidence": "面向订单履约的上下文优化与不确定性决策",
+      "canonical_evidence": "面向订单履约的上下文优化与不确定性决策",
+      "llm_tldr_en": "Builds conformal predictive distributions via CPS and cross Venn-Abers to capture order-level delivery uncertainty, embeds them in contextual optimization solved by C-SAA, and bounds fulfillment regret by forecast error.",
+      "llm_tldr_cn": "针对送货上门场景中静态运输时间估计无法反映订单级不确定性、导致履约选择次优的问题，本文用保形预测系统与交叉Venn-Abers预测器构建保形预测分布，并将其嵌入上下文优化模型，通过上下文样本平均近似求解。理论分析表明每个履约决策的遗憾可由预测误差与场景界定，实验显示该方法能有效降低履约成本。该工作为供应链中不确定性感知的资源分配与规划提供了可复用的建模范式。",
+      "llm_tldr": "针对送货上门场景中静态运输时间估计无法反映订单级不确定性、导致履约选择次优的问题，本文用保形预测系统与交叉Venn-Abers预测器构建保形预测分布，并将其嵌入上下文优化模型，通过上下文样本平均近似求解。理论分析表明每个履约决策的遗憾可由预测误差与场景界定，实验显示该方法能有效降低履约成本。该工作为供应链中不确定性感知的资源分配与规划提供了可复用的建模范式。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "optimization methods for supply chain planning and resource allocation",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.38292v1",
+      "source": "arxiv",
+      "title": "Vendster: An Evaluation Arena to Investigate How Forecasting Tool Quality Affects LLM Agent Behaviors in Buyer-Vendor Negotiation",
+      "abstract": "Time-series forecasters are ranked almost entirely by accuracy metrics, but a forecast's decision value, its effect on the downstream decision, need not track accuracy and is rarely measured. This problem compounds as large language model (LLM) agents increasingly consume forecasters as tools, mediating them through stochastic, opaque policies. We present Vendster, an evaluation arena measuring how a forecaster's bias and prediction-interval width change the outcome of a buyer--vendor discount negotiation between two LLM agents. In the reference instance Vendster-M5, sampling base demand patterns from the M5 dataset, we evaluate two frontier-closed LLM families (Claude Opus 4.6 and GPT-5.6 Sol) and two open ones (DeepSeek-V3.2 and Qwen3-235B-A22B). Model-generated forecasts raise sales target attainment by up to +17 percentage points (p<0.001), yet standard forecast evaluation metrics such as relWQL and MASE do not predict negotiation outcomes at a statistically significant level. To isolate the causal structure, we substitute in synthetic forecasts with controlled bias and interval width. Under-prediction bias significantly improves outcomes for agents that react more to the forecasts---dose-response slopes -0.387 and -0.416 (p<0.001). Interval width has no statistically significant effect at zero bias. These findings indicate that the direction of forecast bias and agent forecast-reactivity are more strongly associated with downstream outcomes than forecast accuracy. Vendster is fully customizable and released under CC BY-NC 4.0 at https://github.com/amazon-science/Vendster.",
+      "authors": [
+        "Charin Polpanumas"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.AI"
+      ],
+      "published": "2026-10-28T05:23:48+00:00",
+      "link": "https://arxiv.org/pdf/2610.38292v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM agents negotiating buyer-vendor deals using forecasting tools",
+      "llm_evidence_cn": "大语言模型智能体利用预测工具进行买方-供应商谈判",
+      "llm_evidence": "大语言模型智能体利用预测工具进行买方-供应商谈判",
+      "canonical_evidence": "大语言模型智能体利用预测工具进行买方-供应商谈判",
+      "llm_tldr_en": "Forecasters are ranked by accuracy, yet decision value is rarely measured. Vendster is an evaluation arena where two LLM agents negotiate buyer-vendor discounts, showing how forecast bias and interval width shift outcomes on M5 demand data.",
+      "llm_tldr_cn": "时间序列预测器通常仅按精度排序，但预测的决策价值很少被衡量，当大语言模型智能体把预测器当作工具调用时问题更突出。作者提出Vendster评测竞技场，让两个大模型智能体进行买方-供应商折扣谈判，考察预测偏差与预测区间宽度如何改变谈判结果。基于M5数据集的需求模式对Claude与GPT系列模型实验，揭示了预测质量与下游决策价值之间的错位。",
+      "llm_tldr": "时间序列预测器通常仅按精度排序，但预测的决策价值很少被衡量，当大语言模型智能体把预测器当作工具调用时问题更突出。作者提出Vendster评测竞技场，让两个大模型智能体进行买方-供应商折扣谈判，考察预测偏差与预测区间宽度如何改变谈判结果。基于M5数据集的需求模式对Claude与GPT系列模型实验，揭示了预测质量与下游决策价值之间的错位。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "Large language model agents and multi agent coordination for supply chain optimization and inventory planning.",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.39275v1",
+      "source": "arxiv",
+      "title": "LLM-Assisted Optimization for Simulation-Based Redesign",
+      "abstract": "Engineering design frequently involves redesigning a prior solution to adapt to changes in context, such as material prices or system requirements. Redesign often leverages simulators too complex and/or computationally intensive for traditional numerical solvers, which lack engineering knowledge and context, to ensure global solution quality. Large language models (LLMs) can interpret semantic information, including engineering knowledge about the system and changes in context, to help guide search, and recent studies have shown that incorporating this knowledge into optimization can improve search performance. However, how best to combine LLMs with numerical solvers in redesign remains unclear. We develop and test an integrated LLM-optimization approach for redesign and compare three methods for leveraging LLMs (warm start, variable fixing and ReAct) and four black-box solvers (Bayesian optimization, genetic algorithms, mesh adaptive direct search and random search) on an electric vehicle battery pack cost minimization case study across four types of redesign scenarios. We find that the integrated approach can match feasible design discovery of the numerical-solver baselines with 80% fewer simulator evaluations while tripling the fraction of runs that find near-optimal solutions. We find that the best LLM-solver integration approach and the way the prior solution is leveraged depend on the structure of the design requirement change, and that the benefit of increasing LLM model size grows with the extent to which the LLM controls the search. These results show clear potential for LLMs in redesign tasks for guiding or replacing numerical solvers.",
+      "authors": [
+        "Chan-Eui Song",
+        "Jeremy J. Michalek",
+        "Christopher McComb"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CE",
+        "math.OC"
+      ],
+      "published": "2026-10-29T03:28:30+00:00",
+      "link": "https://arxiv.org/pdf/2610.39275v1",
+      "tags": [
+        "keyword:llm-supply",
+        "query:llm-supply"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Integrating LLMs with numerical solvers and simulators for optimization-based redesign",
+      "llm_evidence_cn": "将LLM与数值求解器及仿真器结合用于优化重设计",
+      "llm_evidence": "将LLM与数值求解器及仿真器结合用于优化重设计",
+      "canonical_evidence": "将LLM与数值求解器及仿真器结合用于优化重设计",
+      "llm_tldr_en": "Redesign relies on simulators too costly for solvers; this work integrates LLMs with numerical solvers, letting LLM knowledge guide search in simulation-based optimization.",
+      "llm_tldr_cn": "工程重设计常依赖过于复杂或昂贵的仿真器，而传统数值求解器缺乏工程知识与上下文，难以保证全局解质量。作者提出并测试一种LLM与数值求解器结合的集成优化方法，利用LLM解读工程知识与情境变化来引导搜索。实验表明融合LLM语义知识可提升重设计搜索性能。该工作为语言模型与优化仿真结合提供了可复用范式，可迁移到供应链规划与仿真决策。",
+      "llm_tldr": "工程重设计常依赖过于复杂或昂贵的仿真器，而传统数值求解器缺乏工程知识与上下文，难以保证全局解质量。作者提出并测试一种LLM与数值求解器结合的集成优化方法，利用LLM解读工程知识与情境变化来引导搜索。实验表明融合LLM语义知识可提升重设计搜索性能。该工作为语言模型与优化仿真结合提供了可复用范式，可迁移到供应链规划与仿真决策。",
+      "llm_tags": [
+        "query:llm-supply"
+      ],
+      "matched_query_tag": "query:llm-supply",
+      "matched_query_text": "Integrating language models with optimization and simulation for resilient supply chain management.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

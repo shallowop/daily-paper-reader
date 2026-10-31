@@ -1,0 +1,2815 @@
+Title: Supply Chain Information Sharing among Competitors: Profit-Based Participation under Market Shocks
+
+URL Source: https://arxiv.org/pdf/2610.35681v1
+
+Published Time: Tue, 27 Oct 2026 03:07:25 GMT
+
+Number of Pages: 53
+
+Markdown Content:
+# Supply Chain Information Sharing among Competitors: Profit-Based Participation under Market Shocks 
+
+Batuhan C ¸ elik ∗, Bahar C ¸ avdar †
+
+, and Jennifer Pazour ‡
+
+Department of Industrial and Systems Engineering, Rensselaer Polytechnic Institute, Troy, NY 
+
+Abstract 
+
+Sharing information can help coordinate supply chain decisions in response to mar-ket shocks. Yet, firms must weigh these benefits against the risk of strengthening competitors. We study when competing firms voluntarily join an information-sharing platform to exchange information about market shocks while retaining operational au-tonomy. Firms differ in information capabilities and decide whether to participate be-fore private signals are realized, creating stochastic information asymmetry. We model participation and quantity decisions as a two-stage dynamic game with incomplete information. For two horizontal competitors, we derive closed-form equilibrium partic-ipation strategies that reveal how information power and production efficiency shape participation. Numerical analysis examines more complex supply chain networks. We find that supply chain characteristics impact participation and the level of information asymmetry is a key factor in the equilibrium platform profiles. Firms with similar information power may benefit from joining forces to reduce their competitive disad-vantage against higher information power competitors. Cost-inefficient firms may be less willing to participate because their competitors can exploit shared information, and uncertainty can serve as a competitive shield by restricting the actions of more efficient competitors. However, when several competitors join the platform, a cost-inefficient firm may also choose to participate to avoid an informational disadvantage. 
+
+Keywords: information-sharing platform, quantity competition, dynamic game, stochastic information asymmetry. 
+
+# 1 Introduction 
+
+Supply chain firms’ ability to adapt their operations in response to changes in market conditions is key to improving supply chain performance, especially when disruptions or market fluctuations cause demand shocks (Eckstein et al., 2015). Timely access to supply chain information determines this adaptability (Topan et al., 2018; Zheng et al., 2019). However, in most supply chains, information flows indirectly through orders or shipments, requiring firms to infer market conditions retrospectively rather than observe them directly 
+
+> ∗
+
+celikb@rpi.edu 
+
+> †
+
+cavdab2@rpi.edu 
+
+> ‡
+
+pazouj@rpi.edu 
+
+1arXiv:2610.35681v1 [math.OC] 26 Oct 2026 (Vives, 1984). As a result, firms may observe market shocks at different times or with different accuracies, leading to information asymmetry. Information asymmetry is further amplified in competitive environments, where some firms invest in more powerful forecasting or other sensing efforts, resulting in better prediction capabilities of market disruption than other firms (Shin and Tunca, 2010). When firms rely on private information and respond to market shocks asynchronously, coordination across the supply chain becomes more difficult. For example, asymmetric information creates challenges for designing effective coordination mechanisms for replen-ishment and inventory planning policies (Ha, 2001; Sahin and Robinson, 2002). This is because staggered information flow causes undersupply during the actual demand phase and oversupply after demand dissipates. This was observed during the COVID-19 pan-demic, which disrupted both supply and demand, with demand for some products surging while demand for others fell sharply. Delayed and decentralized responses led firms to join markets or expand production based on incomplete information, resulting in excess in-ventories and falling prices, as observed in China’s mask market (Sixth Tone, 2020). Such situations illustrate how supply chains may have the collective capacity to respond to shocks but fail to do so in a timely or efficient manner because of information asymmetry. Numerous studies have shown that sharing operational information, such as observed shocks and changing demand or market parameters, across supply chain partners allows firms to improve responsiveness, reduce uncertainty, and enhance overall supply chain per-formance (Cachon and Fisher (2000), Lee et al. (2000), Chen et al. (2000), Ivanov (2021), Li et al. (2017), Wong et al. (2021), Costantino et al. (2014), Gu et al. (2021),Huo et al. (2014)). Beyond overall system improvements, firms with more information may also choose to share it for their own benefit. For example, Walmart shares real-time sales and inven-tory data with suppliers through Retail Link, improving suppliers’ demand forecasting and production decisions and strengthening Walmart’s competitive advantage. These well-established benefits of information sharing in supply chains have been stud-ied extensively, yet this literature commonly assumes firms willingly share information or considers information sharing only through bilateral relationships in supply chain contracts (Shen et al., 2019). However, in practice, competing firms rarely participate in information exchange platforms. Consequently, there exists a gap between the proposed benefits of 2information sharing and the practical reluctance of competing firms to do so. Given the limited understanding of what drives competing firms to share information (Guan et al., 2020), we study competing firms’ decisions to participate in information-sharing platforms. We consider a set of horizontally competing firms that retain full au-tonomy over whether to join an information-sharing platform and over their operational decisions. Firms decide whether to join a centralized information-sharing platform, and this decision is made by firms before knowing whether they or their competitors will acquire pri-vate information (what is referred to as stochastic information asymmetry). If a firm joins the platform, it commits to sharing information it detects about market conditions, and the platform distributes this information to all participating firms. Following the participation decisions, firms make quantity decisions to maximize their own expected profits based on their available information, either their private information, if they do not participate in the platform, or, if they do participate, the shared information through the platform. The key question for each firm is whether the benefits of information sharing outweigh the loss of competitive advantage from sharing their private information. We explore equilibrium participation decisions under stochastic information asymmetry and study how firms’ information capabilities, competitive interactions, and network struc-ture affect their incentives to participate in information-sharing. In doing so, this work makes the following key contributions. First, we analyze competing firms’ information-sharing decisions as strategic decisions made before they know which firms will acquire private information, and thus before they know whether they will act as an information provider or an information recipient. Second, we characterize equilibrium participation strategies for two horizontally competing firms and show how differences in information power and production efficiency affect participation. When both firms have equal infor-mation power, the higher-cost firm is the participation bottleneck. When production costs are equal, the firm with greater information power is the bottleneck. We also show that market sensitivity affects participation differently under these two asymmetries, motivating participation under cost asymmetry while discouraging it under information power asym-metry. Third, we examine information sharing among multiple firms within a networked competition structure, and numerically observe that denser networks reduce participation incentives. In sparse networks, participation is easier among firms with no common markets, 3while it becomes more difficult when firms compete in overlapping markets. This paper is organized as follows. Section 2 reviews related literature on information sharing in supply chains. In Section 3, we describe the problem setting and present a formulation. Section 4 presents an analysis of a small supply chain and explores the key factors in firms’ participation decisions. In Section 5, we provide numerical results to explore larger supply chains to further investigate platform participation. Section 6 provides conclusions and directions for future research. 
+
+# 2 Literature Review 
+
+We review related literature in three areas: studies evaluating supply chain information sharing, studies considering information sharing as a strategic decision in bilateral settings, and studies examining information sharing among multiple firms facilitated by a platform. 
+
+# 2.1 Value of Supply Chain Information Sharing 
+
+In this stream of literature, information sharing is not treated as a decision; instead, this literature evaluates the system-wide benefits of different information sharing policies. By exchanging key information such as supplier capacity (Choi et al., 2008; Yuan and Qiong, 2008), demand estimates (Lee et al., 1997; Chen et al., 2000; Lee et al., 2000; Lin et al., 2002; Zhao et al., 2002; Cho and Lee, 2013), or both (Yuan and Qiong, 2008), these studies show that information sharing in supply chains reduces uncertainty, leading to more effective material flow and reduced costs. When analyzing information sharing, these studies do not consider firms’ individual objectives. Firms are assumed to participate in information sharing regardless of whether they benefit individually. When firms maximize individual profits, incentives to share may diverge from system-wide objectives, particularly when private information provides a competitive advantage. For example, Zhang (2006) shows that inventory information exchange can reduce system-wide inefficiencies; yet it does not necessarily benefit all firms. Therefore, although related studies show the value of system-wide information sharing, firms’ individual objectives and the value of private information must be considered. 42.2 Information Sharing as a Decision Problem in Bilateral Set-tings 
+
+This stream models information sharing as a strategic decision in bilateral settings, where firms exchange information through one-to-one relationships. A common setting focuses on interactions in which one firm is the sharer and the other firm is the receiver, generally in vertical interactions where downstream firms hold private demand information that is beneficial to upstream firms. Because the informed firm lacks incentives to share its information voluntarily, a large group of studies examines how contracts can induce information sharing. Shen et al. (2019) provides a comprehensive review. For example, manufacturers may purchase demand forecasts from retailers (Li and Zhang, 2002) or offer supply chain contracts that incentivize information sharing (Ha and Tong, 2008; Zhou et al., 2017; Chen and Sun, 2025). Beyond contracts, different mechanisms can also influence information sharing. For example, reducing production costs may motivate retailers to share demand information (Ha et al., 2017). Other studies find that explicit and tacit collusion between retailers may affect sharing incentives (Wu et al., 2021). Even when information is shared only on a one-to-one basis, other firms (not part of the one-to-one sharing agreement) introduce additional strategic dynamics into information sharing decisions. For example, when a retailer interacts with multiple upstream firms, the retailer may choose to share with none, one, or both firms, depending on contract timing and operational dynamics, such as nonlinear costs or competition intensity (Shang et al., 2016). Uninformed competitors may infer information indirectly, weakening incentives for voluntary information sharing (Zhang, 2002; Li, 2002). Furthermore, inference effects can even harm the intended information receiver (Cao and Chen, 2021). Similarly, shared information can be leaked to competitors, although contracts may prevent such leakage (Chen and ¨Ozer, 2019). In competitive multi-chain environments, retailers’ incentive for sharing private information bilaterally with their respective manufacturers depends explic-itly on rivals’ actions. Although mutual information sharing maximizes joint profits, each retailer can prefer to withhold information when the rival shares, leading to a prisoner’s dilemma–type outcome (Guan et al., 2020). Another group of studies considers settings in which both firms possess private informa-5tion but the firms decide whether to share information after private information is observed. In such environments, sharing incentives depend on both strategic interactions and signal characteristics. For example, when a supplier and a retailer have signals with different precision, sharing incentives depend on the variance and correlation of their signals (Zhang and Chen, 2013). In a coopetitive supply chain where one of the firms serves both as the supplier and the competitor of the other firm, sharing information may benefit one firm while harming the other (Wang et al., 2020). Raweewan and Ferrell (2018) develops a static game-theoretic model of bilateral information sharing among competing firms, where firms simultaneously decide whether to reveal private signals in a static bilateral information sharing game with exogenously determined payoffs. While this literature extensively examines strategic bilateral information sharing under asymmetric information and competition, all known work assume two key features. First, firms decide whether to share information after private information is observed, allowing them to make sharing decisions conditioned on realized informational advantage. Second, the interaction structure is predefined: the set of firms and the direction of information flows are given. Hence, these studies consider the environments in which the firms already have their private information when making information sharing decisions. In many supply chain environments, however, informational advantage varies across realizations, and firms need to make participation decisions in information sharing before observing the information. In these cases, participation decisions differ significantly from information sharing decisions based on realized signals. 
+
+# 2.3 Platform-Based Information Sharing Among Multiple Firms 
+
+Because information sharing through bilateral relationships is often difficult to manage when multiple firms operate in the supply chain, a stream of studies examines multi-agent settings, in which a platform facilitates information exchange among multiple firms simultaneously. Several studies analyze settings where a platform possesses superior information and selectively reveals it to competing firms (Hou et al., 2026; Li et al., 2021; Zhong et al., 2023; Zha et al., 2023; Liu et al., 2021). Online retail platforms are a common example in this setting. In these models, the platform determines the level of information to reveal to each participant, while firm participation is assumed to be given. The focus is on 6how such a platform affects competition and operational outcomes, rather than on firms’ incentives to join the platform. Massari and Giannoccaro (2021) studies information sharing among competing firms using agent-based simulation, and finds that information sharing can improve performance even under competitive environments. However, participation is assumed rather than derived from equilibrium behavior, so firm-level incentives are not explicitly modeled. These studies highlight the role of platforms in facilitating information sharing among multiple competing firms. However, they assume firms will participate and do not con-sider their private incentives. Two notable exceptions are Wu et al. (2022) and Liu and Rahimian (2026), both of which study participation decisions in an information-sharing platform. In both settings, each participant has private demand information. Therefore, each competitor knows that, conditioned on participation, it will both share its private in-formation and receive information from other participants. Specifically, Liu and Rahimian (2026) study privacy-preserving information sharing among firms competing in a single Cournot market. Their platform aggregates participants’ private demand signals, consid-ering a privacy preserving mechanism, with its own external information to provide back to participants an aggregate demand estimate. Wu et al. (2022) studies participation de-cisions in an information-sharing platform among competing garages with interdependent demands. In their setting, each garage has complete information about its own demand shock, and platform participation allows it to access competitors’ private demand informa-tion. In contrast, our work is interested in settings where firms do not yet know whether they will share or receive information when they decide participation. Although voluntary platform participation has been considered in these two papers, the conditions that shape participation and platform formation under stochastic information asymmetry, where the firms are uncertain about who will have private information, has not been studied. 
+
+# 3 Problem Definition and Formulation 
+
+We study firms’ participation decisions in an information-sharing platform within a quantity-competition setting in a perishable-product supply chain prone to shocks. Firms decide whether to participate before observing the market state and without knowledge of other 7firms’ private information. Therefore, platform participation is considered a strategic de-cision. A firm joins the platform only if participation yields a higher expected profit. Since one firm’s participation affects the information available to others and their quan-tity decisions, we model the participation decision in the information-sharing platform as a two-stage dynamic game. In the first stage, firms decide whether to participate, and in the second stage, they make their quantity decisions given the realized platform configura-tion. Our goal is to analyze the information sharing participation decisions under different supply chain settings. In the following part, we first present the underlying supply chain environment. We then introduce the two-stage game structure and the information-sharing platform, and formulate the second-stage quantity decision and the first-stage participation decision. 
+
+# 3.1 Underlying Supply Chain Environment 
+
+Consider a set of firms F in a quantity competition across a set of markets M. Each firm serves a subset of markets. We model firms’ competition in markets with a two-echelon supply chain as a bipartite network G = ( F ∪M , E ), where E is the set of firm-market edges. An edge between a firm i ∈ F and market j ∈ M indicates that Firm i serves Market j. In a given supply network G, Firm i serves a subset of markets Mi := {j ∈ M | (i, j ) ∈ E},and Market j is served by a subset of firms Fj := {i ∈ F | (i, j ) ∈ E}.Firms supply a homogeneous seasonal or perishable product, e.g., fresh food or consumer goods with a short shelf life, to markets. Due to the perishable nature of the product, firms do not carry over inventory. Therefore, production decisions are single-period decisions (Cachon and Swinney, 2011). In each production period, Firm i chooses the quantity 
+
+qij ≥ 0 supplied to each market j ∈ Mi. Markets operate under clearing conditions; all supplied products are sold within the operational cycle, and firms’ quantity decisions directly determine market prices; in particular, higher total supply in a market leads to a lower price (Wang and Webster, 2009). Hence, following the platform participation decision, firms are in a Cournot competition. Let Qj := P
+
+> i∈Fj
+
+qij denote the total supply in Market j, for each market j ∈ M , the 8market-clearing price is 
+
+Pj (Qj ) = aj − bj · Qj , (Baseline market price) where aj > 0 is the price intercept of Market j, and bj > 0 measures how sensitive the price is to total supply in the market. We refer to these parameters as market size and market sensitivity , respectively. The linear price function follows standard market-clearing models widely used in the Cournot competition literature (Cao et al., 2013; Fang and Shou, 2015; Bimpikis et al., 2019). We assume convex production costs, reflecting a soft production capacity for the firms (Bimpikis et al., 2019). Specifically, Firm i’s total production cost is 
+
+Ci
+
+ X
+
+> j∈Mi
+
+qij 
+
+ = ci ·
+
+ X
+
+> j∈Mi
+
+qij 
+
+
+
+> 2
+
+, (1) where ci > 0 is a firm-specific cost parameter that captures Firm i’s production efficiency 
+
+or cost competitiveness .
+
+Impact of Shocks: The supply chain environment described above represents a baseline case characterized by the market-clearing price parameters ( aj , b j ). However, supply chain disruptions can affect these parameters. The supply chain may experience a shock with probability ω. Conditional on a shock occurring, we assume that it affects a single Market 
+
+j with probability rj > 0, where P
+
+> j∈M
+
+rj = 1, providing a tractable modeling approach (Gao et al., 2019; Mehrotra and Schmidt, 2021; Tomlin, 2006; Serel, 2008). Indicator 
+
+θ ∈ M ∪ { 0} denotes the realized market state, where θ = 0 represents no shock and θ = j,
+
+j ∈ M represents a shock occurring at Market j. Accordingly, the prior distribution over the market state can be expressed as Pr( θ = 0) = 1 − ω (no shock) and Pr( θ = j) = ωr j (Shock in Market j ∈ M ).
+
+A shock in a market affects the price dynamics, shifting its price intercept by D. There-fore, the state-dependent prices under the market-shock effect are represented as follows 
+
+Pj (Qj |θ) = aj + D · 1{θ = j} − bj · Qj , (State-dependent market price) 9where D > 0 is a constant parameter, representing the shock magnitude .When a shock occurs, firms may receive private information before making production decisions. Specifically, Firm i receives an independent shock signal with probability pi,reflecting its information power . The information power of each firm is common knowledge, but firms do not observe whether other firms have received a signal or not. A firm can observe a signal only when there is actually a shock. That is, when there is no shock, firms do not receive a false signal that might lead them to believe there is one. We assume that the observed signal is accurate. Firm i’s profit equals its total revenue from the markets it serves minus the production cost. For a given market state θ, Firm i’s profit function is expressed as 
+
+πi(⃗q, θ ) = X
+
+> j∈Mi
+
+Pj (Qj | θ)qij − Ci
+
+ X
+
+> j∈Mi
+
+qij 
+
+ . (2) where ⃗q = ( q kl )(k,l )∈E is the vector of quantities supplied by firms to markets. Private signals create information asymmetry, leading to a Bayesian Cournot competi-tion in quantity decisions. 
+
+# 3.2 Information-sharing Platform 
+
+Market shocks create challenges for efficient quantity decisions, leading to under- or over-supply. The information-sharing platform aims to improve supply chain performance by reducing information asymmetry among participating firms through the sharing of private signals. Firms’ participation decisions can be driven by two motives: improving their own access to market information to support better decision-making and reducing uncertainty regarding other firms’ information state. If every firm observes the market shock but is unaware of other firms’ observations, they will produce more than what they would under complete information. This creates oversupply in the market, which can be avoided by information sharing. The process that governs the firms’ platform participation decision can be modeled as a two-stage dynamic game. In the first stage, firms simultaneously decide whether to participate in the information-sharing platform before observing the realized market state or other firms’ private information. Each set of participating firms represents a unique 10 platform participation configuration (hereafter referred to as configuration ), denoted by a binary vector ⃗ V ∈ { 0, 1}|F| , where Vi = 1 indicates that Firm i participates in the platform. Once the platform is formed, in the second stage, a market shock may occur, and firms choose their quantities based on the observed information conditional on the re-alized platform configuration ⃗ V in a networked Cournot competition under uncertainty. Nonparticipating firms rely on their own private information, while participants share the platform’s accumulated information power, denoted by pplatform (⃗ V ) for a platform configu-ration ⃗ V , defined as the probability that at least one participant detects an existing market shock. According to the independent detection assumption introduced earlier, platform ⃗ V ’s detection probability is 
+
+pplatform (⃗ V ) = 1 − Y
+
+> i∈F
+
+(1 − pi)Vi . (Platform’s information power) Therefore, for any participating Firm i (i.e., Vi = 1), we have pplatform ≥ pi.The sequence of events and decisions is presented in Figure 1. 
+
+First-Stage Decisions 
+
+Firms decide whether to join the platform. Shock realization Private signal observation. Participants share signals. 
+
+Second-Stage Decisions 
+
+Firms choose their production quantities. Figure 1: Sequence of events for platform participation decisions in the first stage and the quantity decisions in the second stage. To illustrate the information-sharing platform in more detail, we present an example. 
+
+Example. Consider a small supply chain with three firms and two markets as shown in Figure 2a. Suppose that, in the first stage, only Firms 2 and 3 join the platform, represented by platform configuration ⃗ V = [0 , 1, 1] . Once the platform is formed, the supply chain will operate as usual, experiencing occasional market shocks. While the information power of the platform formed by Firms 2 and 3 is constant, the actual information may differ depending on the realized shock and its observability. The “Possible Realizations” row in Figure 2b illustrates all nine possible cases based on the realizations of shock occurrence, signal detection by each firm, and information sharing under this platform configuration. 
+
+11 (a) Small supply chain network. 
+
+> (b) Possible realizations of firms’ signals and information exchange among participants in an illustrative example.
+
+Figure 2: Example for information sharing with a platform: Structural (left) and opera-tional (right) views of a three-firm two-market example supply chain, where Firms 2 and 3 participate in the platform (i.e., ⃗ V = [0 , 1, 1]). 
+
+We explain the trade-offs of platform participation from the perspective of Firm 3. In realizations 1, 5, and 9, neither Firm 2 nor Firm 3 observes a shock signal. Therefore, Firm 3’s belief that ‘the market has no shock’ is stronger than its belief about the same condition if it were not on the platform. In realizations 3 and 7, Firm 3 receives the shock signal through information sharing. In realization 7, participation gives Firm 3 an advantage over the non-participating Firm 1, which remains unaware of the shock. In all realizations, Firm 3 knows Firm 2’s information state (and vice versa), which reduces uncertainty in Firm 3’s decision problem. Particularly in realizations 2 and 6, Firm 3 knows Firm 2 also has the signal and adjusts its quantity decisions to avoid overproduction. 
+
+In the following part, we formulate firms’ quantity decisions in the second stage under a given platform configuration (including the no-platform case) as a Bayesian Cournot competition. Using this model, we then determine equilibrium platform configurations. 
+
+# 3.3 Firms’ Quantity Decision 
+
+Because products are perishable and there is no inventory carryover or backordering, firms’ quantity decisions are independent across time periods. Therefore, we model the second-stage quantity competition as a static Bayesian quantity game that captures uncertainty from market shocks and asymmetric information. The game structure depends on both the supply chain network and the platform participation configuration. We denote the corresponding Bayesian game under a specific information-sharing platform configuration ⃗V by Γ( ⃗ V ). Thus, our model can be viewed as a family of Bayesian games. The game elements are as follows. 12 Firm Types: In the Bayesian quantity game, a firm’s type includes the market shock information it has prior to making its quantity decision. Firms participating on the plat-form, if it forms, are of the same type because they share the same information. Hence, a firm’s type depends on the realized shock information and the platform configuration. Let T be the set of all firm types; we denote firm i’s type by zi. Type zi = (+ , j )indicates that Firm i has a shock signal for Market j, either through its own observation or through information sharing. Type zi = ( −) implies that Firm i does not have any signal. Let ⃗z −i denote the type profile of all firms except Firm i, and let ⃗z = ( z i,⃗ z −i) denote the type profile of all firms. 
+
+Beliefs: Each firm forms beliefs over the market state θ and the types of other firms ⃗z −i.These beliefs are based on common prior knowledge about each firm and the market, as well as on the firm’s private information and information sharing induced by the platform configuration ⃗ V . Note that firms on the platform share the same type as other participants. Firm i’s posterior beliefs over the system state are represented by the conditional joint distribution P r (θ,⃗ z −i | zi,⃗ V ). Explicit expressions for the prior and posterior probabilities are provided in Appendix A. 
+
+Actions: Based on its belief, each firm decides the quantities it supplies to the markets it serves. We denote the production quantities of Firm i by qi(zi;⃗ V ) = ( qij (zi;⃗ V )) j∈Mi and the full quantity vector by ⃗q(⃗z;⃗ V ) = ( qij (zi;⃗ V )) (i,j )∈E .
+
+Payoff Function: In the Bayesian quantity game Γ( ⃗ V ), a firm’s payoff is its expected realized profit over the firm’s belief about the market state and firm types. By taking the expectation over θ and ⃗z −i in the profit in Equation 2, the payoff of Firm i given type zi is 
+
+X
+
+> θ∈{ 0}∪M
+
+X⃗z −i
+
+P r (θ,⃗ z −i | zi,⃗ V ) · πi
+
+⃗q (⃗z;⃗ V ), θ 
+
+
+
+. (3) 
+
+Bayesian Nash Equilibrium: A collection of strategies q∗ 
+
+> i
+
+(zi;⃗ V ), i ∈ F and zi ∈ T , is a Bayesian Nash equilibrium if, for every firm i and its type zi, the following condition holds: 
+
+q∗ 
+
+> i
+
+(zi;⃗ V ) ∈ arg max 
+
+> qi
+
+E
+
+h
+
+πi
+
+⃗q (⃗z;⃗ V ), θ 
+
+
+
+| zi,⃗ V 
+
+i
+
+, (4) where, in the maximization, ⃗q consists of Firm i’s quantity choices q i and the type-dependent equilibrium quantities q∗
+
+> k
+
+(zk;⃗ V ) of all other firms k̸ = i.13 By solving all firms’ maximization problems simultaneously, we find the equilibrium quantities. For a given type profile ⃗z, we denote the equilibrium quantity vector under platform configuration ⃗ V by ⃗q ∗(⃗z;⃗ V ) = 
+
+
+
+q∗ 
+
+> ij
+
+(zi;⃗ V )
+
+ 
+
+> (i,j )∈E
+
+. (5) 
+
+# 3.4 Platform Participation Decision 
+
+When making the platform participation decisions in the first stage, a firm’s payoff is the expectation of its profit over all realizations of shocks and signals when firms play the Bayesian Nash equilibrium of the corresponding quantity decisions Γ( ⃗V ), given by Πi(⃗V ) = X
+
+> θ∈{ 0}∪M
+
+X⃗z∈T |F| 
+
+Pr 
+
+
+
+θ,⃗ z |⃗ V
+
+
+
+· πi
+
+⃗q ∗(⃗z;⃗ V ), θ 
+
+
+
+. (6) A platform configuration ⃗ V ∗ is an equilibrium if none of the firms can increase its payoff by unilaterally changing its participation decision. To analyze the participation decisions, we solve the family of Bayesian quantity games 
+
+{Γ( ⃗V )}⃗ V ∈{ 0,1}|F | and compute the associated payoffs Π i(⃗V ) for all firms to identify no-incentive-to-deviate cases. Since the number of possible configurations is exponential in the number of firms, identifying the set of equilibria is computationally demanding. Therefore, in the next section, we first analyze a small supply chain to derive insights. Then, we explore how these insights extend to larger supply chains, where network structure creates additional strategic interactions, through a numerical study in Section 5. 
+
+# 4 Equilibrium Analysis on Small Supply Chains 
+
+We consider a small supply chain setting where two firms serve a single market. This setting provides a baseline that isolates the information sharing tradeoff from network effects: participation improves a firm’s information availability but also reveals information to the competitor. We characterize how shock attributes, firms’ information and competition power affect firms’ participation incentives for homogeneous firms, and for firms that differ in production costs or information power. We present the production quantities used in 14 the following results in Appendix B. In the two-firm case, unilateral participation does not form a platform; hence, only two platform configurations are relevant for equilibrium: (i) the baseline supply chain, ⃗V = [0 , 0], and (ii) both firms join the platform and share their demand signals, ⃗ V = [1 , 1]. Configurations [0 , 1] and [1 , 0] are the same as [0 , 0], and [0 , 0] is always an equilibrium. The participation gain for Firm i is equal to the expected net benefit of information sharing and is computed as follows: ∆i := Π i([1 , 1]) − Πi([0 , 0]) . (7) The platform forms when ∆ i ≥ 0 for i ∈ { 1, 2}.We present the derivation of ∆ i and the firms’ participation decision analysis in Ap-pendix C.1. In the following part, we analyze the participation decisions in terms of firms’ characteristics and market parameters. All proofs are in Appendix C.2. 
+
+# 4.1 Homogeneous Firms 
+
+In the homogeneous case, firms are identical in both information power and production costs, i.e., ( p1 = p2 = p and c1 = c2 = c). In this case, since firms’ participation decisions are symmetric, the platform forms when either firm has an incentive to join. Proposition 1 characterizes the conditions under which the information-sharing platform is formed. 
+
+Proposition 1 (Characterization of platform participation) . Homogeneous firms partici-pate in an information-sharing platform if and only if at least one of the following conditions holds: (i) High cost and low market sensitivity: c ≥ 12(1+ √2) bA.(ii) High information power: p ≥ 12
+
+q 8+13 yy − 4+3 y 
+
+> 2y
+
+, where y = bA 
+
+> c
+
+.(iii) High shock probability: ω ≥ ¯ω(y, p ) = 4+4 y(1+ p)−y2(1−3p−p2) 
+
+> (3 y+2) p(2+ y(−1+2 p))
+
+, where y = bA 
+
+> c
+
+.
+
+These conditions identify when the benefit of improved information outweighs the strate-gic cost of revealing private information. We illustrate the regions defined by these condi-tions in Figure 3. 15 c ≥ bA 
+
+> 2(1 + √2)
+> bA
+> c
+
+(a) High cost and low market sensitivity √13 − 32     
+
+> p≥12
+> √8 + 13 yy
+> −4 + 3 y
+> 2y
+> py=bA
+> c
+
+(b) High information power pω   
+
+> 15
+> √13 −32
+> ω≥¯ω(∞, p )participation guaranteed
+
+(c) High shock probability 
+
+Figure 3: Illustration of Proposition 1: Participation conditions for homogeneous firms to form a platform. Platform forms in shaded regions. (i) High cost and low market sensitivity (Figure 3a): Participation is guaranteed when production costs are sufficiently high relative to market sensitivity (higher c or lower 
+
+b). With high production costs, the competitor’s reaction to shared information is limited. With low market sensitivity, even when the competitor increases its production in response, the price does not change significantly. These effects diminish the intensity of competition, reducing the strategic cost of sharing information and making platform participation more attractive. (ii) High information power (Figure 3b): When both firms have high information power, sharing information does not lead to a significant informational advantage, since the competitor is likely to observe the shock as well. Instead, the platform helps firms resolve uncertainty about each other’s types, enabling them to choose production quantities based on more accurate beliefs. (iii) High shock probability (Figure 3c): When the shock is a low-probability event, the signals become strategically valuable, and firms prefer to keep it private to maintain in-formational advantage. On the other hand, as the probability of a shock increases, the value of private information decreases, while the benefit of eliminating information asymmetry remains, making firms more willing to share information through the platform. In summary, under conditions (ii) and (iii), the private signal has limited value, whereas under condition (i), the adverse economic consequences of information disclosure are limited for homogeneous firms. 16 4.2 Heterogeneous Firms 
+
+The analysis of homogeneous firms shows how supply chain parameters interact to shape participation decisions. However, firms often differ in production efficiency or informa-tion power. We therefore examine how these asymmetries affect participation incentives. Because the platform requires both firms to participate, we focus on the firm with the weaker incentive, i.e., the bottleneck for platform formation. We examine the two sources of asymmetry separately, varying one parameter at a time to isolate their effects. 
+
+# Cost Asymmetric Firms ( p1 = p2 = p and c1̸ = c2): 
+
+We compare the participation incentives of cost-efficient and -inefficient firms to identify the bottleneck firm and analyze its participation conditions. We first show that when firms differ only in cost efficiency, neither market size nor disruption magnitude affects platform formation, as in the homogeneous-firm case. 
+
+Proposition 2 (Participation under same information power) . In two-firm, single-market supply chains where firms have the same information power, neither the market size nor the (positive) shock magnitude changes platform participation decisions. 
+
+Following this observation, we examine participation incentives as a function of other supply chain parameters. In the rest of this section, without loss of generality, we will assume that Firm 1 is the cost-efficient firm, i.e., c1 < c 2. When firms differ only in cost, the more cost-efficient firm benefits more from shared information because it can increase its production quantity at a lower cost and is therefore less affected by the competition. The following proposition shows that Firm 2 is the bottleneck for platform formation. 
+
+Proposition 3 (Participation bottleneck for cost asymmetric firms) . Suppose that Firm 1
+
+is more cost-efficient than Firm 2, with c1 < c 2. Then, ∆2 ≥ 0 implies that ∆1 > 0. That is, whenever the cost-inefficient firm weakly benefits from participating in the information-sharing platform, the cost-efficient firm strictly benefits from participation. 
+
+Because the cost-inefficient firm is the bottleneck, conditions that support its partici-pation also support platform formation. We therefore characterize sufficient conditions for each firm’s participation in the ( p, ω ) space and compare the corresponding regions for the 17 cost-efficient and cost-inefficient firms in Figures 4a and 4b, respectively. The derivations are provided in Appendix C.3. We observe that the participation of the cost-inefficient firm pω 
+
+> 015
+> √13 −32
+> 11
+
+(a) Cost-efficient Firm 1. 0. 0.2 0.4 0.6 0.8 1. 0. 0.2 0.4 0.6 0.8 1.               
+
+> p
+> ω
+> yb A c2
+> y1
+> y2
+> y3
+> y5
+> y10
+> y20
+
+pω           
+
+> 015
+> √13 −32
+> 11y=bA
+> c2
+> y= 1
+> y= 2
+> y= 3
+> y= 5
+> y= 10
+> y= 20
+
+(b) Cost-inefficient Firm 2 for different values of bA 
+
+> c2
+
+.
+
+Figure 4: Sufficient regions for participation in the ( p, ω ) parameter space. The shaded regions indicate parameter combinations for which participation is guaranteed. changes monotonically with market sensitivity (Figure 4b). As bA
+
+c2
+
+increases, the partici-pation region expands, reducing the role of the cost asymmetry in the platform formation. This is because, as market sensitivity increases relative to the cost-inefficient firm’s pro-duction cost, producing more becomes less desirable for both firms primarily due to its impact on the market price (i.e., reducing the price at a higher rate). This leaves less room for the shared information to actively influence the firms’ quantities. Consequently, the strategic cost of sharing private information decreases. Moreover, information sharing removes uncertainty about the other firm’s type, enabling firms to predict each other’s production decisions more accurately. These effects collectively make information sharing more preferable for the cost-inefficient firm. The effect of market sensitivity thus differs across the two settings: higher market sensitivity encourages platform participation when firms differ in cost, whereas lower market sensitivity encourages participation when firms are homogeneous. 
+
+# Information Power Asymmetric Firms ( p1̸ = p2 and c1 = c2 = c): 
+
+We now analyze platform participation decisions under information power heterogeneity only. Without loss of generality, we assume Firm 1 has higher information power, i.e., 18 p1 > p 2. The following proposition shows that Firm 1 is the bottleneck and determines the platform formation. 
+
+Proposition 4 (Participation bottleneck for information power asymmetric firms) . When firms differ only in information power and p1 > p 2, then ∆1 ≥ 0 implies that ∆2 > 0.That is, whenever the high-information power firm weakly benefits from participating in the information-sharing platform, the low information power firm strictly benefits from participation. 
+
+Information power asymmetry makes the analysis much less tractable. We therefore adopt a numerical approach to identify when Firm 1 participates and, by Proposition 4, when the platform forms. We explore the entire ( p1, p2
+
+p1
+
+) parameter space for different values of bA
+
+c and ω. We focus on these parameters because participation decisions are particularly sensitive to them and vary little with the remaining parameters. We illustrate selected results in Figure 5 for ω = 0 .2. In each plot, the shaded region represents where the platform forms.         
+
+> (a) bA/c = 0 .25 (b) bA/c = 1 (c) bA/c = 5
+
+Figure 5: Participation region from Firm 1’s perspective in the ( p1, p 2/p 1) parameter space, 
+
+ω = 0 .2. The participation regions in Figure 5 suggest that the high-information power firm (Firm 1) is more likely to participate as the information-power gap decreases (i.e., as p2
+
+increases). As market sensitivity decreases with respect to production cost, Firm 1 tolerates larger information gaps in its participation decision. Overall, both forms of heterogeneity create different participation bottlenecks: cost-inefficient firms under cost asymmetry, high-information power firms under information 19 power asymmetry. Thus, the effect of heterogeneity on participation depends on both the source and degree of the asymmetry. 
+
+# 5 Numerical Study: Networked Competition Structure Effects on Participation 
+
+The two-firm analysis examines settings in which firms compete directly and explores how firm and market characteristics affect platform formation. When more than two firms interact across multiple markets, firms are subject to both direct and indirect competition, and participation decisions depend on the broader network competition structure, which is determined by the topology of the network connecting firms to markets. Thus, in this section, we conduct a numerical study of supply chains comprising three firms and four markets, varying the network topology in addition to the other factors captured in Section 4. Our goal is to examine whether observations in the direct-competition environment extend to more complex supply chain network competition structures, and to identify how changes in supply chain competition density and firms’ exposure to local competition affect firms’ participation decisions in the presence of varying information power and shock magnitude. In the numerical study, we set the baseline market size to aj = a = 1000 for each Market j and the shock probability to ω = 0 .1. We assume a uniform distribution of shock locations across markets, with rj = r = 0 .25 for all j. Other parameter variants are created by modifying this baseline setting and are described in the subsequent sections. 
+
+# 5.1 Role of Competition Network on Platform Formation 
+
+We first examine how network competition structure affects platform formation under dif-ferent information-power and shock conditions. To do so, we use five networks with distinct topologies, as shown in Figure 6, that differ in (i) overall intensity of competition , deter-mined by the network density, and (ii) firms’ local competition exposure , determined by the allocation of firm-market pairs. To isolate the effects of network topology from firm and market heterogeneity, for each firm, we fix production costs at ci = c = 1 and set market sensitivity at bj = b = 1 for each market. For firms, we consider three levels of information power: high ( p = 0 .75), 20 Figure 6: Supply chain network topologies representing different competition structures. medium ( p = 0 .5), and low ( p = 0 .25). We examine all combinations corresponding to two scenarios: (a) asymmetric information power, where one firm has higher information power than the other two homogeneous firms and (b) asymmetric information power across firms. For disruptions, we vary the normalized shock size, Da , across three levels: low ( Da = 0 .25), medium ( Da = 1), and high ( Da = 2). We then employ a full-factorial experimental design across all parameter combinations. 
+
+Firms with Asymmetric Information Power: Earlier in Section 4, we observed that when firms differ only in information power, the one with high information power has less incentive to participate because it gives up relatively more of its informational advantage while receiving less in return. We observe a similar pattern across network topologies, with participation reluctance strongest in the complete network, where firms face the greatest overall competitive exposure. In Table 1, we see that the firm with higher information (i.e., Firm 1) never participates in the platform when the network is fully connected, but does so when the supply network becomes less connected. Relative to the complete network, reducing total network density, while keeping the distribution of local competition balanced, results in full participation in several instances. This is because, as the supply chain network becomes less connected, the better-informed firm is less negatively affected by the increase in competitors’ information advantage resulting from the information it shares. Participation incentives also depend on how competitive exposure is distributed among firms. Table 2 compares two sparse network instances with the same total density but different distributions of local competition. The high-information power firm is reluctant to participate when it faces greater local competition, but participates more often when 21 Table 1: Equilibrium platform profiles under different network densities.                                  
+
+> Information power Complete Network Near-compelete Network
+> (p1, p 2, p 3)Shock Magnitude Shock Magnitude
+> Low Medium High Low Medium High
+> (0 .75 ,0.50 ,0.50) SSSSAA(0 .50 ,0.25 ,0.25) –SSSSS(0 .75 ,0.25 ,0.25) SSSSSS
+
+Notes: A = all firms join; S = only information-symmetric firms join; – = no platform equilibrium observed. 
+
+it faces less local competition. For example, in the uneven sparse network, when Firm 1 has high information power, it does not participate under medium and high shocks because other firms also serve the only market Firm 1 serves, creating direct competition in that market. Conversely, in the balanced sparse network, the platform attracts more firms compared to the uneven network across all parameter settings. Table 2: Equilibrium platform profiles under different local competitive exposure.                                                                                  
+
+> Information power Sparse–Uneven Sparse–Balanced
+> (p1, p 2, p 3)Shock Magnitude Shock Magnitude
+> Low Medium High Low Medium High
+> (0 .75 ,0.50 ,0.50) ASSAAA(0 .50 ,0.75 ,0.50) AAAAAA(0 .50 ,0.50 ,0.75) AAAAAA(0 .50 ,0.25 ,0.25) ASSAAA(0 .25 ,0.50 ,0.25) AAAAAA(0 .25 ,0.25 ,0.50) AAAAAA(0 .75 ,0.25 ,0.25) SSSSSA(0 .25 ,0.75 ,0.25) S––SSS(0 .25 ,0.25 ,0.75) SSSSSA
+
+Notes: A = all firms join; S = only information-symmetric firms join; – = no platform equilibrium observed; 
+
+Firms with Symmetric Information Power: When firms have equal information power, full participation is substantially more common than under asymmetric informa-tion power, and participation is largely insensitive to network topology. Across all set-tings with symmetric information power, full participation occurs except in one case: the complete network under the smallest shock and lowest information power ( Da = 0 .25 and 
+
+pi = p = 0 .25). With symmetric information power, neither firm has an informational advantage that deters participation, while information sharing allows both firms to reduce uncertainty about their competitors’ information and decisions. Because full participation occurs in all but one case, we do not report these results in a separate table. 22 5.2 System Parameter Effects on Platform Formation Across Networks 
+
+Next, we investigate how changes in firms’ production costs and market sensitivity affect equilibrium platform participation across varying network structures and shock magnitude, as these parameters are the most influential in the platform characteristics. To do so, we compare participation decisions in the ‘Complete’ network, representing a high level of competition, with those in the ‘Intermediate-density’ network, representing a lower level of competition. We vary the normalized shock magnitude to represent different levels of disruption intensity: low (0.5), medium (1), high (1.5). We set ci = 1 and b = 1 as their respective base levels and vary one parameter at a time while holding the other at its base level. For the selected parameter, we consider progressively lower and higher values from the set {0.05 , 0.1, 0.25 , 0.5, 1.5, 2}.Table 3: Effect of production cost changes on equilibrium platform participation.                                                                                
+
+> Cost change for the considered firm Considered Firm Network Information power Increasing cost Decreasing cost
+> (p1, p 2, p 3)Shock Magnitude DaShock Magnitude Da
+> 0.5 11.5 0.5 11.5 Firm 1 Complete (0 .25 ,0.25 ,0.25) AAAA/ −†A/ −†A(0 .75 ,0.25 ,0.25) –CCCCC
+> Firm 2 Intermediate (0 .25 ,0.25 ,0.25) AAAAAA(0 .25 ,0.75 ,0.25) CCCCCC
+> Firm 3 Intermediate (0 .25 ,0.25 ,0.25) AAAAAA(0 .25 ,0.25 ,0.75) ––CCCC
+> Notes: The selected firm is the firm whose production cost is varied in the numerical studies; Starting from base level ci= 1, selected firm’s cost increased to {1.5,2}or decreased to {0.5,0.25 ,0.1,0.05 }; A = all firms join; C = only cost-symmetric firms join; – = no platform equilibrium is observed; A/ −†= initially all firms participate and when the production cost is sufficiently low, the platform no longer forms.
+
+Production Cost Effect: In the production-cost analysis, we change the cost of one firm at a time. This firm is marked as ‘Considered Firm’ in Table 3 (Firm 1 in Complete and Firm 2 or Firm 3 in Intermediate-density ). The table summarizes the equilibrium platform configurations as we change the selected firm’s production cost. Platform configurations are categorized according to whether only the two cost-symmetric firms join (denoted by 
+
+C in the table) or whether all three firms join (denoted by A in the table). The effect of production cost asymmetry on platform participation depends on how 23 the asymmetry is distributed. When one firm is sufficiently more cost-efficient than its competitors, the inefficient firms may be discouraged from sharing information with the cost-efficient firm and the platform does not form. On the contrary, if a single firm is cost-inefficient compared to its competitors, it chooses to participate in the platform to avoid missing out on the collective information. These observations suggest that when the cost-inefficient firms are the majority, they are reluctant to form a platform with a more efficient competitor. However, when they are the minority, they prefer to join when their more efficient competitors form a platform and collectively reach a critical mass of shared information. When one firm has greater information power than its competitors and becomes more cost-efficient (i.e., decreasing cost), its competitors, which previously remained outside the platform, begin to participate and share information with one another, while the more efficient and better-informed firm remains outside the platform in equilibrium. The reason is that the firm in consideration now has advantages in both information and production efficiency, making it a particularly strong competitor. In response, the other firms benefit from coordinating through the platform and sharing information with each other, thereby strengthening their competitive position against the advantaged firm. 
+
+Market Sensitivity Effect: Table 4 shows the market sensitivity effect on firms’ par-ticipation decisions across different supply chain networks and information-power gaps be-tween firms. Table 4 shows how market sensitivity affects firms’ participation decisions across different network structures and information-power configurations. Consistent with the analysis in Section 4, decreasing market sensitivity generally increases participation across all considered supply chain networks. Market sensitivity has a stronger effect when information power is asymmetric. At the base or higher levels of market sensitivity, the information-disadvantaged firms often participate and share information with one another, while the information-advantaged firm remains outside the platform. This is an example where low-information firms join forces against the high-information firm to become more competitive. As market sensitivity decreases, the competition becomes less fierce, and the equilibrium shifts toward full participation, with the information-advantaged firm also join-ing the platform. Thus, lower market sensitivity primarily promotes participation by firms that would otherwise remain outside the platform because of their information advantage. 24 Table 4: Equilibrium participation configurations under market sensitivity effect.                                                                             
+
+> Network Information power Market sensitivity Shock magnitude Da
+> (p1, p 2, p 3)0.5 11.5 Complete (0 .25 ,0.25 ,0.25)
+> ↑AAA
+> base case ( b= 1) AAA
+> ↓AAA
+> (0 .75 ,0.25 ,0.25)
+> ↑−SS
+> base case ( b= 1) SSS
+> ↓S/A †S/A †A
+> Intermediate (0 .25 ,0.25 ,0.25)
+> ↑AAA
+> base case ( b= 1) AAA
+> ↓AAA
+> (0 .25 ,0.75 ,0.25)
+> ↑SSS
+> base case ( b= 1) SSS
+> ↓AAA
+> (0 .25 ,0.25 ,0.75)
+> ↑−SS
+> base case ( b= 1) −SS
+> ↓AAA
+> Notes: A= all firms join; S= only information-symmetric firms join; −= no platform equilibrium is observed. S/A †indicates a transitional case: for a moderate decrease in market sensitivity, the equilibrium is “information-symmetric firms join,” whereas for a sufficiently large decrease, it shifts to “all firms join.”
+
+# 6 Summary 
+
+In this paper, we study the participation of horizontally competing supply chain firms in a centralized, multi-firm information-sharing platform to share market shock signals that affect demand. We consider firms with different information capabilities and the participation problem prior to the realization of private signals, thereby creating a stochastic information-asymmetry environment. The key question for each firm is whether the benefits of information sharing outweigh the loss of competitive advantage from sharing their private information. We develop a game-theoretic model to identify the supply chain characteristics that shape firms’ incentives to participate in the platform. We first analyze the equilibrium participation strategies when there are two competing firms, providing closed-form results for equilibrium participation behavior that highlight the effect of information power and production efficiency on firms’ participation decisions. Numerical results, capturing more complex competition network structures, show that both network structure and the position of each firm in the network critically influence participation incentives. Our findings reveal how supply chain characteristics impact participation in informa-tion sharing. First, the level of information asymmetry is a key factor in the equilibrium platform profile. Firms with similar information power may benefit from joining forces to reduce their competitive disadvantage against higher information power competitors. 25 Second, cost-inefficient firms may be less willing to participate because their competitors can exploit shared information, and uncertainty can serve as a competitive shield by re-stricting the actions of more efficient competitors. However, when several competitors join the platform, a cost-inefficient firm may also choose to participate to avoid an informa-tional disadvantage. Third, market sensitivity affects the competitive role of information and uncertainty. In highly sensitive markets, where firms have less flexibility to adjust their production quantities, information becomes more valuable. At the same time, uncer-tainty becomes more challenging for cost-inefficient firms. Consequently, greater market sensitivity increases the reluctance of high-information power firms to participate, while cost-inefficient firms are more willing to participate. Lastly, we analyze how supply chain network topology shapes information sharing incentives among competing firms. Although competing firms are generally considered to be reluctant to share information, our results show that they may do so when information sharing creates an opportunity to redistribute their efforts between the markets they serve. Specifically, strategic information sharing may reduce the intensity in shared markets by enabling firms to focus on the markets where they have stronger positions. There are a number of directions open for future research. First, this work assumes the signals being shared are truthful, and future research could explore mechanisms that penal-ize untruthful reporting. Further, different disruption settings and types of information to share could be considered. In addition, future research could extend the single-period set-ting to multiple operational periods with a defined participation horizon that captures how updates in beliefs affect participation. Another direction worth exploring is how to design platform mechanisms to increase participation. For example, firms could be compensated to participate by creating reward allocation schemes funded by participation fees collected from firms benefiting more from the platform. Finally, in this work, we assume that firms make their decisions based on financial gains alone, omitting privacy concerns, to isolate the impact of supply chain conditions on platform benefits, but future work could explore privacy-preserving methods to encourage information sharing in competing supply chains. 
+
+# Data Availability Statement 
+
+The data supporting the findings of this study are available within the article. 26 Declaration of Generative AI Use 
+
+The authors used OpenAI ChatGPT for minor language refinement. 
+
+# References 
+
+Bimpikis, K., Ehsani, S., and Ilkılı¸ c, R. (2019). Cournot competition in networked markets. 
+
+Management Science , 65(6):2467–2481. Cachon, G. P. and Fisher, M. (2000). Supply chain inventory management and the value of shared information. Management Science , 46(8):1032–1048. Cachon, G. P. and Swinney, R. (2011). The value of fast fashion: Quick response, enhanced design, and strategic consumer behavior. Management Science , 57(4):778–795. Cao, E. and Chen, G. (2021). Information sharing motivated by production cost reduction in a supply chain with downstream competition. Naval Research Logistics (NRL) , 68(7):898– 907. Cao, E., Wan, C., and Lai, M. (2013). Coordination of a supply chain with one manu-facturer and multiple competing retailers under simultaneous demand and cost disrup-tions. International Journal of Production Economics , 141(1):425–433. Meta-heuristics for manufacturing scheduling and logistics problems. Chen, F., Drezner, Z., Ryan, J. K., and Simchi-Levi, D. (2000). Quantifying the bullwhip effect in a simple supply chain: The impact of forecasting, lead times, and information. 
+
+Management Science , 46(3):436–443. Chen, Y. and ¨Ozer, ¨O. (2019). Supply chain contracts that prevent information leakage. 
+
+Management Science , 65(12):5619–5650. Chen, Z.-Y. and Sun, M. (2025). Data-driven contract design for supply chain coordination with algorithm sharing and algorithm competition. IISE Transactions , 57(5):573–589. Cho, D. W. and Lee, Y. H. (2013). The value of information sharing in a supply chain with a seasonal demand process. Computers & Industrial Engineering , 65(1):97–108. Intelligent Manufacturing Systems. Choi, H.-c. P., Blocher, J. D., and Gavirneni, S. (2008). Value of sharing production yield information in a serial supply chain. Production and Operations Management , 17(6):614– 625. Costantino, F., Di Gravio, G., Shaban, A., and Tronci, M. (2014). The impact of informa-tion sharing and inventory control coordination on supply chain performances. Computers & Industrial Engineering , 76:292–306. Eckstein, D., Goellner, M., Blome, C., and Henke, M. (2015). The performance impact of supply chain agility and supply chain adaptability: the moderating effect of product complexity. International Journal of Production Research , 53(10):3028–3046. 27 Fang, Y. and Shou, B. (2015). Managing supply uncertainty under supply chain cournot competition. European Journal of Operational Research , 243(1):156–176. Gao, S. Y., Simchi-Levi, D., Teo, C.-P., and Yan, Z. (2019). Disruption risk mitigation in supply chains: The risk exposure index revisited. Operations Research , 67(3):831–852. Gu, M., Yang, L., and Huo, B. (2021). The impact of information technology usage on supply chain resilience and performance: An ambidexterous view. International Journal of Production Economics , 232:107956. Guan, Z., Zhang, X., Zhou, M., and Dan, Y. (2020). Demand information sharing in competing supply chains with manufacturer-provided service. International Journal of Production Economics , 220:107450. Ha, A. Y. (2001). Supplier-buyer contracting: Asymmetric cost information and cutoff level policy for buyer participation. Naval Research Logistics (NRL) , 48(1):41–64. Ha, A. Y., Tian, Q., and Tong, S. (2017). Information sharing in competing supply chains with production cost reduction. Manufacturing & Service Operations Manage-ment , 19(2):246–262. Ha, A. Y. and Tong, S. (2008). Contracting and information sharing under supply chain competition. Management Science , 54(4):701–715. Hou, P., Liu, Z., Pun, H., and Wang, J. (2026). Platform’s information sharing strategy in a supplier encroachment context with economies of scale. IISE Transactions , 0(0):1–16. Huo, B., Zhao, X., and Zhou, H. (2014). The effects of competitive environment on supply chain information sharing and performance: an empirical study in china. Production and Operations Management , 23(4):552–569. Ivanov, D. (2021). Digital supply chain management and technology to enhance resilience by building and using end-to-end visibility during the covid-19 pandemic. IEEE Transactions on Engineering Management , pages 1–11. Lee, H. L., Padmanabhan, V., and Whang, S. (1997). Information distortion in a supply chain: The bullwhip effect. Management Science , 43(4):546–558. Lee, H. L., So, K. C., and Tang, C. S. (2000). The value of information sharing in a two-level supply chain. Management Science , 46(5):626–643. Li, G., Tian, L., and Zheng, H. (2021). Information sharing in an online marketplace with co-opetitive sellers. Production and Operations Management , 30(10):3713–3734. Li, H., Pedrielli, G., Lee, L. H., and Chew, E. P. (2017). Enhancement of supply chain resilience through inter-echelon information sharing. Flexible Services and Manufacturing Journal , 29:260–285. Li, L. (2002). Information sharing in a supply chain with horizontal competition. Manage-ment Science , 48(9):1196–1212. 28 Li, L. and Zhang, H. (2002). Supply chain information sharing in a competitive environ-ment. In Song, J.-S. and Yao, D. D., editors, Supply Chain Structures: Coordination, Information and Optimization , pages 161–206. Springer US, Boston, MA. Lin, F., Huang, S., and cheng Lin, S. (2002). Effects of information sharing on supply chain performance in electronic commerce. IEEE Transactions on Engineering Management ,49(3):258–268. Liu, Y. and Rahimian, M. A. (2026). Mechanism design for privacy-preserving information sharing in oligopoly competition. arXiv preprint arXiv:2606.02348 .Liu, Z., Zhang, D. J., and Zhang, F. (2021). Information sharing on retail platforms. 
+
+Manufacturing & Service Operations Management , 23(3):606–619. Massari, G. F. and Giannoccaro, I. (2021). Investigating the effect of horizontal coopetition on supply chain resilience in complex and turbulent environments. International Journal of Production Economics , 237:108150. Mehrotra, M. and Schmidt, W. (2021). The value of supply chain disruption duration information. Production and Operations Management , 30(9):3015–3035. Raweewan, M. and Ferrell, W. G. (2018). Information sharing in supply chain collaboration. 
+
+Computers & Industrial Engineering , 126:269–281. Sahin, F. and Robinson, E. P. (2002). Flow coordination and information sharing in sup-ply chains: review, implications, and directions for future research. Decision Sciences ,33(4):505–536. Serel, D. A. (2008). Inventory and pricing decisions in a single-period problem involving risky supply. International Journal of Production Economics , 116(1):115–128. Shang, W., Ha, A. Y., and Tong, S. (2016). Information sharing in a supply chain with a common retailer. Management Science , 62(1):245–263. Shen, B., Choi, T.-M., and Minner, S. (2019). A review on supply chain contracting with information considerations: information updating and information asymmetry. Interna-tional Journal of Production Research , 57(15-16):4898–4936. Shin, H. and Tunca, T. I. (2010). Do firms invest in forecasting efficiently? the effect of competition on demand forecast investments and supply chain coordination. Operations Research , 58(6):1592–1610. Sixth Tone (2020). From shortage to glut: China’s mask market collapse. Accessed: 2026-04-08. Tomlin, B. (2006). On the value of mitigation and contingency strategies for managing supply chain disruption risks. Management Science , 52:639–657. Topan, E., Tan, T., van Houtum, G.-J., and Dekker, R. (2018). Using imperfect advance demand information in lost-sales inventory systems with the option of returning inventory. 
+
+IISE Transactions , 50(3):246–264. 29 Vives, X. (1984). Duopoly information equilibrium: Cournot and bertrand. Journal of Economic Theory , 34(1):71–94. Wang, C. X. and Webster, S. (2009). Markdown money contracts for perishable goods with clearance pricing. European Journal of Operational Research , 196(3):1113–1122. Wang, J.-J., Dong, J., Yue, X., and Zhong, Q. (2020). Information sharing in a supply chain with a coopetitive contract manufacturer. IEEE Transactions on Systems, Man, and Cybernetics: Systems , 50(5):1777–1793. Wong, W.-P., Tan, K. H., Govindan, K., Li, D., and Kumar, A. (2021). A conceptual framework for information-leakage-resilience. Annals of Operations Research , pages 1– 21. Wu, J., Zou, L., Gong, Y., and Chen, M. (2021). The anti-collusion dilemma: Information sharing of the supply chain under buyback contracts. Transportation Research Part E: Logistics and Transportation Review , 152:102413. Wu, Y., He, Q. C., and Wang, X. (2022). Competitive spatial pricing for urban parking systems: Network structures and asymmetric information. IISE Transactions , 54(2):186– 197. Yuan, Q. and Qiong, Z. (2008). Incentive mechanism of supply chain inventory manage-ment based on information sharing. In 2008 International Seminar on Business and Information Management , volume 2, pages 373–377. IEEE. Zha, Y., Li, Q., Huang, T., and Yu, Y. (2023). Strategic information sharing of online platforms as resellers or marketplaces. Marketing Science , 42(4):659–678. Zhang, F. (2006). Competition, cooperation, and information sharing in a two-echelon assembly system. Manufacturing & Service Operations Management , 8(3):273–291. Zhang, H. (2002). Vertical information exchange in a supply chain with duopoly retailers. 
+
+Production and Operations Management , 11(4):531–546. Zhang, J. and Chen, J. (2013). Coordination of information sharing in a supply chain. 
+
+International Journal of Production Economics , 143(1):178–187. Zhao, X., Xie, J., and Leung, J. (2002). The impact of forecasting model selection on the value of information sharing in a supply chain. European Journal of Operational Research , 142(2):321–344. Zheng, M., Shunko, M., Gavirneni, N., Shu, Y., and Wu, K. (2019). Reactive production with preprocessing restriction in supply chains with forecast updates. IISE Transactions ,51(12):1402–1436. Zhong, Q., Wang, J., Zou, Z., and Lai, X. (2023). The incentives for information sharing in online retail platforms. Transportation Research Part E: Logistics and Transportation Review , 172:103050. Zhou, M., Dan, B., Ma, S., and Zhang, X. (2017). Supply chain coordination with infor-mation sharing: The informational advantage of gpos. European Journal of Operational Research , 256(3):785–802. 30 A Prior and Posterior Beliefs 
+
+This appendix presents probability expressions capturing firms’ beliefs. Throughout this section, firms i and k denote platform members, while firms u and v denote non-members. 
+
+# A.1 Prior Probabilities 
+
+Parameter θ denotes the market state defined in Section 3.1. A shock occurs with proba-bility ω, and conditional on a shock, the shock location is Market j with probability rj :Pr( θ = 0) = 1 − ω, Pr( θ = j) = ωr j .
+
+Conditional on a shock at Market j, a non-member firm u observes a signal with prob-ability pu:Pr( zu = (+ , j ) | θ = j) = pu, Pr( zu = − | θ = j) = 1 − pu, Pr( zu = − | θ = 0) = 1 .
+
+For platform members, information sharing improves information availability 
+
+pplatform = 1 − Y
+
+> i∈F:Vi=1
+
+(1 − pi).
+
+Accordingly, for a platform member i,Pr( zi = (+ , j ) | θ = j) = pplatform , Pr( zi = − | θ = j) = 1 − pplatform ,
+
+Pr( zi = − | θ = 0) = 1 .
+
+Unconditional on a shock, Pr( zk = (+ , j )) = ωr j pk, Pr( zi = (+ , j )) = ωr j pplatform .
+
+# A.2 Posterior beliefs over the market state 
+
+If a non-member firm u does not observe a signal, its posterior belief over the market state is Pr( θ = j | zu = −) = (1 − pu)ωr j
+
+1 − ωp u
+
+,
+
+Pr( θ = 0 | zu = −) = 1 − ω
+
+1 − ωp u
+
+.
+
+If a platform member i does not observe a signal, then Pr( θ = j | zi = −) = (1 − pplatform )ωr j
+
+1 − ωp platform 
+
+,
+
+Pr( θ = 0 | zi = −) = 1 − ω
+
+1 − ωp platform 
+
+.
+
+If a firm observes a shock signal at Market j, then it knows the market state with 31 certainty: Pr( θ = j | zx = (+ , j )) = 1 , x ∈ { i, u }.
+
+# A.3 Posterior Beliefs over Other Firms’ Types 
+
+Conditional on a shock at Market j, non-members’ signal realizations are independent. 
+
+Member beliefs. If platform member i observes a signal at Market j, then for other member k, it has the following belief: Pr( zk = (+ , j ) | zi = (+ , j )) = 1 ,
+
+indicating information sharing within the platform. For a non-member v, the belief is Pr( zv = (+ , j ) | zi = (+ , j )) = pv, Pr( zv = (+ , j ) | zi = −) = ωr j (1 − pplatform )pv
+
+1 − ωp platform 
+
+.
+
+Non-member beliefs. If non-member Firm u observes a signal at Market j, then it knows θ = j. In this case, for another non-member v and a platform member k,Pr( zv = (+ , j ) | zu = (+ , j )) = pv,
+
+Pr( zk = (+ , j ) | zu = (+ , j )) = pplatform .
+
+If Firm u does not observe a signal, then Pr( zv = (+ , j ) | zu = −) = ωr j (1 − pu)pv
+
+1 − ωp u
+
+, (8) Pr( zk = (+ , j ) | zu = −) = ωr j (1 − pu)pplatform 
+
+1 − ωp u
+
+. (9) 
+
+# B Small Supply Chain: Firms’ Equilibrium Quantity De-cisions Analysis 
+
+In this section, we derive the firms’ equilibrium production quantities in the two-firm supply chain setting. 
+
+# B.1 Baseline: Equilibrium under Private Information 
+
+In the baseline case, firms operate without the platform, represented by ⃗ V = [0 , 0]. There-fore, demand signals remain private, and firms form beliefs about their competitor’s infor-mation. We distinguish production decisions for each firm based on whether they observe the signal or not, and represent the quantity-game equilibrium as the vector [q∗ 
+
+> 1
+
+(−| [0 , 0]) , q ∗ 
+
+> 1
+
+(+ , A |[0 , 0]); q∗ 
+
+> 2
+
+(−| [0 , 0]) , q ∗ 
+
+> 2
+
+(+ , A |[0 , 0])] .
+
+For compactness in this section, let 
+
+q+1 := q∗
+
+> 1A
+
+(+ , A | [0 , 0]) , q+2 := q∗
+
+> 2A
+
+(+ , A | [0 , 0]) , q− 
+
+> 1
+
+:= q∗
+
+> 1A
+
+(− | [0 , 0]) , q− 
+
+> 2
+
+:= q∗
+
+> 2A
+
+(− | [0 , 0]) .
+
+32 The production quantities are nonnegative. When Firm i observes a signal, it chooses its production in response to expectation its competitor’s production.When Firm i does not observe a signal, uncertainty remains both for market conditions and the competitor’s information. The corresponding posterior beliefs are derived in Section A. A Bayesian equilibrium is a vector ( q− 
+
+> 1
+
+, q +1 , q − 
+
+> 2
+
+, q +2 ) such that each quantity is optimal for the corresponding firm and information state, given the competitor’s type-contingent production quantities. Hence, none of the firms has an incentive to deviate at the equilib-rium. 
+
+Payoff Functions and Best Responses. We derive the equilibrium quantities in the baseline case. When Firm i observes the disruption, it chooses q+ 
+
+> i
+
+taking as given the quantities chosen by Firm j. Its expected payoff is 
+
+E
+
+h
+
+πi
+
+ q+ 
+
+> i
+
+, q + 
+
+> j
+
+, q − 
+
+> i
+
+, q − 
+
+> j
+
+, θ  | zi = (+ , A ),⃗ V = [0 , 0] 
+
+i
+
+= (1 − pj ) aA + D − bA(q+ 
+
+> i
+
++ q− 
+
+> j
+
+) q+
+
+> i
+
++ pj
+
+aA + D − bA(q+ 
+
+> i
+
++ q+ 
+
+> j
+
+) q+
+
+> i
+
+− ci
+
+ q+
+
+> i
+
+2 .
+
+(10) When Firm i does not observe the disruption, it chooses q− 
+
+> i
+
+based on its posterior beliefs. Its expected payoff is 
+
+E
+
+h
+
+πi
+
+ q+ 
+
+> i
+
+, q + 
+
+> j
+
+, q − 
+
+> i
+
+, q − 
+
+> j
+
+, θ  | zi = −,⃗ V = [0 , 0] 
+
+i
+
+= 1 − ω
+
+1 − ω + ω(1 − pi)
+
+aA − bA(q− 
+
+> i
+
++ q− 
+
+> j
+
+) q−
+
+> i
+
++ ω(1 − pi)(1 − pj )1 − ω + ω(1 − pi)
+
+aA + D − bA(q− 
+
+> i
+
++ q− 
+
+> j
+
+) q−
+
+> i
+
++ ω(1 − pi)pj
+
+1 − ω + ω(1 − pi)
+
+aA + D − bA(q− 
+
+> i
+
++ q+ 
+
+> j
+
+) q−
+
+> i
+
+− ci
+
+ q−
+
+> i
+
+2 .
+
+(11) 
+
+First-Order and Second-Order Optimality Conditions Using the payoff functions above, Firm i’s first-order and second-order conditions are as follows. 
+
+When Firm i observes the disruption: 
+
+∂E
+
+h
+
+πi
+
+
+
+q+ 
+
+> i
+
+, q + 
+
+> j
+
+, q − 
+
+> i
+
+, q − 
+
+> j
+
+, θ 
+
+
+
+| zi = (+ , A ),⃗ V = [0 , 0] 
+
+i
+
+∂q +
+
+> i
+
+= aA + D − bA
+
+
+
+pj q+ 
+
+> j
+
++ (1 − pj )q−
+
+> j
+
+
+
+− 2( bA + ci)q+ 
+
+> i
+
+,
+
+(12) 
+
+∂2E
+
+h
+
+πi
+
+
+
+q+ 
+
+> i
+
+, q + 
+
+> j
+
+, q − 
+
+> i
+
+, q − 
+
+> j
+
+, θ 
+
+
+
+| zi = (+ , A ),⃗ V = [0 , 0] 
+
+i
+
+∂  q+
+
+> i
+
+2 = −2( bA + ci) < 0. (13) 
+
+When Firm i does not observe the disruption: 
+
+33 ∂E
+
+h
+
+πi
+
+
+
+q+ 
+
+> i
+
+, q + 
+
+> j
+
+, q − 
+
+> i
+
+, q − 
+
+> j
+
+, θ 
+
+
+
+| zi = −,⃗ V = [0 , 0] 
+
+i
+
+∂q −
+
+> i
+
+= aA + ω(1 − pi)1 − ωp i
+
+D
+
+− 1 − ωp i − ωp j + ωp ipj
+
+1 − ωp i
+
+bAq−
+
+> j
+
+− ω(1 − pi)pj
+
+1 − ωp i
+
+bAq+
+
+> j
+
+− 2( bA + ci)q− 
+
+> i
+
+.
+
+(14) 
+
+∂2E
+
+h
+
+πi
+
+
+
+q+ 
+
+> i
+
+, q + 
+
+> j
+
+, q − 
+
+> i
+
+, q − 
+
+> j
+
+, θ 
+
+
+
+| zi = −,⃗ V = [0 , 0] 
+
+i
+
+∂  q−
+
+> i
+
+2 = −2( bA + ci) < 0. (15) 
+
+Best Responses. Since −2( bA + ci) < 0, the first-order condition together with the nonnegativity constraint characterizes Firm i’s unique best responses for each type. 
+
+BR + 
+
+> i
+
+= max 
+
+0,aA + D − bA
+
+
+
+pj q+ 
+
+> j
+
++ (1 − pj )q−
+
+> j
+
+
+
+2( bA + ci)
+
+ . (16) 
+
+BR − 
+
+> i
+
+= max 
+
+0, aA + ω(1 −pi)1−ωp i D − 1−ωp i−ωp j +ωp ipj 
+
+> 1−ωp i
+
+bAq− 
+
+> j
+
+− ω(1 −pi)pj 
+
+> 1−ωp i
+
+bAq+
+
+> j
+
+2( bA + ci)
+
+ . (17) The corresponding conditions for Firm j are obtained analogously by interchanging indices. 
+
+Properties of Equilibrium Quantities. Every production quantity is constrained to be nonnegative. Depending on which nonnegativity constraints are binding, the system of best responses has 2 4 possible active-set configurations. Instead of solving the system separately for all configurations, we first describe equilibrium properties to restrict the set of candidate equilibrium configurations. For the equilibrium analysis, we introduce the following notation, which is useful in the proofs. For each firm k ∈ { i, j }, let 
+
+μk = ω(1 − pk)1 − ωp k
+
+denote the posterior probability that the demand shock has occurred conditional on Firm 
+
+k not observing a signal. Let, ˆa− 
+
+> k
+
+:= aA + μkD, ˆa+ := aA + D, 
+
+where ˆ a− 
+
+> k
+
+is the expected demand intercept conditional on Firm k not observing the signal, whereas ˆ a+ is the demand intercept when the positive demand shock is observed. Finally, 34 we define 
+
+κk := 2( bA + ck),
+
+which is the coefficient on Firm k’s own quantity in its first-order condition. From the parameter domains of our model, 0 < μ k < 1, ˆa− 
+
+> k
+
+< ˆa+, κk > 2bA, (18) We first examine the quantities when firms observe the signal. 
+
+Lemma 1. Firms with a disruption signal produce a positive quantity, i.e., q+ 
+
+> i
+
+, q + 
+
+> j
+
+> 0.Proof. Because all equilibrium quantities are nonnegative and the coefficients of the com-petitors’ production quantities are negative in the best response, the best-response expres-sions (16),(17), imply upper bounds 
+
+q− 
+
+> k
+
+≤ ˆa−
+
+> k
+
+κk
+
+, q+ 
+
+> k
+
+≤ ˆa+
+
+κk
+
+. (19) Consider Firm i’s marginal payoff at the boundary q+ 
+
+> i
+
+= 0, denoted by M P + 
+
+> i
+
+, which is 
+
+M P + 
+
+> i
+
+:= 
+
+∂E
+
+h
+
+πi | zi = (+ , A ),⃗ V = [0 , 0] 
+
+i
+
+∂q +  
+
+> iq+
+> i=0
+
+= ˆ a+ − bA
+
+h
+
+(1 − pj )q− 
+
+> j
+
++ pj q+
+
+> j
+
+i
+
+.
+
+Applying the upper bounds in (19) to Firm j gives 
+
+M P + 
+
+> i
+
+≥ ˆa+ − bA
+
+κj
+
+
+
+(1 − pj )ˆ a− 
+
+> j
+
++ pj ˆa+
+
+.
+
+By conditions (18), 
+
+M P + 
+
+> i
+
+> ˆa+ − bA
+
+κj
+
+ˆa+.
+
+Moreover bA
+
+κj
+
+< 12 implies 
+
+M P + 
+
+> i
+
+> ˆa+
+
+2 > 0.
+
+Thus, Firm i’s conditional payoff is strictly increasing in q+ 
+
+> i
+
+at the boundary q+ 
+
+> i
+
+= 0. Since its conditional payoff is strictly concave in q+ 
+
+> i
+
+, q+ 
+
+> i
+
+= 0 cannot be optimal. Hence 
+
+q+ 
+
+> i
+
+> 0.
+
+The same argument applies to Firm j, by interchanging i with j,
+
+q+ 
+
+> j
+
+> 0.
+
+By Lemma 1, any equilibrium quantity vector with a zero-production component can have that zero only in one of the without-signal quantities, q− 
+
+> i
+
+and q− 
+
+> j
+
+.35 We continue the analysis by considering two cases according to the firms’ information power. First, we consider firms with symmetric information power. Then, we consider firms with asymmetric information power. Without loss of generality, in the asymmetric case we assume pi > p j .
+
+When Firms have symmetric information power ( pi = pj = p): 
+
+Lemma 2. When firms have the same information power ( p1 = p2), their without-signal production quantities are strictly positive, i.e., q− 
+
+> i
+
+> 0 and q− 
+
+> j
+
+> 0.Proof. Since pi = pj = p, we have 
+
+μi = μj =: μ, and therefore ˆ a− 
+
+> i
+
+= ˆ a− 
+
+> j
+
+=: ˆ a−.
+
+Consider Firm i’s marginal payoff at the boundary q− 
+
+> i
+
+= 0, denoted by M P − 
+
+> i
+
+, which is 
+
+M P − 
+
+> i
+
+:= 
+
+∂E
+
+h
+
+πi | zi = −,⃗ V = [0 , 0] 
+
+i
+
+∂q −  
+
+> iq−
+> i=0
+
+= ˆ a− − bA
+
+h
+
+(1 − rp )q− 
+
+> j
+
++ rpq +
+
+> j
+
+i
+
+.
+
+Applying the upper bounds in (19), 
+
+M P − 
+
+> i
+
+≥ ˆa− − bA
+
+κj
+
+(1 − rp )ˆ a− + rp ˆa+ .
+
+Since ˆ a+ − ˆa− = (1 − r)D, we have (1 − μp )ˆ a− + μp ˆa+ = ˆ a− + μp (1 − μ)D. 
+
+Moreover, p(1 − μ) < 1, so 
+
+μp (1 − μ)D < μD < ˆa−.
+
+Hence, (1 − μp )ˆ a− + μp ˆa+ < 2ˆ a−.
+
+Since bA
+
+κj
+
+< 12 , we have 
+
+M P − 
+
+> i
+
+> 0.
+
+Thus, Firm i’s payoff is strictly increasing in q− 
+
+> i
+
+at the boundary q− 
+
+> i
+
+= 0. Since its payoff conditioned on not observing a signal is strictly concave in q− 
+
+> i
+
+, q− 
+
+> i
+
+= 0 cannot be optimal. Hence, 
+
+q− 
+
+> i
+
+> 0.
+
+By symmetry, 
+
+q− 
+
+> j
+
+> 0.
+
+When Firms have asymmetric information power ( pi > p j ): 
+
+36 Lemma 3. When firms have asymmetric information power, pi > p j , the lower-information firm’s without-signal production quantity is positive, i.e., q− 
+
+> j
+
+> 0.Proof. Recall that 
+
+μ(p) = ω(1 − p)1 − ωp 
+
+is strictly decreasing in p. Thus, 
+
+pi > p j =⇒ μi < μ j .
+
+Consider Firm j’s marginal payoff at the boundary q− 
+
+> j
+
+= 0: 
+
+M P − 
+
+> j
+
+:= 
+
+∂E
+
+h
+
+πj | zj = −,⃗ V = [0 , 0] 
+
+i
+
+∂q −  
+
+> jq−
+> j=0
+
+= ˆ a− 
+
+> j
+
+− bA
+
+(1 − μj pi)q− 
+
+> i
+
++ μj piq+
+
+> i
+
+ .
+
+Applying the upper bounds in (19), 
+
+M P − 
+
+> j
+
+≥ ˆa− 
+
+> j
+
+− bA
+
+κi
+
+(1 − μj pi)ˆ a− 
+
+> i
+
++ μj piˆa+ .
+
+Since μi < μ j and pi(1 − μi) < 1, (1 − μj pi)ˆ a− 
+
+> i
+
++ μj piˆa+ = aA + [ μi + μj pi(1 − μi)] D< a A + 2 μj D< 2ˆ a− 
+
+> j
+
+,
+
+Since bA
+
+κi
+
+< 12 , we have 
+
+M P − 
+
+> j
+
+> 0.
+
+Thus, Firm j’s payoff is strictly increasing in q− 
+
+> j
+
+at the boundary q− 
+
+> j
+
+= 0. Since its conditional payoff is strictly concave in q− 
+
+> j
+
+, q− 
+
+> j
+
+= 0 cannot be optimal. Hence, 
+
+q− 
+
+> j
+
+> 0.
+
+Equilibrium Candidates. By Lemmas 1-3, when firms have the same information power, the equilibrium production quantities under each signal type are strictly positive for each firm. In contrast, when firms have asymmetric information power, the higher-information firm’s without-signal quantity may be zero. Thus, the equilibrium can be either an interior solution or a boundary solution in which only the higher-information firm’s without-signal quantity is zero. Next, we solve the candidate solutions and identify the condition under which each candidate is an equilibrium. 37 Interior Candidate Equilibrium We first solve the system for the interior candidate, in which all four production quantities are strictly positive. Hence, the nonnegativity constraints in the best responses are not binding, and the interior candidate can be obtained by solving the unconstrained system of first-order conditions. Subtracting each firm’s the without-signal first order condition from its the with-signal first order condition gives 
+
+κi(q+ 
+
+> i
+
+− q− 
+
+> i
+
+) + bApj (1 − μi)( q+ 
+
+> j
+
+− q− 
+
+> j
+
+) = ˆ a+ − ˆa− 
+
+> i
+
+, (20) 
+
+bApi(1 − μj )( q+ 
+
+> i
+
+− q− 
+
+> i
+
+) + κj (q+ 
+
+> j
+
+− q− 
+
+> j
+
+) = ˆ a+ − ˆa− 
+
+> j
+
+. (21) Next, define the changes in production after observing the signal as 
+
+xi := q+ 
+
+> i
+
+− q− 
+
+> i
+
+, xj := q+ 
+
+> j
+
+− q− 
+
+> j
+
+.
+
+Then, (20) and (21) can be written as 
+
+ κi bApj (1 − μi)
+
+bApi(1 − μj ) κj
+
+  xi
+
+xj
+
+
+
+=
+
+(1 − μi)D
+
+(1 − μj )D
+
+
+
+. (22) Since κiκj > 4b2 
+
+> A
+
+and 0 < p ipj (1 − μi)(1 − μj ) < 1, the coefficient matrix is nonsingular, and the system has a unique solution. Hence, 
+
+xi = (1 − ri)D (κj − bApj (1 − rj )) 
+
+κiκj − b2
+
+> A
+
+pipj (1 − ri)(1 − rj ) , (23) 
+
+xj = (1 − rj )D (κi − bApi(1 − ri)) 
+
+κiκj − b2
+
+> A
+
+pipj (1 − ri)(1 − rj ) . (24) Next, substituting q+ 
+
+> i
+
+= q− 
+
+> i
+
++ xi, and q+ 
+
+> j
+
+= q− 
+
+> j
+
++ xj , into the without-signal first-order conditions gives κi bA
+
+bA κj
+
+  q−
+
+> i
+
+q−
+
+> j
+
+
+
+=
+
+ˆa− 
+
+> i
+
+− bAμipj xj
+
+ˆa− 
+
+> j
+
+− bAμj pixi
+
+
+
+. (25) Since κiκj > 4b2
+
+> A
+
+, the coefficient matrix is nonsingular, and the system has a unique solution. Hence, 
+
+q− 
+
+> i
+
+=
+
+κj
+
+ ˆa− 
+
+> i
+
+− bAμipj xj
+
+ − bA
+
+
+
+ˆa− 
+
+> j
+
+− bAμj pixi
+
+
+
+κiκj − b2
+
+> A
+
+, (26) 
+
+q− 
+
+> j
+
+=
+
+κi
+
+
+
+ˆa− 
+
+> j
+
+− bAμj pixi
+
+
+
+− bA
+
+ ˆa− 
+
+> i
+
+− bAμipj xj
+
+
+
+κiκj − b2
+
+> A
+
+. (27) Finally, the with-signal quantities are obtained from 
+
+q+ 
+
+> i
+
+= q− 
+
+> i
+
++ xi, q+ 
+
+> j
+
+= q− 
+
+> j
+
++ xj . (28) Thus, equations (23)- (24) and (26)- (28) define the unique interior candidate. 38 Boundary Candidate Equilibrium Next, we solve the system for the boundary can-didate by fixing q− 
+
+> i
+
+= 0. The remaining three first-order conditions are 
+
+κj q− 
+
+> j
+
++ bAμj piq+ 
+
+> i
+
+= ˆ a− 
+
+> j
+
+, (29) 
+
+κiq+ 
+
+> i
+
++ bA
+
+
+
+(1 − pj )q− 
+
+> j
+
++ pj q+
+
+> j
+
+
+
+= ˆ a+, (30) 
+
+κj q+ 
+
+> j
+
++ bApiq+ 
+
+> i
+
+= ˆ a+. (31) From (29) and (31), 
+
+q− 
+
+> j
+
+= ˆa− 
+
+> j
+
+− bAμj piq+
+
+> i
+
+κj
+
+, q+ 
+
+> j
+
+= ˆa+ − bApiq+
+
+> i
+
+κj
+
+. (32) Substituting these expressions into (30) gives 
+
+ κiκj − b2
+
+> A
+
+pi (pj + μj (1 − pj ))  q+ 
+
+> i
+
+= aA(κj − bA) + D (κj bA (pj + μj (1 − pj ))) .
+
+Since 
+
+κiκj − b2
+
+> A
+
+pi (pj + μj (1 − pj )) > 4b2 
+
+> A
+
+− b2 
+
+> A
+
+> 0,
+
+the system has a unique solution. In particular, 
+
+q+ 
+
+> i
+
+= (κj − bApj )ˆ a+ − bA(1 − pj )ˆ a−
+
+> j
+
+κiκj − b2
+
+> A
+
+pi(pj + μj (1 − pj )) . (33) By (32), the remaining quantities are 
+
+q+ 
+
+> j
+
+= κj (κi − bApi)ˆ a+ + b2
+
+> A
+
+pi(1 − pj )aA(1 − μj )
+
+κj
+
+ κiκj − b2
+
+> A
+
+pi(pj + μj (1 − pj ))  , (34) 
+
+q− 
+
+> j
+
+= aA
+
+ κj (κi − bAμj pi) − b2
+
+> A
+
+pipj (1 − μj ) + κj μj D(κi − bApi)
+
+κj
+
+ κiκj − b2
+
+> A
+
+pi(pj + μj (1 − pj ))  . (35) Since κi, κ j > 2bA, 0 < p i, p j , μ j < 1, and 0 < ˆa− 
+
+> j
+
+< ˆa+, the quantity expressions are strictly positive. So, 
+
+q+ 
+
+> i
+
+> 0, q− 
+
+> j
+
+> 0, q+ 
+
+> j
+
+> 0.
+
+Equilibrium Characterization From the equilibrium candidate analysis above, equi-librium selection reduces to checking whether q− 
+
+> i
+
+= 0 is optimal for Firm i when pi > p j .Firm i’s without-signal marginal payoff at the boundary q− 
+
+> i
+
+= 0 is 
+
+M P − 
+
+> i
+
+= ˆ a− 
+
+> i
+
+− bA
+
+
+
+(1 − μipj )q− 
+
+> j
+
++ μipj q+
+
+> j
+
+
+
+. (36) Since Firm i’s payoff is strictly concave in q− 
+
+> i
+
+, the KKT condition at the boundary is 
+
+q− 
+
+> i
+
+= 0 ⇐⇒ M P − 
+
+> i
+
+≤ 0 (37) 39 By substituting the boundary candidate quantities, we have 
+
+M P − 
+
+> i
+
+= aA(κj − bA)  κiκj − b2
+
+> A
+
+pipj (1 − μi)(1 − μj )
+
+κj
+
+ κiκj − b2
+
+> A
+
+pi(pj + μj (1 − pj )) 
+
+− Dκ j
+
+ κibAμj + κibApj μi(1 − μj ) − κiκj μi − b2
+
+> A
+
+piμj (1 − μi)
+
+κj
+
+ κiκj − b2
+
+> A
+
+pi(pj + μj (1 − pj )) 
+
+The numerator is linear in the market size aA and the shock size D. To simplify the equilibrium condition, denote their respective coefficients by 
+
+ϕa := ( κj − bA)  κiκj − b2
+
+> A
+
+pipj (1 − μi)(1 − μj ) , (38) 
+
+ϕD := κj
+
+ κibAμj + κibApj μi(1 − μj ) − κiκj μi − b2
+
+> A
+
+piμj (1 − μi) . (39) Then 
+
+M P − 
+
+> i
+
+= aAϕa − Dϕ D
+
+κj
+
+ κiκj − b2
+
+> A
+
+pi(pj + μj (1 − pj ))  . (40) The denominator in (40) is strictly positive as shown earlier in the boundary candidate equilibrium analysis. Moreover, ϕa > 0 since κj > b A and κiκj − b2
+
+> A
+
+pipj (1 − μi)(1 − μj ) > 0. From this analysis, we have the following complete equilibrium characterization for ⃗V = [0 , 0]. Let ϕa and ϕD be defined in (38) and (39) and without loss of generality pi ≥ pj . Then, 
+
+q∗ =
+
+
+
+qC , pi > p j , ϕ D > 0, DaA
+
+≥ ϕa
+
+ϕD
+
+,
+
+qI , otherwise. (41) 
+
+# B.2 Equilibrium Under Information Sharing 
+
+When both firms join the platform ( V = [1 , 1]), they share demand signals, eliminating the information asymmetry present in the baseline case. As a result, firms have identical information sets, and neither firm has any uncertainty about their competitor’s information. The equilibrium quantities are represented by (q∗ 
+
+> 1
+
+(−| [1 , 1]) , q ∗ 
+
+> 1
+
+(+ , A |[1 , 1]) , q ∗ 
+
+> 2
+
+(−| [1 , 1]) , q ∗ 
+
+> 2
+
+(+ , A |[1 , 1])) .
+
+For compactness, let 
+
+q+pi := q∗
+
+> iA
+
+(+ , A | [1 , 1]) , q−pi := q∗
+
+> iA
+
+(− | [1 , 1]) , i ∈ { 1, 2}
+
+Conditional on the shared information, depending on whether a signal is observed, only one pair of quantities is realized. Consequently, the problem can be decomposed into two Cournot games: one conditional on the observed signal and one conditional on the absence of the signal. In both cases, firms have the same information about the demand environment and therefore face the same conditional demand intercept. The firms still choose quantities strategically and simultaneously, taking the other firm’s quantity as given when computing their best response. Firm i’s payoff is 
+
+πi(qi, q j ) = [ˆ a − bA(qi + qj )] qi − ciq2 
+
+> i
+
+,
+
+40 where ˆ a denotes the relevant conditional demand intercept. Therefore, the unique pure-strategy Cournot equilibrium with linear inverse demand and quadratic costs is given by 
+
+q∗ 
+
+> iA
+
+= (bA + 2 cj )ˆ a
+
+4( bA + ci)( bA + cj ) − b2
+
+> A
+
+, q∗ 
+
+> jA
+
+= (bA + 2 ci)ˆ a
+
+4( bA + ci)( bA + cj ) − b2
+
+> A
+
+. (42) Hence, when at least one of the firms observes the shock and the signal is shared, the demand state is common knowledge and ˆ a = aA + D. Therefore, 
+
+q+pi = (bA + 2 cj )( aA + D)4( bA + ci)( bA + cj ) − b2
+
+> A
+
+and q+pj = (bA + 2 ci)( aA + D)4( bA + ci)( bA + cj ) − b2
+
+> A
+
+. (43) When neither of the firms observes a signal, the uncertainty regarding the shock remains. However, because both firms have the same information, they share the common posterior belief about the market state. The posterior probability that the shock occurred is Pr( θ̸ = 0 | z1 = −, z 2 = −) = ω(1 − p1)(1 − p2)1 − ω(p1 + p2 − p1p2) .
+
+Thus, the corresponding conditional expected demand intercept is ˆa = aA + ω(1 − p1)(1 − p2)1 − ω(p1 + p2 − p1p2) D. 
+
+The expected-profit game is therefore equivalent to a standard Cournot game with this conditional expected demand intercept. It follows that 
+
+q−pi =(bA + 2 cj )
+
+h
+
+aA + ω(1 −p1)(1 −p2)1−ω(p1+p2−p1p2) D
+
+i
+
+4( bA + ci)( bA + cj ) − b2
+
+> A
+
+and q−pj =(bA + 2 ci)
+
+h
+
+aA + ω(1 −p1)(1 −p2)1−ω(p1+p2−p1p2) D
+
+i
+
+4( bA + ci)( bA + cj ) − b2
+
+> A
+
+.
+
+(44) 
+
+# C Participation Analysis In 2-Firm 1-Market Supply chain 
+
+# C.1 Analytical Derivation of ∆i
+
+In this appendix, we derive an analytical representation of ∆ i that will be used in the participation analysis. The equilibrium quantities under the two participation configura-tions ( ⃗ V = [0 , 0] and ⃗ V = [1 , 1]) are derived in Appendix B. Since the quantity equilibrium without the platform may be either interior ( qI ) or boundary ( qC ), the participation gain is also piecewise. Let ∆ Ii and ∆ Ci denote the participation gain when qI and qC are the equilibrium quantity vectors under ⃗ V = [0 , 0], respectively. Thus, ∆i =
+
+(
+
+∆Ii , if qI is the equilibrium for ⃗ V = [0 , 0] ,
+
+∆Ci , if qC is the equilibrium for ⃗ V = [0 , 0] . (45) After substituting the corresponding equilibrium quantities and simplifying, each case 41 can be written as a rational function of the model parameters: ∆Ii = f Ii (·)
+
+gIi (·) , ∆Ci = f Ci (·)
+
+gCi (·) . (46) We first show that the denominator of ∆ i is strictly positive. 
+
+Lemma 4. For any bA > 0, ω ∈ (0 , 1) , c i > 0, p i ∈ (0 , 1) , i ∈ { 1, 2}, the denominator polynomial is strictly positive: gI (·), g C (·) > 0.Proof. We prove the result for the interior and boundary cases separately. Starting with the interior case, write the denominator as the product of three terms: 
+
+gI (·) = g1(·)g2(·)g3(·),
+
+where 
+
+g1(·) =  3b2 
+
+> A
+
++ 4 c1c2 + 4 bA(c1 + c2)2 ,g2(·) = 1 − ω(p1 + p2 − p1p2),
+
+and 
+
+g3(·) = 
+
+
+
+4( bA + c1)( bA + c2)(1 − p1ω)(1 − p2ω) − b2
+
+> A
+
+p1p2(1 − ω)22
+
+.
+
+Since bA, c 1, c 2 > 0, we have g1(·) > 0. Moreover, because ω, p 1, p 2 ∈ (0 , 1) 
+
+g2(·) = 1 − ω(p1 + p2 − p1p2) = 1 − ω (1 − (1 − p1)(1 − p2)) > 1 − ω > 0.
+
+It remains to show that g3(·) > 0. Since c1, c 2, b A > 0 and p1, p 2, ω ∈ (0 , 1), 4( bA + c1)( bA + c2)(1 − p1ω)(1 − p2ω) − b2
+
+> A
+
+p1p2(1 − ω)2
+
+> b 2
+
+> A
+
+(1 − ω)2(4 − p1p2) > 0.
+
+Hence, the expression inside the square is strictly positive, so g3(·) > 0. Therefore, 
+
+gI (·) > 0. (47) Similarly, in the boundary case, write the denominator as 
+
+gC (·) = g4(·)g5(·)g6(·),
+
+where 
+
+g4(·) =  3b2 
+
+> A
+
++ 4 bAc1 + 4 bAc2 + 4 c1c2
+
+2 ,g5(·) = 1 − p1ω − p2ω + p1p2ω, 
+
+and 
+
+g6(·) = 
+
+
+
+4( c1c2 + bAc1 + bAc2 + b2
+
+> A
+
+)( −1 + p2ω) + b2
+
+> A
+
+p1(p2 + ω − 2p2ω)
+
+2
+
+.
+
+Note that g4(·) = g1(·) > 0 and g5(·) = g2(·) > 0. It remains to show that g6(·) > 0. Since c1, c 2, b A > 0 and p1, p 2, ω ∈ (0 , 1), 42 4( c1c2 + bAc1 + bAc2 + b2
+
+> A
+
+)( −1 + p2ω) + b2
+
+> A
+
+p1(p2 + ω − 2p2ω)
+
+< 4b2
+
+> A
+
+(−1 + p2ω) + b2
+
+> A
+
+(p2 + ω − 2p2ω)= −b2
+
+> A
+
+(4 − p2 − ω − 2p2ω) < 0.
+
+Thus, the expression inside the square is strictly negative, and hence g6(·) > 0. There-fore, 
+
+gC (·) > 0. (48) By Lemma 4, the denominator is strictly positive over the parameter domain. Therefore, ∆Ii ≥ 0 ⇐⇒ f Ii (·) ≥ 0, ∆Ci ≥ 0 ⇐⇒ f Ci (·) ≥ 0.
+
+Hence, the firm participation is determined by the sign of the corresponding numerator. We first consider the interior case. After rearranging the numerator f Ii (·) with respect to aA and D, it can be written as 
+
+f Ii (·) = α0(bA, c 1, c 2, p 1, p 2, ω )D2, (49) We next consider the boundary case. Rearranging numerator f Ci (·) with respect to aA
+
+and D, gives a quadratic function 
+
+f Ci (·) = α1a2 
+
+> A
+
++ α2aAD + α3D2, (50) The coefficients α0, α 1, α 2, and α3 depend only on bA, c 1, c 2, p 1, p 2, and ω.The participation analysis in Section 4 and its proofs in Appendix C.2 are derived from the numerator of the interior and boundary representations of the gain function. 
+
+# C.2 Proofs of Participation Analysis 
+
+Proof of Proposition 1. Under homogeneous firms, 
+
+c1 = c2 = c, p1 = p2 = p. 
+
+Since information power is symmetric, the private-information equilibrium is interior. By Lemma 4, the denominator of the participation gain is strictly positive. Hence, participation is determined by the sign of the numerator of the interior participation gain. Under c1 = c2 = c and p1 = p2 = p, factoring the numerator gives 
+
+D2(bA + c)p(1 − ω)2ω(p − 1) 
+
+
+
+b2 
+
+> A
+
+− 4bAc − 4c2 − 3b2
+
+> A
+
+p − 4bAcp − b2
+
+> A
+
+p2
+
+− 3b2
+
+> A
+
+pω + 4 bAcpω + 4 c2pω + 6 b2
+
+> A
+
+p2ω + 4 bAcp 2ω
+
+
+
+.
+
+(51) Since 
+
+D2(bA + c)p(1 − ω)2ω(p − 1) < 0,
+
+43 the sign of the numerator is opposite to the sign of the term in the last parentheses of expression (51). Substituting bA = yc and factoring out c2 > 0, firms participate if and only if 4 + 4 y + 4 py − y2 + 3 py 2 + p2y2
+
+− pω  4 + 4 y + 4 py − 3y2 + 6 py 2 ≥ 0. (52) The expression in (52) is affine in ω. Let, A(y, p ) be the ω independent component and 
+
+B(y, p ) be the ω dependent component. Therefore, the participation condition can be written as 
+
+A(y, p ) − ωB (y, p ) ≥ 0. (53) By rearranging terms, we have 
+
+A(y, p ) =4 + 4 y(1 + p) + y2(−1 + 3 p + p2), (54) 
+
+B(y, p ) = p(3 y + 2) (2 + y(−1 + 2 p)) . (55) Because (53) is affine in ω, we first determine when its values at both endpoints with respect to ω are positive for every p ∈ (0 , 1). This gives the parameter region for y > 0independent of p and ω.At ω = 0, since 
+
+∂A (y, p )
+
+∂p = 4 y + 3 y2 + 2 py 2 > 0,A(y, p ) is strictly increasing in p. Hence, its sign for all p ∈ (0 , 1) is positive if 
+
+A(y, 0) = 4 + 4 y − y2 ≥ 0.
+
+At ω = 1, the expression is 
+
+A(y, p ) − B(y, p ) = (1 − p)  4 + 4 y − y2 + p(4 y + 5 y2) . (56) Since 0 < p < 1 and 4 y + 5 y2 > 0, A(y, p ) − B(y, p ) is also strictly positive for every 
+
+p ∈ (0 , 1) if 4 + 4 y − y2 ≥ 0. For y > 0, 4 + 4 y − y2 ≥ 0 ⇐⇒ y ≤ 2(1 + √2) .
+
+When y ≤ 2(1 + √2), the participation expression (52) is strictly positive at both ω = 0 and ω = 1. Since it is affine in ω, it is strictly positive for every ω ∈ (0 , 1). Hence firms participate if y ≤ 2(1 + √2), or equivalently, 
+
+c ≥ 12(1 + √2) bA. (57) This proves that condition (i) is sufficient for platform formation. Next, we consider the case where condition (i) does not hold, y > 2(1 + √2). We have 
+
+A(y, 0) = 4 + 4 y − y2 < 0. and A(y, 1) = 4 + 8 y + 3 y2 > 0.
+
+44 Since A(y, p ) is strictly increasing in p, there is a unique root, denoted by ¯ p(y), of 
+
+A(y, p ) = 0 with respect to p ∈ (0 , 1). Solving A(y, p ) = 0 for p gives ¯p(y) = 12
+
+r 8 + 13 yy − 4 + 3 y
+
+2y . (58) Consequently, in the region y > 2(1 + √2), 
+
+p > ¯p(y) ⇐⇒ A(y, p ) > 0,p = ¯ p(y) ⇐⇒ A(y, p ) = 0 ,
+
+0 < p < ¯p(y) ⇐⇒ A(y, p ) < 0.
+
+(59) We next show that A(y, p ) ≥ 0 ensures participation when ω > 0. By (55), since p > 0and 3 y + 2 > 0, the sign of B(y, p ) is determined by 2 + y(−1 + 2 p). (60) Expression (60) has a unique root, denoted by ˆ p(y) as ˆp(y) = y − 22y .
+
+Since expression (60) is linear and strictly increasing in p, this gives 
+
+p > ˆp(y) ⇐⇒ B(y, p ) > 0,p = ˆ p(y) ⇐⇒ B(y, p ) = 0 ,
+
+0 < p < ˆp(y) ⇐⇒ B(y, p ) < 0.
+
+(61) At p = ˆ p(y) = y − 22y ,
+
+A (y, ˆp(y)) = (y + 2)(3 y + 2) 4 > 0.
+
+Since A(y, p ) is strictly increasing in p and A(y, ¯p(y)) = 0, it implies that ¯p(y) < ˆp(y). (62) Next consider p ≥ ¯p(y). If ¯ p(y) ≤ p ≤ ˆp(y), then, (59) and (61) give A(y, p ) ≥ 0 and 
+
+B(y, p ) ≤ 0. Therefore, 
+
+A(y, p ) − ωB (y, p ) ≥ 0 ⇐⇒ ¯p(y) ≤ p ≤ ˆp(y). (63) Next, if p > ˆp(y), then B(y, p ) > 0, so A(y, p ) − ωB (y, p ) is decreasing in ω. So the smallest endpoint value is attained at ω = 1. Recall expression (56), 
+
+A(y, p ) − B(y, p ) = (1 − p)  4 + 4 y − y2 + p(4 y + 5 y2) .
+
+45 At p = ˆ p(y) = y−22y , it is equal to 
+
+A(y, ˆp(y)) −B(y, ˆp(y)) = (1 − ˆp(y))(4+4 y −y2 + y − 22y (4 y +5 y2)) = (1 − ˆp(y)) y(3 y + 2) 2 > 0.
+
+The expression inside the second parenthesis of (56) is strictly increasing in p. Thus, when 
+
+A(y, p ) − B(y, p ) > 0 if p > ˆp. (64) Hence, in both cases, 
+
+A(y, p ) − ωB (y, p ) ≥ 0for every ω ∈ (0 , 1) if 
+
+y > 2(1 + √2) and p ≥ ¯p(y). (65) This proves the sufficiency of condition (ii). Finally, we consider y > 2(1 + √2) and p < ¯p(y). By (59), A(y, p ) < 0 and by (61) and (62), B(y, p ) < 0. This implies that 
+
+A(y, p ) − ωB (y, p ) ≥ 0 ⇐⇒ ω ≥ A(y, p )
+
+B(y, p ) . (66) Substituting the expressions for A(y, p ) and B(y, p ) gives a threshold for ω, denoted by ¯ω(y, p ): 
+
+ω ≥ 4 + 4 y(1 + p) + y2(−1 + 3 p + p2)
+
+p(3 y + 2) (2 + y(−1 + 2 p)) = ¯ ω(y, p ). (67) Hence, when 
+
+y > 2(1 + √2) , p < ¯p(y),
+
+firms participate if and only if 
+
+ω ≥ ¯ω(y, p ).
+
+This proves that condition (iii) is sufficient for participation. These three conditions partition the parameter space. Moreover, condition (iii) is both necessary and sufficient when y > 2(1 + √2) and p < ¯p(y). Therefore, if none of the three conditions is satisfied, then 
+
+y > 2(1 + √2) , p < ¯p(y), ω < ¯ω(y, p ).
+
+Thus ∆ i < 0, so firms do not participate. This proves the necessity part of the proposition. 
+
+Proof of Proposition 3. Suppose p1 = p2 = p. By Lemma 2, we consider the interior representation of the participation gain for both firms. Let 
+
+c := c1, z := c2
+
+c1
+
+> 1, y := bA
+
+c1
+
+> 0.
+
+Substituting c1 = c, c2 = cz , bA = cy , p1 = p2 = p into participation gains, by Lemma 46 4, the signs of ∆ 1 and ∆ 2 are determined by their respective numerators. Let N um (∆ i) be the numerator of the participation gain function of Firm i.After rearranging the terms in the numerator, we have Num(∆ 1) = D2pω (1 − p)(1 − ω)2(1 + y)G1(z, y, p, ω ), (68) Num(∆ 2) = D2pω (1 − p)(1 − ω)2(z + y) G2(z, y, p, ω ), (69) where (1 + y)G1(z, y, p, ω ) and ( z + y)G2(z, y, p, ω ) denote the firm-specific polynomial factors in z, y, p, ω . G1(z, y, p, ω ) and G2(z, y, p, ω ) are the following polynomials: 
+
+G1(z, y, p, ω ) = − p4y  4ωz + ωy 2 + 4 ωy + 2 zy + y2
+
+×  16 ω2z2y + 16 ω2z2 + 20 ω2zy 2 + 24 ω2zy + 6 ω2y3 + 8 ω2y2
+
++8 ωzy 2 + 4 ωzy + 5 ωy 3 + 4 ωy 2 − 2zy 2 − y3
+
++ p3
+
+− 64 ω3z4y2 − 128 ω3z4y − 64 ω3z4 − 160 ω3z3y3
+
+− 224 ω3z3y2 − 64 ω3z3y − 116 ω3z2y4 − 32 ω3z2y3 + 112 ω3z2y2
+
+− 20 ω3zy 5 + 104 ω3zy 4 + 160 ω3zy 3 + 3 ω3y6 + 40 ω3y5 + 48 ω3y4
+
++ 32 ω2z3y3 + 160 ω2z3y2 + 128 ω2z3y + 88 ω2z2y4 + 480 ω2z2y3
+
++ 368 ω2z2y2 + 96 ω2zy 5 + 464 ω2zy 4 + 352 ω2zy 3 + 33 ω2y6
+
++ 144 ω2y5 + 112 ω2y4 + 64 ωz 3y3 + 64 ωz 3y2 + 160 ωz 2y4
+
++ 160 ωz 2y3 + 16 ωz 2y2 + 120 ωzy 5 + 136 ωzy 4 + 32 ωzy 3
+
++ 29 ωy 6 + 40 ωy 5 + 16 ωy 4 − 4z2y4 − 4zy 5 − y6
+
++ p2
+
+192 ω2z4y2 + 384 ω2z4y + 192 ω2z4 + 480 ω2z3y3
+
++ 736 ω2z3y2 + 256 ω2z3y + 364 ω2z2y4 + 192 ω2z2y3 − 208 ω2z2y2
+
++ 64 ω2zy 5 − 296 ω2zy 4 − 416 ω2zy 3 − 13 ω2y6 − 136 ω2y5 − 144 ω2y4
+
+− 64 ωz 3y3 − 128 ωz 3y2 − 64 ωz 3y − 176 ωz 2y4 − 416 ωz 2y3
+
+− 224 ωz 2y2 − 164 ωzy 5 − 432 ωzy 4 − 256 ωzy 3 − 50 ωy 6
+
+− 144 ωy 5 − 96 ωy 4 − 32 z3y3 − 32 z3y2 − 68 z2y4 − 64 z2y3
+
+− 44 zy 5 − 40 zy 4 − 9y6 − 8y5
+
+− 4p(z + y)
+
+
+
+48 ωz 3y2 + 96 ωz 3y + 48 ωz 3 + 72 ωz 2y3
+
++ 104 ωz 2y2 + 32 ωz 2y + 19 ωzy 4 − 24 ωzy 3 − 48 ωzy 2
+
+− 4ωy 5 − 32 ωy 4 − 32 ωy 3 − 8z2y3 − 8z2y2 − 11 zy 4
+
+− 16 zy 3 − 4zy 2 − 4y5 − 8y4 − 4y3
+
++ 4( z + y)2  16 z2y2 + 32 z2y + 16 z2 + 8 zy 3 + 8 zy 2 − y4 − 8y3 − 8y2
+
+(70) 47 and 
+
+G2(z, y, p, ω ) = − p4y  4ωzy + 4 ωz + ωy 2 + y2 + 2 y
+
+×  8ω2zy 2 + 24 ω2zy + 16 ω2z + 6 ω2y3 + 20 ω2y2 + 16 ω2y
+
++4 ωzy 2 + 4 ωzy + 5 ωy 3 + 8 ωy 2 − y3 − 2y2
+
++ p3
+
+48 ω3z2y4 + 160 ω3z2y3 + 112 ω3z2y2 − 64 ω3z2y − 64 ω3z2
+
++ 40 ω3zy 5 + 104 ω3zy 4 − 32 ω3zy 3 − 224 ω3zy 2 − 128 ω3zy 
+
++ 3 ω3y6 − 20 ω3y5 − 116 ω3y4 − 160 ω3y3 − 64 ω3y2
+
++ 112 ω2z2y4 + 352 ω2z2y3 + 368 ω2z2y2 + 128 ω2z2y
+
++ 144 ω2zy 5 + 464 ω2zy 4 + 480 ω2zy 3 + 160 ω2zy 2 + 33 ω2y6
+
++ 96 ω2y5 + 88 ω2y4 + 32 ω2y3 + 16 ωz 2y4 + 32 ωz 2y3
+
++ 16 ωz 2y2 + 40 ωzy 5 + 136 ωzy 4 + 160 ωzy 3 + 64 ωzy 2
+
++ 29 ωy 6 + 120 ωy 5 + 160 ωy 4 + 64 ωy 3 − y6 − 4y5 − 4y4
+
++ p2
+
+− 144 ω2z2y4 − 416 ω2z2y3 − 208 ω2z2y2 + 256 ω2z2y + 192 ω2z2
+
+− 136 ω2zy 5 − 296 ω2zy 4 + 192 ω2zy 3 + 736 ω2zy 2 + 384 ω2zy 
+
+− 13 ω2y6 + 64 ω2y5 + 364 ω2y4 + 480 ω2y3 + 192 ω2y2
+
+− 96 ωz 2y4 − 256 ωz 2y3 − 224 ωz 2y2 − 64 ωz 2y
+
+− 144 ωzy 5 − 432 ωzy 4 − 416 ωzy 3 − 128 ωzy 2 − 50 ωy 6
+
+− 164 ωy 5 − 176 ωy 4 − 64 ωy 3 − 8zy 5 − 40 zy 4 − 64 zy 3
+
+− 32 zy 2 − 9y6 − 44 y5 − 68 y4 − 32 y3
+
++ 4 p(1 + y)
+
+
+
+32 ωz 2y3 + 48 ωz 2y2 − 32 ωz 2y − 48 ωz 2
+
++ 32 ωzy 4 + 24 ωzy 3 − 104 ωzy 2 − 96 ωzy + 4 ωy 5
+
+− 19 ωy 4 − 72 ωy 3 − 48 ωy 2 + 4 z2y3 + 4 z2y2 + 8 zy 4
+
++ 16 zy 3 + 8 zy 2 + 4 y5 + 11 y4 + 8 y3
+
+− 4(1 + y)2  8z2y2 − 16 z2 + 8 zy 3 − 8zy 2 − 32 zy + y4 − 8y3 − 16 y2 .
+
+(71) Since 1 + z > 0 and z + y > 0, sign(∆ i) = sign( Gi) for i = 1 , 2. (72) Next, it is sufficient to show that whenever z > 1, y > 0, 0 < p, < 1, 0 < ω < 1, 
+
+G1(z, y, p, ω ) > G 2(z, y, p, ω )When we factor G1(z, y, p, ω ) − G2(z, y, p, ω ), we have 
+
+G1(z, y, p, ω ) − G2(z, y, p, ω ) = ( z − 1) H(z, y, p, ω ). (73) 48 where H(z, y, p, ω ) is a polynomial of z, y, p, ω . Because H(z, y, p, ω ) is lengthy, we omit the exact expression. However, collecting it by using Mathematica in terms of 
+
+z − 1, y, p, 1 − p, ω, 1 − ω. (74) gives 
+
+H(z, y, p, ω ) = 4 
+
+> 252
+
+X
+
+> ν=1
+
+γν (z − 1) tν yℓν pmν (1 − p)4−mν ωnν (1 − ω)3−nν , (75) where tν , ℓ ν ≥ 0, 0 ≤ mν ≤ 4, 0 ≤ nν ≤ 3, and γν > 0 for all ν = 1 , 2, .., 252. Therefore, 
+
+H(z, y, p, ω ) > 0.
+
+Since z − 1 > 0, 
+
+G1(z, y, p, ω ) > G 2(z, y, p, ω ). (76) Now suppose that Firm 2 weakly benefits from participation: ∆2 ≥ 0.
+
+Then by (72), 
+
+G2 ≥ 0.
+
+Then (76) implies that, 
+
+G1 > 0.
+
+Again, by (72), ∆1 > 0.
+
+Therefore, ∆2 ≥ 0 =⇒ ∆1 > 0. (77) 
+
+Proof of Proposition 4. Because c1 = c2 = c, platform formation makes the firms symmetric in the quantity decisions. Hence, Π 1([1 , 1]) = Π 2([1 , 1]). Therefore, ∆1 = Π 1([1 , 1]) − Π1([0 , 0]) , ∆2 = Π 1([1 , 1]) − Π2([0 , 0]) ,
+
+which implies ∆2 − ∆1 = Π 1([0 , 0]) − Π2([0 , 0]) . (78) Thus, it is sufficient to prove the stronger result: Π1([0 , 0]) > Π2([0 , 0]) if p1 > p 2. (79) Define the following transformations: 
+
+y := bA
+
+c > 0, x := DaA
+
+> 0.
+
+We show the condition (79) for interior and boundary equilibria under ⃗ V = [0 , 0] separately. 49 i) Interior equilibrium. 
+
+When the private-information equilibrium is interior, all quantities are strictly positive. By (12), 
+
+aA + D − bA
+
+
+
+pj q+ 
+
+> j
+
++ (1 − pj )q−
+
+> j
+
+
+
+= 2( bA + ci)q+
+
+> i
+
+and by (14), 
+
+aA + ω(1 − pi)1 − ωp i
+
+D − 1 − ωp i − ωp j + ωp ipj
+
+1 − ωp i
+
+bAq− 
+
+> j
+
+− ω(1 − pi)pj
+
+1 − ωp i
+
+bAq+ 
+
+> j
+
+= 2( bA + ci)q− 
+
+> i
+
+.
+
+By substituting the left term with right, Firm i’s conditional equilibrium profit given its type t can be written as ( bA + c)qi([0 , 0] |t)2 for i ∈ { 1, 2} and t ∈ {− , (+ , A )}. Hence, Πi([0 , 0]) = ( bA + c)  (1 − ωp i)( q− 
+
+> i
+
+)2 + ωp i(q+ 
+
+> i
+
+)2 .
+
+Substituting the interior equilibrium quantities and rearranging gives Π1([0 , 0]) − Π2([0 , 0]) = D2
+
+cω(p1 − p2)(1 − ω)2(1 + y)4(1 + y)2(1 − p1ω)(1 − p2ω) − y2p1p2(1 − ω)2 , (80) Since 0 < p 2 < p 1 < 1 and 0 < ω < 1, 1 − piω > 1 − ω, i = 1 , 2,
+
+⇒ 4(1 + y)2(1 − p1ω)(1 − p2ω) − y2p1p2(1 − ω)2 >(1 − ω)2 4(1 + y)2 − y2 > 0.
+
+Similarly, since 0 < p 2 < p 1 < 1, 0 < ω < 1 and y > 0, the numerator of (80) is strictly positive. Thus, Π1([0 , 0]) − Π2([0 , 0]) > 0 if p1 > p 2 and q∗ = qI . (81) 
+
+ii) Boundary equilibrium. 
+
+Since, q− 
+
+> 1
+
+= 0 , q +1 > 0, q − 
+
+> 2
+
+> 0, q +2 > 0 when the equilibrium is the boundary solution, equilibrium-profit representations at boundary case are Π1([0 , 0]) = ( bA + c)ωp 1(q+1 )2, (82) Π2([0 , 0]) = ( bA + c)  (1 − ωp 2)( q− 
+
+> 2
+
+)2 + ωp 2(q+2 )2 . (83) .Substituting the boundary equilibrium quantities into expressions (82) and (83) gives 50 Π1([0 , 0]) − Π2([0 , 0]) = a2
+
+> A
+
+c
+
+14(1 + y) [4(1 + y)2(1 − p2ω) − y2p1(p2 + ω − 2p2ω)] 
+
+× −
+
+
+
+4(1 + y)2(1 − p1ω)(1 − p2ω) − y2p1p2(1 − ω)2
+
+− 8ω(1 − p1)(1 − p2ω)(1 + y)2x
+
+− 4ω(1 + y)2
+
+p1p2ω − p1 − 2p2ω + p2 + ω
+
+
+
+x2
+
+!
+
+.
+
+(84) Since 0 < p 2 < p 1 < 1 and 0 < ω < 1, 
+
+p2 + ω − 2p2ω < 1 − p2ω, 
+
+⇒ 4(1 + y)2(1 − p2ω) − y2p1(p2 + ω − 2p2ω) >(1 − p2ω)  4(1 + y)2 − y2p1
+
+ > 0.
+
+Moreover, since c > 0, the denominator of (84) is strictly positive. Thus, the sign of Π1([0 , 0]) − Π2([0 , 0]) is determined by the numerator of (84). In the numerator, aA > 0, hence, it is sufficient to show that the remaining term is positive. However, this term does not need to be positive for every x > 0. It suffices to show its positivity over the parameter region in which the boundary candidate is the equilibrium. By (41), when p1 > p 2, the boundary solution is the equilibrium only if 
+
+ϕD > 0 and x = DaA
+
+≥ ϕa
+
+ϕD
+
+.
+
+Therefore, showing the quadratic expression in (84) is strictly positive for every x ≥ ϕa 
+
+> ϕD
+
+is sufficient. For c1 = c2 = c and bA = cy , we substitute κi = 2( bA + c) and ri = ω(1 −pi)1−ωp i into equations (38) and (39): 
+
+ϕa = c3(y + 2) (1 − ωp 1)(1 − ωp 2)
+
+
+
+4(1 + y)2(1 − ωp 1)(1 − ωp 2) − y2p1p2(1 − ω)2
+
+, (85) 
+
+ϕD = c3(y + 2) (1 − ωp 1)(1 − ωp 2) − 2ω(1 + y)
+
+
+
+2(1 − p1)(1 − p2ω)+ y(p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2) 
+
+!
+
+. (86) The common factor c3(y+2) (1 −ωp 1)(1 −ωp 2) is strictly positive. Hence, it cancels from the ratio 
+
+ϕa/ϕ D. Thus, the boundary equilibrium conditions are 
+
+x ≥ x∗ = 4(1 + y)2(1 − p1ω)(1 − p2ω) − y2p1p2(1 − ω)2
+
+−2ω(1 + y) (2(1 − p1)(1 − p2ω) + y(p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2)) (87) 51 and 
+
+−2ω(1 + y)
+
+
+
+2(1 − p1)(1 − p2ω) + y(p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2) 
+
+
+
+> 0, (88) where x∗ denotes a threshold for x. Since 2 ω(1 + y) > 0, condition (88) is equivalent to 2(1 − p1)(1 − p2ω) + y(p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2) < 0. (89) Because 2(1 − p1)(1 − p2ω) > 0 and y > 0, it follows that 
+
+p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2 < 0. (90) Note that, 
+
+
+
+p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2 
+
+
+
+−
+
+
+
+p1p2ω − p1 − 2p2ω + p2 + ω
+
+
+
+= (1 − p1)(2 − p2 − ω) > 0.
+
+⇒0 >
+
+
+
+p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2 
+
+
+
+>
+
+
+
+p1p2ω − p1 − 2p2ω + p2 + ω
+
+
+
+.
+
+Hence, the coefficient of x2 in (84) is strictly positive, implying that the quadratic expression determining Π 1([0 , 0]) − Π2([0 , 0]) is strictly convex in x.It remains to show that this quadratic expression is positive throughout the boundary-equilibrium region. Thus, the boundary equilibrium requires x ≥ x∗.Since 1 − piω > 1 − ω for i = 1 , 2, 4(1 + y)2(1 − p1ω)(1 − p2ω) − y2p1p2(1 − ω)2 > (1 − ω)2  4(1 + y)2 − y2p1p2
+
+ > 0. (91) Therefore, the quadratic expression in (84) is strictly negative at x = 0. Together with the expression is strictly convex, it implies that the expression has one negative root and one positive root. Moreover, by (88), the denominator defining x∗ is strictly positive, while (91) shows that its numerator is strictly positive. Hence, x∗ > 0. The last step to show is that the unique positive root lies below x∗. Since x∗ is the left endpoint of the boundary-equilibrium region, we evaluate the quadratic expression at 
+
+x = x∗ which is 
+
+ (p1 − p2)(1 − ω)2
+
+ω (2(1 − p1)(1 − p2ω) + y (p1p2ω + p1p2 + p1ω − 3p1 − 2p2ω + 2)) 2
+
+
+
+×  4(1 + y)2(1 − p2ω) − y2p1(p2 + ω − 2p2ω)
+
+×  4(1 + y)2(1 − p1ω)(1 − p2ω) − y2p1p2(1 − ω)2 .
+
+(92) Because p1 −p2 > 0, 0 < ω < 1 the first factor in (92) is strictly positive, its denominator is strictly positive by (89). The second factor is strictly positive by (84), and the third factor is strictly positive by (91). Hence, the quadratic expression is strictly positive at x = x∗.Thus, the unique positive root must be strictly below x∗. Consequently, the quadratic expression is strictly positive for every x ≥ x∗, and hence Π1([0 , 0]) − Π2([0 , 0]) > 0 if p1 > p 2 and q∗ = qC . (93) 52 Combining (81) and (93), we have Π1([0 , 0]) − Π2([0 , 0]) > 0 ⇐⇒ p1 > p 2.
+
+By (78), ∆2 − ∆1 = Π 1([0 , 0]) − Π2([0 , 0]) > 0.
+
+Consequently, if ∆ 1 ≥ 0 then ∆ 2 > 0. 
+
+# C.3 Construction of Figure 4b 
+
+Define the following transformations: 
+
+y := bA
+
+c2
+
+> 0, z := c1
+
+c2
+
+< 1.
+
+By C.1, factoring the terms of numerator f (·) with respect to z gives ∆2 ≥ 0 ⇐⇒ β0 + β1z + β2z2 + β3z3 + β4z4 + β5z5 + β6z6 + β7z7 ≥ 0. (94) with coefficients β0-β7. Then, define the cumulative summation denoted by 
+
+St := 
+
+> t
+
+X
+
+> k=0
+
+βk, ∀t ∈ { 0, 1, 2, 3, 4, 5, 6, 7}
+
+By using a Computer Algebra System (CAS), Mathematica, we find the conditions for 0 < p < 1, 0 < ω < 1, and selected y values for which the coefficients 
+
+St ≥ 0, ∀t ∈ { 0, 1, 2, 3, 4, 5, 6, 7}. (95) Since z < 1, (95), implies ∆ 2 ≥ 0. 53
