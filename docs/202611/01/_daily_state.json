@@ -1,0 +1,73 @@
+{
+  "date": "20261101",
+  "date_label": "",
+  "generated_at": "2026-11-01 22:50:36 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.33785v1",
+      "route": "202611/01/2610.33785v1-geoeconomic-stress-and-european-defence-readiness",
+      "title": "Geoeconomic Stress and European Defence Readiness",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "压力情景下的韧性与后勤准备度测量",
+      "first_seen_at": "2026-11-01 22:50:36 UTC",
+      "updated_at": "2026-11-01 22:50:36 UTC"
+    },
+    {
+      "paper_id": "2610.37932v1",
+      "route": "202611/01/2610.37932v1-understanding-large-language-models-as-numerical-optimizers",
+      "title": "Understanding Large Language Models as Numerical Optimizers",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "评估大语言模型作为数值优化器生成可行近优解的能力",
+      "first_seen_at": "2026-11-01 22:50:36 UTC",
+      "updated_at": "2026-11-01 22:50:36 UTC"
+    },
+    {
+      "paper_id": "2610.40023v1",
+      "route": "202611/01/2610.40023v1-hemo-harness-self-evolution-for-multi-objective-combinatorial-optimization",
+      "title": "HEMO: Harness Self-Evolution for Multi-Objective Combinatorial Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "由大语言模型驱动的自演化框架用于多目标组合优化算子设计",
+      "first_seen_at": "2026-11-01 22:50:36 UTC",
+      "updated_at": "2026-11-01 22:50:36 UTC"
+    },
+    {
+      "paper_id": "2610.40138v1",
+      "route": "202611/01/2610.40138v1-a-deep-learning-framework-for-quantile-demand-forecasting-in-e-commerce-with-doubly-censored-data",
+      "title": "A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "llm-supply"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "分位数需求预测框架支撑库存与计划决策",
+      "first_seen_at": "2026-11-01 22:50:36 UTC",
+      "updated_at": "2026-11-01 22:50:36 UTC"
+    }
+  ]
+}

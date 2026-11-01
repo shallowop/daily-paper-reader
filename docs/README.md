@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-31</span>
+      <span class="dpr-home-dashboard-kicker">2026-11-01</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 10 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 4 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>0</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>10</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>4</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-31 22:43:15 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-11-01 22:50:36 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日速读10篇、精读0篇，重点集中在AI驱动的仓储物流数字孪生优化、面向可靠金融AI的上下文工程与三引擎架构两个方向。最值得关注的是：《AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization》和《Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI》均获7.0分，分别指向物流自动化优化与金融AI工程化落地。普通读者可先读这两篇摘要，把握“数字孪生与上下文工程”两条主线，再按兴趣延伸到《The Generalised Kessler Syndrome and the Persian Gulf》。</p>
+<p>今日完成4篇速读筛选，聚焦地缘经济、LLM数值优化与多目标组合优化三个方向。</p>
+<p>最值得看的是《Understanding Large Language Models as Numerical Optimizers》和《Geoeconomic Stress and European Defence Readiness》，分别对应模型机制理解与现实风险研判。</p>
+<p>普通读者可先从LLM数值优化器一文入手建立概念，再按兴趣延伸至防务准备或HEMO的优化方法。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -91,12 +93,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">速读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">10 篇</strong>
+    <strong class="dpr-home-dashboard-count">4 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization">AI-Driven Digital Twin Framework for Warehouse Logistics Automation Optimization</span></li><li><span class="dpr-home-dashboard-paper-title" title="Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI">Beyond LLM Wrappers: Context Engineering and the Three-Engine Architecture for Reliable Financial AI</span></li><li><span class="dpr-home-dashboard-paper-title" title="The Generalised Kessler Syndrome and the Persian Gulf">The Generalised Kessler Syndrome and the Persian Gulf</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Geoeconomic Stress and European Defence Readiness">Geoeconomic Stress and European Defence Readiness</span></li><li><span class="dpr-home-dashboard-paper-title" title="Understanding Large Language Models as Numerical Optimizers">Understanding Large Language Models as Numerical Optimizers</span></li><li><span class="dpr-home-dashboard-paper-title" title="HEMO: Harness Self-Evolution for Multi-Objective Combinatorial Optimization">HEMO: Harness Self-Evolution for Multi-Objective Combinatorial Optimization</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>10</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">llm-supply <strong>4</strong></span></div>
 </section>
 </div>
 

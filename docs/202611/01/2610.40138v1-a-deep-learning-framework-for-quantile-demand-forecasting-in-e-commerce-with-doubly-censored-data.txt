@@ -1,0 +1,1166 @@
+Title: A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data
+
+URL Source: https://arxiv.org/pdf/2610.40138v1
+
+Published Time: Fri, 30 Oct 2026 04:11:05 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data 
+
+# Ziwen Ye ∗
+
+guziyzw@gmail.com Meituan Beijing, China 
+
+# Jiawen Wei †
+
+weijiawen@meituan.com Meituan Beijing, China 
+
+# Teng Song 
+
+songteng02@meituan.com Meituan Beijing, China 
+
+# Chen Chen 
+
+chenchen11@meituan.com Meituan Beijing, China 
+
+# Guangrui Ma 
+
+magr@connect.ust.hk Meituan Beijing, China 
+
+## Abstract 
+
+In recent years, a growing number of online retail companies have embraced deep learning models for demand forecasting, leverag-ing their scalability in processing large-scale datasets. Accurate demand forecasts enable improved planning and allow operational flexibility to adjust sales accordingly. Moreover, quantile estima-tion has gained widespread application as it offers valuable uncer-tainty quantification, thereby enhancing the robustness of decision-making processes. However, limited research has addressed the effective quantification of uncertainty when target labels are am-biguous. In retail, actual sales can be capped by stock and boosted by temporary promotions, whereas the target is underlying de-mand. Such scenarios are characterized by double censoring and no deep-learning pipeline yet exists for such data. In this paper, we introduce a straightforward framework for learning quantiles from doubly-censored observations and propose a tailored evaluation metric. Our approach is supported by theoretical guarantees, and we empirically demonstrate that our metric correlates well with the oracle calibration measure. Experimental results show that our estimator surpasses existing baselines. Finally, inventory simula-tions and real-world applications confirm the practical utility of our method in retail operations. 
+
+## CCS Concepts 
+
+• Computing methodologies → Neural networks ; Supervised learning by regression .
+
+## Keywords 
+
+Deep Learning, Inventory Management, Censored Demand, Quan-tile Regression 
+
+ACM Reference Format: 
+
+Ziwen Ye, Jiawen Wei, Teng Song, Chen Chen, and Guangrui Ma. 2026. A Deep Learning Framework for Quantile Demand Forecasting in E-commerce 
+
+> ∗This work was done while the author was at Meituan.
+> †corresponding Author.
+> This work is licensed under a Creative Commons Attribution 4.0 International License.
+> CIKM ’26, Rome, Italy
+> © 2026 Copyright held by the owner/author(s). ACM ISBN 979-8-4007-2539-5/2026/11 https://doi.org/10.1145/3799682.3840587
+
+with Doubly Censored Data. In Proceedings of the 35th ACM International Conference on Information and Knowledge Management (CIKM ’26), November 07–11, 2026, Rome, Italy. ACM, New York, NY, USA, 11 pages. https://doi. org/10.1145/3799682.3840587 
+
+## 1 Introduction 
+
+In supply chain management, quantile regression is highly val-ued for its distribution-free nature and ability to estimate uncer-tainty. Retail giants like JD and Amazon utilize deep learning-based quantile estimation for inventory optimization[25, 28, 29]. How-ever, when sales data are censored, such as due to stockouts or promotions, quantile regression estimates can become biased. As illustrated in Figure 1 , right-censoring happens with perishable items, where low stock causes frequent stockouts and conceals true demand. On the flip side, left-censoring occurs with promotional products, where temporary promotions lead to observed sales sur-passing actual demand. Daily necessities typically have sufficient stock and rarely go on promotion, so their sales data usually reflects the actual demand. When right and left censoring coexist in one dataset, it’s called doubly censoring. 
+
+Figure 1: Censored data example. 
+
+Using or discarding doubly censored data both distort forecasts: the former fits the model on biased labels, the latter discards usable information[40]. In practice, retailers often revise sales using ad hoc business rules, yet without true demand they cannot verify the accuracy or feed the revised data back into the forecasting pipeline. Consequently, demand forecasting still lacks an end-to-end training method for doubly censored data and an appropriate metric to evaluate models under this scenario. Survival analysis offers a direct parallel: only a lower bound on lifetime is observed, producing right-censored responses. Re-weighting techniques developed for this arXiv:2610.40138v1 [cs.LG] 29 Oct 2026 CIKM ’26, November 07–11, 2026, Rome, Italy Ziwen Ye, Jiawen Wei, Teng Song, Chen Chen, and Guangrui Ma 
+
+setting motivate our unified framework, which trains any deep network end-to-end with the Doubly Portnoy Estimator (DPE). Likewise, while quantile forecasts are usually judged by calibration and sharpness, no calibration test exists for doubly censored data. Borrowing again from survival methodology, we propose Extended D-Calibration to assess the calibration of competing models under double censoring. In conclusion, this paper presents a unified framework for train-ing and evaluating deep models under doubly censored data. Al-though motivated by e-commerce demand forecasting, the frame-work is domain-agnostic and can be extended to any setting with similar censoring patterns. Our contributions are as follows. 
+
+• We introduce an end-to-end algorithm that trains deep mod-els with the DPE, and provide the first formal proof of its properness under doubly censored data, closing a long-standing theoretical gap in quantile estimation with incomplete ob-servations. 
+
+• To evaluate models trained under such censoring, we propose Extended D-Calibration, a new metric for doubly censored data, and prove that it precisely gauges the gap between modelled and true probabilities under mild assumptions. 
+
+• We first validate the proposed metric and algorithm through simulations, then confirm their effectiveness on two large-scale real-world datasets. Inventory simulations further demon-strate their superiority in stock control, and online A/B tests verify their practical impact. 
+
+## 2 Related Work 2.1 Probabilistic Demand Forecasting 
+
+Probabilistic demand forecasting plays a crucial role in inventory management across various sectors. A widely studied problem in this domain is the newsvendor problem, which identifies a spe-cific quantile of the demand distribution as the optimal inventory level[2, 4]. Traditional approaches for estimating demand quan-tiles typically rely on deterministic forecasts and the historical residuals of predicted values[21]. With the rise of deep learning, neural network-based demand forecasting has become increasingly prevalent. For example, to capture uncertainty, DeepAR employs a Recurrent Neural Network (RNN) to generate hidden states and estimates distribution parameters through maximum likelihood estimation[30]. This approach requires assumptions about the un-derlying data distribution. In contrast, quantile regression offers a non-parametric approach for probabilistic forecasting that does not require distributional assumptions[20]. Building on this foundation, Wen, Lim, and other researchers[22, 36] have designed Seq2Seq models that directly estimate quantiles using quantile loss as the loss function. How-ever, these models typically provide predictions for a fixed set of quantiles. To enable arbitrary quantile forecasting, a spline-based neural network have been proposed[5, 11, 25, 32]. These networks leverage the flexibility of splines to interpolate between quantiles, thereby allowing for more granular probabilistic forecasts. In the theoretical analysis of probabilistic forecasting, the theory of scoring rules serves as a fundamental framework. A loss function that qualifies as a proper scoring rule ensures that model training with this function can elicit the true underlying distribution[12]. To evaluate the effectiveness of different proper scoring rules, re-cent studies have widely adopted calibration and sharpness as key evaluation criteria[8, 10, 32]. Our study also employs these metrics to evaluate model performance. 
+
+## 2.2 Censored Quantile Regression 
+
+As highlighted in the introduction, censored data remain largely overlooked in demand forecasting. To exploit such data, we draw upon survival analysis, a field with an extensive literature on cen-soring (see [27, 35] for a comprehensive survey). Deep learning has recently been combined with survival analy-sis under right censoring [19, 40]. Some studies use censored data during training [1, 13]. In the statistical literature, doubly censored data have been studied via quantile regression [18, 23, 27], but few works link censored quantile regression to deep models. The q-rnn package trains networks with left censoring [6]. Pearce et al. extend Portnoy’s Estimator to train deep models via an iterative re-weighting algorithm [26]. Yanagisawa shows that Portnoy’s Esti-mator is proper, so the true distribution is recovered by optimization [39]. On the evaluation side, the C-index [17] quantifies median dis-crimination only, whereas D-Calibration [16] assesses calibration under right censoring. Neither extends to doubly censored data. We close this gap by introducing Extended D-Calibration, the first metric to evaluate calibration in the presence of both left and right censoring. 
+
+## 3 Preliminaries 3.1 Notation 
+
+We consider the task of using sequential features 𝑥 ∈ X to learn the quantile function of demand 𝑦 ∈ Y with a censoring indicator 
+
+Δ. Given a dataset D = {( 𝑥 1, 𝑦 ∗
+
+> 1
+
+, Δ1), ..., (𝑥 𝑁 , 𝑦 ∗ 
+
+> 𝑁
+
+, Δ𝑁 )} , 𝑦 ∗ denotes the observed demand and 𝑦 denotes the true demand. When no censoring occurs, 𝑦 ∗ = 𝑦 and we set Δ = 0. Let 𝑅 and 𝐿 be the right-censored demand and left-censored demand, respectively. In the right-censoring scenarios, we can only observe 𝑅 , where we denote 
+
+Δ as 1. Similarly, Δ is denoted as 2 for left-censoring scenarios, where 𝐿 is observed. When no censoring occurs, the 𝜏 -quantile of 
+
+𝑦 conditional on 𝑥 is obtained by: 
+
+𝑦 𝜏 = 𝐹 −1 (𝜏 |𝑥 ) = argmin  
+
+> 𝑧 ∈𝑅
+
+E  
+
+> 𝑌 ∼𝐹
+
+[𝜌 𝜏 (𝑦, 𝑧 )] 
+
+where 𝜌 𝜏 (𝑦, 𝑧 ) = (𝜏 −1[𝑦 < 𝑧 ])( 𝑦 −𝑧 ) is the quantile loss, 𝜏 ∈ ( 0, 1)
+
+is the quantile level and 1 is the indicator function[20]. Quantile loss has been shown to be a proper scoring rule[12]. The formal definition of the proper scoring rule under censored data is given as follows[39], Definition 3.1. A scoring rule 𝑆 ( ˆ𝐹, (𝑦, Δ)) is proper if 
+
+E 
+
+> 𝑦 ∼𝑌
+
+[𝑆 ( ˆ𝐹, (𝑦, Δ))] ≥ E 
+
+> 𝑦 ∼𝑌
+
+[𝑆 (𝐹, (𝑦, Δ))] .
+
+Where 𝐹 is the cumulative distribution function (CDF) and ˆ 𝐹 
+
+is the estimation of 𝐹 . In probabilistic forecasting, training with a proper scoring rule is standard: if the loss is not proper, the fitted distribution ˆ 𝐹 may deviate arbitrarily from the true 𝐹 .A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data CIKM ’26, November 07–11, 2026, Rome, Italy 
+
+Unless stated otherwise, we adopt the standard survival-analysis assumption that censoring is independent of the true demand condi-tional on the features. This assumption can be expressed as follows: Assumption 3.1. [Independent censoring] (𝐿, 𝑅 ) ⊥ ⊥ 𝑦 |𝑥 
+
+While unobserved confounders may violate this in practice, our covariates (e.g., price, promotions) absorb the main sources of en-dogeneity. 
+
+## 3.2 Evaluation 
+
+Calibration and sharpness are the two canonical criteria for evalu-ating probabilistic forecasts. For calibration, we first examine the uncensored case. To check whether the model is calibrated on an interval 𝐼 = [𝜏 𝑘 , 𝜏 𝑘 +1], we simply count how many observations fall into that interval: 𝑁 𝑘 = 𝑁 Í
+
+> 𝑖 =1
+
+1(𝜏 𝑖𝑦 ∈ 𝐼 ), where 𝜏 𝑖𝑦 = ˆ𝐹 (𝑦 𝑖 |𝑥 𝑖 ) is the cumulative probability of the 𝑖 -th observation. If 𝑁 𝑘 /𝑁 equals 
+
+𝜏 𝑘 +1 − 𝜏 𝑘 , the model is calibrated on 𝐼 . The overall calibration error of the CDF is then measured by Calibration = 
+
+> 𝐾 −1
+
+∑︁ 
+
+> 𝑘 =1
+
+ 𝜏 𝑘 +1 − 𝜏 𝑘 − 𝑁 𝑘 
+
+> 𝑁
+
+2.
+
+Under right-censoring, we cannot determine whether a censored observation truly falls inside 𝐼 . Haider et al.[16] therefore re-weights each right-censored observation by its distance to the interval, using the conditional probability mass: 
+
+𝑁 𝑅 𝑘 =
+
+> 𝑁
+
+∑︁ 
+
+> 𝑖 =1
+
+{1(Δ𝑖 = 0)1(𝜏 𝑖𝑦 ∈ 𝐼 )
+
+| {z }
+
+> uncensored observation
+
++ 1(Δ𝑖 = 1) [ 𝜏 𝑘 +1 − 𝜏 𝑖𝑅 
+
+1 − 𝜏 𝑖𝑅 
+
+1(𝜏 𝑖𝑅 ∈ 𝐼 ) + 𝜏 𝑘 +1 − 𝜏 𝑘 
+
+1 − 𝜏 𝑖𝑅 
+
+1(𝜏 𝑖𝑅 < 𝜏 𝑘 )] 
+
+| {z }
+
+> right-censored observation
+
+}
+
+and D-Calibration is then D-Calibration = 
+
+> 𝐾 −1
+
+∑︁ 
+
+> 𝑘 =1
+
+ 𝜏 𝑘 +1 − 𝜏 𝑘 − 𝑁 𝑅 𝑘 
+
+> 𝑁
+
+2.
+
+Yet calibration alone does not suffice to judge forecast quality [12]. When two models exhibit equal calibration, the one with the more concentrated predictive distribution is preferred. Sharpness, a property of the forecasts alone, is measured by the width of the central predictive interval. For quantiles 𝜏 1 and 𝜏 2 with 𝜏 1 < 𝜏 2,sharpness is defined as 
+
+𝛿 = ˆ𝐹 −1 (𝜏 2) − ˆ𝐹 −1 (𝜏 1).
+
+where ˆ 𝐹 denotes the estimated CDF. 
+
+## 4 Methodology 4.1 Quantile Modeling 
+
+In simulations we use an MLP encoder to map features into em-bedding representations E. For real-world data, demand patterns are more intricate. We therefore adopt a Transformer encoder that processes historical sales, prices and auxiliary variables. It is worth noting that alternative encoders such as Temporal Fu-sion Transformer[22], PatchTST[24] and TSMixer[7] can replace the Transformer as needed. To enable arbitrary-quantile estima-tion, we model the inverse CDF as a piecewise linear function. The unit interval [0, 1) is split into 𝐾 equal segments by 𝐾 + 1 knots 
+
+{( 𝜏 𝑘 , ˆ𝑦 𝑘 )} 𝐾 +1 
+
+> 𝑘 =1
+
+. A neural network takes E as input and outputs a 𝐾 -dimensional vector 𝜃 . After a softplus activation, 𝜃 is transformed into the quantile values { ˆ𝑦 𝑘 }𝐾 𝑘 =1. For any value 𝑦 , we identify the interval 𝐼 𝑞 = [ ˆ𝑦 𝑘 , ˆ𝑦 𝑘 +1] such that 𝑦 ∈ 𝐼 𝑞 and compute its quantile as ˆ𝜏 𝑦 = (1 − 𝑤 𝑦 )𝜏 𝑘 + 𝑤 𝑦 𝜏 𝑘 +1,𝑤 𝑦 = 𝑦 − ˆ𝑦 𝑘 
+
+ˆ𝑦 𝑘 +1 − ˆ𝑦 𝑘 
+
+.
+
+We name this approach q_search and use it throughout the remain-der of the paper. 
+
+## 4.2 Training 
+
+We employ DPE to estimate the quantile function under doubly censored data. For a given quantile level 𝜏 ∈ ( 0, 1), the DPE loss for predicted quantile 𝑦 𝜏 is defined as: 
+
+𝑆 𝐷𝑃𝐸 (𝑦 ∗, 𝑦 𝜏 , 𝑤 𝑙 , 𝑤 𝑟 , 𝜏, Δ) = 1(Δ = 0)𝜌 𝜏 (𝑦 𝜏 , 𝑦 )
+
+| {z }
+
+> Loss for the uncensored scenario
+
++ 1(Δ = 1) [ 𝑤 𝑟 𝜌 𝜏 (𝑦 𝜏 , 𝑅 ) + ( 1 − 𝑤 𝑟 )𝜌 𝜏 (𝑦 𝜏 , 𝑧 ∞)] 
+
+| {z }
+
+> Loss for the right censoring scenario
+
++ 1(Δ = 2) [ 𝑤 𝑙 𝜌 𝜏 (𝑦 𝜏 , 𝐿 ) + ( 1 − 𝑤 𝑙 )𝜌 𝜏 (𝑦 𝜏 , 𝑧 −∞ )] 
+
+| {z }
+
+> Loss for the left censoring scenario
+
+where 𝑧 ∞ and 𝑧 −∞ are sufficiently large positive and negative con-stants, respectively, and 𝑤 𝑙 , 𝑤 𝑟 ∈ [ 0, 1] are redistribution weights. To set the weights, we examine the indicator function 1(𝑦 <
+
+𝑦 𝜏 ) in the quantile loss under censoring. For left-censoring, the observed value 𝐿 serves as an upper bound on the true demand (𝑦 ≤ 𝐿 ). Thus, if 𝑦 𝜏 > 𝐿 , we have 𝑦 ≤ 𝐿 < 𝑦 𝜏 with certainty, implying 1(𝑦 < 𝑦 𝜏 ) = 1 and setting 𝑤 𝑙 = 1. Conversely, if 𝑦 𝜏 < 𝐿 ,the indicator is ambiguous because the true 𝑦 may lie on either side of 𝑦 𝜏 . Following Efron’s [34] redistribution principle, we impute the conditional expectation: 
+
+𝑤 𝑙 = E[1(𝑦 > 𝑦 𝜏 ) | 𝑦 < 𝐿 ] = 𝑃 (𝑦 𝜏 < 𝑦 < 𝐿 )
+
+𝑃 (𝑦 < 𝐿 ) = 𝜏 𝐿 − 𝜏 𝜏 𝐿 
+
+,
+
+where 𝜏 = 𝐹 (𝑦 𝜏 ) and 𝜏 𝐿 = 𝐹 (𝐿 ) are the cumulative probabilities under the true demand CDF 𝐹 . The complementary weight (1 −𝑤 𝑙 )
+
+is redistributed to 𝑧 −∞ , representing mass below the left-censoring threshold. The right-censoring weight 𝑤 𝑟 is derived analogously: 
+
+𝑤 𝑟 = E[1(𝑦 < 𝑦 𝜏 ) | 𝑦 > 𝑅 ] = 𝑃 (𝑅 < 𝑦 < 𝑦 𝜏 )
+
+𝑃 (𝑦 > 𝑅 ) = 𝜏 − 𝜏 𝑅 
+
+1 − 𝜏 𝑅 
+
+.
+
+Under the independent censoring assumption, and with 𝑤 𝑙 , 𝑤 𝑟 
+
+defined with respect to the true CDF 𝐹 , DPE induces a proper scoring rule for 𝜏 -quantile estimation. This result, formalized in Theorem 1, is to our knowledge the first properness guarantee for a quantile loss accommodating both left and right censoring. Theorem 1. Under the independent censoring assumption, if 𝑤 𝑙 
+
+and 𝑤 𝑟 are correct, Doubly Portnoy’s Estimator is a proper scoring rule. 
+
+Proof. We give a proof in Appendix A. □CIKM ’26, November 07–11, 2026, Rome, Italy Ziwen Ye, Jiawen Wei, Teng Song, Chen Chen, and Guangrui Ma 
+
+Based on the weighting strategy described above, Theorem 1 establishes that DPE is a proper scoring rule for the target quan-tiles when the redistribution weights 𝑤 𝑙 and 𝑤 𝑟 are specified with respect to the true demand distribution. In practice, however, the cumulative probabilities 𝜏 𝐿 = 𝐹 (𝐿 ) and 𝜏 𝑅 = 𝐹 (𝑅 ) at the censoring thresholds are unknown and must be estimated from data. 
+
+Algorithm 1: Iterative Re-weighting for DPE Training 
+
+Data: Batch data 𝐵 = {( 𝑥 𝑗 , 𝑦 ∗ 
+
+> 𝑗
+
+, Δ𝑗 )} 𝑏 𝑗 =1
+
+Model: Deep quantile model M𝜃 with 𝐾 knots {𝜏 𝑖 }𝐾 𝑖 =1
+
+Require: Target quantile 𝜏 , learning rate 𝛼 , convergence tolerance 𝜖 
+
+while max 𝑗 |𝑤 (𝑡 ) 
+
+> 𝑟,𝑗
+
+− 𝑤 (𝑡 −1) 
+
+> 𝑟,𝑗
+
+| > 𝜖 or max 𝑗 |𝑤 (𝑡 ) 
+
+> 𝑙,𝑗
+
+− 𝑤 (𝑡 −1) 
+
+> 𝑙,𝑗
+
+| > 𝜖 
+
+do 
+
+// E-step: estimate redistribution weights (stop-gradient) 
+
+for 𝑗 = 1, . . . , 𝑏 do 
+
+{ ˆ𝑦 𝑗,𝜏 𝑖 }𝐾 𝑖 =1 ← M 𝜃 (𝑡 −1) (𝑥 𝑗 );
+
+{ ˜𝑦 𝑗,𝜏 𝑖 }𝐾 𝑖 =1 ← SG ({ ˆ𝑦 𝑗,𝜏 𝑖 }𝐾 𝑖 =1);
+
+if Δ𝑗 = 0 then 
+
+𝑤 (𝑡 ) 
+
+> 𝑟,𝑗
+
+← 1; 𝑤 (𝑡 ) 
+
+> 𝑙,𝑗
+
+← 1; 
+
+else if Δ𝑗 = 1 then 
+
+ˆ𝜏 𝑅 ← 𝑞 _𝑠𝑒𝑎𝑟𝑐ℎ ({ ˜𝑦 𝑗,𝜏 𝑖 }𝐾 𝑖 =1, 𝑅 𝑗 );
+
+if ˆ𝜏 𝑅 ≤ 𝜏 then 
+
+𝑤 (𝑡 ) 
+
+> 𝑟,𝑗
+
+← ( 𝜏 − ˆ𝜏 𝑅 )/( 1 − ˆ𝜏 𝑅 );
+
+else 
+
+𝑤 (𝑡 ) 
+
+> 𝑟,𝑗
+
+← 1; 
+
+end 
+
+𝑤 (𝑡 ) 
+
+> 𝑙,𝑗
+
+← 1; 
+
+else if Δ𝑗 = 2 then 
+
+ˆ𝜏 𝐿 ← 𝑞 _𝑠𝑒𝑎𝑟𝑐ℎ ({ ˜𝑦 𝑗,𝜏 𝑖 }𝐾 𝑖 =1, 𝐿 𝑗 );
+
+if 𝜏 ≤ ˆ𝜏 𝐿 then 
+
+𝑤 (𝑡 ) 
+
+> 𝑙,𝑗
+
+← ( ˆ𝜏 𝐿 − 𝜏 )/ ˆ𝜏 𝐿 ;
+
+else 
+
+𝑤 (𝑡 ) 
+
+> 𝑙,𝑗
+
+← 1; 
+
+end 
+
+𝑤 (𝑡 ) 
+
+> 𝑟,𝑗
+
+← 1; 
+
+end 
+
+// M-step: partial maximization via gradient descent 
+
+𝐿 (𝜃 ) ← Í𝑏 𝑗 =1 𝑆 𝐷𝑃𝐸 (𝑦 ∗ 
+
+> 𝑗
+
+, ˆ𝑦 𝑗,𝜏 , 𝑤 (𝑡 ) 
+
+> 𝑙,𝑗
+
+, 𝑤 (𝑡 ) 
+
+> 𝑟,𝑗
+
+, 𝜏, Δ𝑗 );
+
+𝜃 (𝑡 ) ← OptimizerUpdate (𝜃 (𝑡 −1) , ∇𝜃 𝐿, 𝛼 );
+
+end 
+
+To implement DPE in practice, we extend the iterative re-weighting (IR) procedure of Pearce et al. [26] from the right-censored survival setting to the doubly censored demand forecasting scenario. We extend this procedure to doubly censored demand forecasting and adapt it for deep neural networks, as summarized in Algorithm 1. 
+
+Theoretical justification. We now show that Algorithm 1 ad-mits a principled probabilistic interpretation, extending the frame-work of Pearce et al. [26] to the doubly censored setting. Following Pearce et al., we assume that the likelihood for each uncensored datapoint at quantile level 𝜏 follows an asymmetric Laplace distri-bution (ALD) with location ˆ 𝑦 𝑗,𝜏 and scale 𝜆 =√︁ 𝜏 (1 − 𝜏 ). Under this assumption, the log-density corresponds to the negative check loss up to an additive constant [26, Eq. 16]: log 𝑓 (𝑦 𝑗 ; ˆ 𝑦 𝑗,𝜏 , 𝜆 ) = −𝜌 𝜏 (𝑦 𝑗 , ˆ𝑦 𝑗,𝜏 ) + const .
+
+For censored observations, we define the weighted likelihood by redistributing probability mass according to the current weight estimates. For a right-censored sample 𝑗 with censoring time 𝑅 𝑗 ,the contribution is: 
+
+𝑓 weighted (𝑦 𝑗 ; ˆ 𝑦 𝑗,𝜏 , 𝑤 𝑟,𝑗 ) = 𝑓 (𝑅 𝑗 ; ˆ 𝑦 𝑗,𝜏 )𝑤 𝑟,𝑗 · 𝑓 (𝑧 ∞; ˆ 𝑦 𝑗,𝜏 )1−𝑤 𝑟,𝑗 ,
+
+where 𝑧 ∞ is a sufficiently large constant representing mass beyond the censoring threshold. The left-censored case is defined analo-gously. Combining all samples, the joint weighted likelihood is: 
+
+𝑝 (y|X, 𝜃, w𝑙 , w𝑟 , 𝜏 ) =
+
+Ö 
+
+> 𝑖 :Δ𝑖 =0
+
+𝑓 (𝑦 𝑖 ; ˆ 𝑦 𝑖,𝜏 )×
+
+Ö 
+
+> 𝑗 :Δ𝑗 =1
+
+𝑓 weighted (𝑦 𝑗 ; ˆ 𝑦 𝑗,𝜏 , 𝑤 𝑟,𝑗 )×
+
+Ö 
+
+> 𝑘 :Δ𝑘 =2
+
+𝑓 weighted (𝑦 𝑘 ; ˆ 𝑦 𝑘,𝜏 , 𝑤 𝑙,𝑘 ).
+
+Taking the negative log-likelihood and substituting the ALD density recovers exactly the DPE loss 𝑆 𝐷𝑃𝐸 (up to an additive con-stant). Thus, minimizing the DPE loss is equivalent to maximizing the weighted ALD likelihood. This reveals that Algorithm 1 can be interpreted as a generalized EM algorithm [26]: the E-step computes the redistribution weights by evaluating the conditional expectations under the current model, and the M-step performs a partial maximization of the expected complete-data log-likelihood via gradient descent. This probabilistic foundation elevates the iterative re-weighting strategy above heuristic reasoning, ensur-ing that each iteration yields a well-defined statistical objective. Although weights are approximated from the current model, the generalized EM procedure converges to a stationary point under mild conditions [38]. 
+
+## 4.3 Evaluation 
+
+Figure 2: The illustration of re-weighting strategy. A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data CIKM ’26, November 07–11, 2026, Rome, Italy 
+
+Having established a training objective for doubly censored data, we now turn to evaluation. Standard calibration metrics assume fully observed outcomes and thus fail under censoring. We there-fore develop Extended D-Calibration, which generalizes the re-weighting principle of DPE to assessment. For uncensored observations, membership of 𝜏 𝑦 in 𝐼 = [𝜏 𝑘 , 𝜏 𝑘 +1]
+
+is certain, so calibration is computed directly. When data are doubly censored, ambiguity arises as soon as 𝜏 𝐿 or 𝜏 𝑅 lies inside 𝐼 , because the true 𝜏 𝑦 may still fall outside this interval. As illustrated in 
+
+Figure 2 , when 𝜏 𝑅 falls within the interval 𝐼 , the true 𝜏 𝑦 may occur at any point within (𝜏 𝑅 , 1). Thus, we design a weighting strategy for different observations. Specifically, we use the probability that 
+
+𝜏 𝑦 falls within 𝐼 as their weights and incorporate these weights into the calibration calculation. Hence, the calculation of 𝑁 𝐷 𝑘 under doubly censored data is given by, 
+
+𝑁 𝐷 𝑘 =
+
+> 𝑁
+
+∑︁ 
+
+> 𝑖 =1
+
+n
+
+1(Δ𝑖 = 0)1(𝜏 𝑖𝑦 ∈ 𝐼 )
+
+| {z }
+
+> uncensored
+
++ 1(Δ𝑖 = 1)
+
+h 𝜏 𝑘 +1 − 𝜏 𝑖𝑅 
+
+1 − 𝜏 𝑖𝑅 
+
+1(𝜏 𝑖𝑅 ∈ 𝐼 ) + 𝜏 𝑘 +1 − 𝜏 𝑘 
+
+1 − 𝜏 𝑖𝑅 
+
+1(𝜏 𝑖𝑅 < 𝜏 𝑘 )
+
+i| {z }
+
+> right-censored
+
++ 1(Δ𝑖 = 2)
+
+h 𝜏 𝑖𝐿 − 𝜏 𝑘 
+
+𝜏 𝑖𝐿 
+
+1(𝜏 𝑖𝐿 ∈ 𝐼 ) + 𝜏 𝑘 +1 − 𝜏 𝑘 
+
+𝜏 𝑖𝐿 
+
+1(𝜏 𝑖𝐿 > 𝜏 𝑘 +1)
+
+i| {z }
+
+> left-censored
+
+o
+
+Assume the unit interval [0, 1] is divided into 𝐾 non-overlapping sub-intervals. To assess the performance across these intervals, we propose a metric, Extended D-Calibration, defined as: Extended D-Calibration = 
+
+> 𝐾 −1
+
+∑︁ 
+
+> 𝑘 =1
+
+(𝜏 𝑘 +1 − 𝜏 𝑘 − 𝑁 𝐷 𝑘 
+
+𝑁 )2
+
+Moreover, for the proposed 𝑁 𝐷 𝑘 , we prove that the expectation value of 𝑁 𝐷 𝑘 /𝑁 equals 𝜏 𝑘 +1 − 𝜏 𝑘 under some conditions, thereby providing a theoretical guarantee for this weighting scheme. This is formalized in the following theorem: Theorem 2. Under the independent censoring assumption, if the cumulative distribution function is strictly monotonically increasing, the expected proportion of doubly censored data in each bin equals the bin width, i.e., E[ 𝑁 𝐷 𝑘 
+
+𝑁 ] = 𝜏 𝑘 +1 − 𝜏 𝑘 
+
+Proof. We give a proof in Appendix B. □
+
+## 5 Experiments 
+
+We conduct extensive experiments to evaluate the proposed metric and algorithm on both simulated and real-world retail datasets. 1
+
+Our three primary research objectives are: 
+
+• How accurately does the proposed metric assess model cali-bration under doubly censored data compared with existing measures? 
+
+• Does the proposed method outperform alternative approaches in calibration and sharpness in both simulated and real-world scenarios? 
+
+> 1Code and simulation scripts are included in the link.
+
+• Does the method translate into operational gains, that is, superior inventory management benefits? These three questions address the discriminative power and calibra-tion accuracy of our metric, the predictive efficacy of our method, and its practical utility. Because no ground-truth calibration mea-sure is available on real data, we benchmark our metric against alternatives in synthetic datasets. In these datasets, models are trained solely on censored observations, while true labels are re-vealed only at evaluation time to compute the benchmark metrics. Regarding implementation details, all models are implemented in PyTorch utilizing one server with an Intel Xeon CPU with 128 cores, 228GB RAM and an NVIDIA A100 GPU with 40GB memory. The op-timizer used is the Adam optimizer with 𝜖 = 0.001, and the learning rate is selected from {0.001, 0.003, 0.006, 0.01} based on performance on the validation set. After some preliminary experiments, we fixed 
+
+𝑘 at 20 for all methods to ensure a fair comparison. 
+
+## 5.1 Baselines 
+
+Given the lack of established methods for training models under doubly censoring, we compare our approach with established base-lines for quantile modeling: Excl. Censor[26], LogNorm MLE[26], S-CRPS[1], CQRNN[26]. 
+
+## 5.2 Metrics 
+
+In the simulation study we benchmark our metric against three widely used calibration measures: ECE-uncensored, ECE[8, 9, 15, 33] and D-Calibration[16]. We take the oracle calibration computed from the real label as the gold standard. When evaluating DPE we additionally report sharpness and CRPS[12] calculated on the true demand to assess overall performance. Note that sharpness is quantified by the width of the 10th–90th quantile interval and we compute the quantile-based CRPS in the same manner as Berrisch et al.[3]. 
+
+## 5.3 Synthetic Datasets Results 
+
+5.3.1 Synthetic Datasets. Covariates and response. Coefficients are sampled once as 𝛽 0, 𝛽 1, 𝛽 2 ∼ U ( 0, 5) and 𝛽 3 ∼ U ( 0, 3). We then draw 𝑥 1 ∼ U ( 0, 3), 𝑥 2 ∼ U ( 0, 5), 𝑥 3 ∼ U ( 0, 5) and generate demand 𝑦 = 𝛽 0 + 𝛽 1𝑥 1 + 𝛽 2 sin (𝑥 2) + 𝛽 3 cos (𝑥 3) + 𝜀 , where 𝜀 ∼N ( 0, 𝜎 2). The sinusoidal terms embed realistic non-linearity, and varying seeds allow us to simulate diverse censoring scenarios. 
+
+Censoring mechanisms. We draw 𝐿 ∼ U ( 0, 10 ) and set 𝑅 =
+
+𝐿 + U ( 2.5, 10 .5); the observed label is 𝑦 ∗ = max {𝐿, min {𝑦, 𝑅 }} .We generate 300,000 synthetic samples in each run and split them into training (60%), validation (20%) and test (20%) sets. All models were trained on the training set using censored labels, the best model was selected on the validation set, and the final evaluation was carried out on the test set. 
+
+5.3.2 Metrics Comparison. We evaluate each calibration metric as a proxy for true calibration quality. For each simulation run, we rank a fixed set of candidate models (varying in architecture and reg-ularization) by their oracle calibration error and independently by each candidate metric. A metric that preserves the oracle’s relative ordering is considered well-aligned. Formally, let roracle ∈ R𝑀 and 
+
+rmetric ∈ R𝑀 denote the rank vectors over 𝑀 models; we compute CIKM ’26, November 07–11, 2026, Rome, Italy Ziwen Ye, Jiawen Wei, Teng Song, Chen Chen, and Guangrui Ma 
+
+Kendall’s 𝜏 [14] and Spearman’s 𝜌 [31] between these orderings. Both coefficients lie in [− 1, 1], with values approaching 1 indicating strong concordance and values near −1 indicating systematic in-version. We average coefficients across 500 independent simulation runs; statistical significance against the null hypothesis of random ranking ( 𝜏 = 0) is assessed via the Wilcoxon signed-rank test [37]. 
+
+Table 1: Performance comparison of calibration metrics.  
+
+> ∗∗
+
+(𝑝 < 0.01 ) (WSR vs Ext. D-Calibration). Metrics Kendall’s 𝜏 Spearman’s 𝜌 
+
+ECE −0.220 ∗∗ −0.262 ∗∗ 
+
+D-Calibration 0.327 ∗∗ 0.414 ∗∗ 
+
+ECE-uncensored 0.486 ∗∗ 0.597 ∗∗ 
+
+Ext. D-Calibration 0.740 0.842 Table 1 reveals a clear hierarchy in rank-alignment quality. Ex-tended D-Calibration achieves the strongest concordance with the oracle (Kendall’s 𝜏 = 0.740, Spearman’s 𝜌 = 0.842), outperforming the second-best metric, ECE-uncensored, by substantial margins (+52% and +41% in relative terms, respectively). Notably, standard ECE exhibits a negative correlation with true calibration quality (𝜏 = −0.220), confirming that in censored settings lower ECE values paradoxically indicate worse calibration because ECE penalizes probability mass assigned beyond the observed horizon, which is actually appropriate for censored data. D-Calibration corrects for distributional assumptions but remains limited ( 𝜏 = 0.327), while ECE-uncensored addresses censoring yet ignores the full pre-dictive distribution. Only Extended D-Calibration integrates both aspects, yielding a statistically significant improvement over all baselines ( 𝑝 < 0.01, Wilcoxon signed-rank test) and approaching the reliability threshold required for model selection in operational deployments. 
+
+5.3.3 Loss Comparison. To evaluate DPE against competing loss functions, we benchmark with Extended D-Calibration, sharpness, oracle calibration, and real CRPS (computed on the real labels). As in the metrics comparison, results are averaged across simulation runs and reported in Table 2 , with significance assessed via the Wilcoxon signed-rank test using the same protocol. As reported in Table 2 , DPE achieves the minimum value in almost all metrics and significantly exceeds all baselines (Wilcoxon signed rank test, 𝑝 < 0.01). Specifically, its Extended D-Calibration exceeds the second-best result by 44.16%, while the real CRPS im-proves by 6.52%, confirming both the calibration and predictive advantages of the proposed estimator. 
+
+5.3.4 Inventory Simulation. We examine practical implementations and assess the effectiveness of various approaches in real-world sce-narios. For large-scale inventory management, the sheer number of SKUs makes manual stocking extremely labor-intensive and costly. In contrast, model-based stocking methods offer cost efficiency and more accurate demand forecasting. Given the numerous SKUs involved, we typically regulate the overall stocking quantity of all SKUs in this category to maximize GMV. In our simulation, we assume there are N SKUs, each with different stockout costs 𝑐 1 and overstock costs 𝑐 2, both following a uniform distribution U(0, 1). We aim to maximize the following expectation: 
+
+E𝑦 ∼𝑝 (𝑦 |𝑥 ) {𝑦 − [ 𝑐 1 (𝑦 − 𝑡 )+ + 𝑐 2 (𝑡 − 𝑦 )+]} 
+
+where 𝑡 is estimated demand and 𝑦 is the demand. We can analytical derive the above expectation and get 
+
+E𝑦 ∼𝑝 (𝑦 |𝑥 ) {𝑦 − [ 𝑐 1 (𝑦 − 𝑡 )+ + 𝑐 2 (𝑡 − 𝑦 )+]} 
+
+= E(Y|X) 
+
+| {z }
+
+> Expectation
+
+−{ 
+
+∫ ∞
+
+> 𝑡
+
+𝑐 1 (𝑦 − 𝑡 )𝑝 (𝑦 |𝑥 )𝑑𝑦 
+
+| {z }
+
+> Stockout loss
+
++
+
+∫ 𝑡 
+
+> 0
+
+𝑐 2 (𝑡 − 𝑦 )𝑝 (𝑦 |𝑥 )𝑑𝑦 
+
+| {z }
+
+> Overstock loss
+
+}
+
+The stockout loss and overstock loss can be further derived as 
+
+𝐿 1 (𝑞 ) =
+
+∫ ∞
+
+> 𝑡
+
+𝑐 1 (𝑦 − 𝑡 )𝑝 (𝑦 |𝑥 )𝑑𝑦 
+
+= 𝑐 1 [
+
+> 1
+
+∑︁ 
+
+> 𝑞 =𝑞 𝑡
+
+ˆ𝐹 −1 (𝑞 |𝑥 ) · Δ𝑞 − ˆ𝐹 −1 (𝑞 𝑡 |𝑥 )( 1 − 𝑞 𝑡 )] 
+
+𝐿 2 (𝑞 ) =
+
+∫ 𝑡 
+
+> 0
+
+𝑐 2 (𝑡 − 𝑦 )𝑝 (𝑦 )𝑑𝑦 
+
+= 𝑐 2 [𝑞 𝑡 · ˆ𝐹 −1 (𝑞 𝑡 |𝑥 ) − 
+
+> 𝑞 𝑡
+
+∑︁ 
+
+> 𝑞 =0
+
+ˆ𝐹 −1 (𝑞 |𝑥 ) · Δ𝑞 ]
+
+Where ˆ 𝐹 −1 is the estimate of the inverse CDF, 𝑞 𝑡 = 𝐹 (𝑡 |𝑥 ) and 
+
+Δ𝑞 = 0.01. The detailed derivation is given in Appendix C. Given a set of quantiles { ˆ𝐹 −1 (𝑞 𝑖 1 |𝑥 𝑖 ), ˆ𝐹 −1 (𝑞 𝑖 2 |𝑥 𝑖 ), ..., ˆ𝐹 −1 (𝑞 𝑖𝐾 |𝑥 𝑖 )} 𝑁 𝑖 =1
+
+for N SKUs, we optimize the following integer programming prob-lem: 
+
+Maximize 
+
+> 𝑁
+
+∑︁ 
+
+> 𝑖 =1
+> 𝐾
+
+∑︁ 
+
+> 𝑗 =1
+
+E(Y 𝑖 |X 𝑖 ) − [ 𝐿 1 (𝑞 𝑖 𝑗 ) + 𝐿 2 (𝑞 𝑖 𝑗 )] · 𝑧 𝑖 𝑗 
+
+subject to 
+
+> 𝐾
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑧 𝑖 𝑗 = 1, 𝑖 = 1, 2, . . . , 𝑁 
+
+> 𝑁
+
+∑︁ 
+
+> 𝑖 =1
+> 𝐾
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑧 𝑖 𝑗 · ˆ𝐹 −1 (𝑞 𝑖 𝑗 ) ≤ 𝑇 · ( 1 + 𝛼 )
+
+where 𝑇 represents expected total volume, 𝛼 ∈ [ 0, 0.4] serves as a volume control parameter and 𝐹 −1 (𝑞 𝑖 𝑗 ) is rounded to the nearest integer. 
+
+Experimental Setup. We simulate inventory dynamics for 𝑁 =
+
+200 SKUs. We evaluate methods across a grid of service-level targets, varying 𝛼 ∈ { 0, 0.05 , 0.10 , . . . , 0.40 }, where higher 𝛼 prioritizes stockout reduction over overstocking mitigation. Performance is measured by two operational metrics: (i) overstocking rate , defined as excess inventory divided by total sales; and (ii) stockout SKU ratio , defined as the proportion of SKUs that experience a complete sellout during the simulation. 
+
+Findings. Figure 3 reveals a clear hierarchical ordering of method performance. DPE achieves the minimal stockout SKU ratio for any fixed overstocking level, and conversely, the minimal overstocking rate for any fixed stockout threshold. This reciprocal dominance indicates that DPE’s Pareto frontier strictly dominates those of CQRNN, Excl. Censor, and S-CRPS across all operational regimes. For example, at an overstocking rate of 0.25, DPE reduces the stock-out ratio to 0.23 compared to 0.25 for S-CRPS (the second-best A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data CIKM ’26, November 07–11, 2026, Rome, Italy 
+
+Table 2: Performance metrics for different survival methods. Bold = best; underline = runner-up; ★𝑝 < 0.05 , ★★ 𝑝 < 0.01 vs DPE (WSR, except Sharpness). 
+
+Model Extended D-Calibration Oracle Calibration Sharpness Real CRPS Excl. Censor 0.154 ★★ 0.492 ★★ 8.646 0.093 ★★ 
+
+LogNorm 0.832 ★★ 1.761 ★★ 12.101 0.164 ★★ 
+
+CQRNN 0.293 ★★ 0.585 ★★ 9.039 0.114 ★★ 
+
+S-CRPS 0.189 ★★ 0.513 ★★ 9.296 0.092 ★★ 
+
+DPE (Our Method) 0.086 0.486 11.218 0.086 Table 3: Calibration and sharpness comparison (lower is better). 
+
+Dataset Youxuan Maicai Metrics Extended D-Calibration Sharpness Extended D-Calibration Sharpness Excl. censor 0.049 76.72 0.17 9.82 
+
+LogNorm 0.039 107.96 0.14 10.8 S-CRPS 0.045 77.54 0.13 11.67 CQRNN 0.042 77.67 0.07 10.45 DPE 0.040 76.4 0.05 10.3 
+
+Figure 3: Inventory Simulation. 
+
+method), a relative improvement of 8%. These gains underscore the operational value of DPE in retail inventory control, particularly in settings where both holding costs and lost-sales penalties are economically significant. 
+
+## 5.4 Real-world Datasets Results 
+
+5.4.1 Real-world Datasets. For real-world experiments, since pub-lic retail datasets such as M5 and Favorita do not collect censoring information, which is prevalent in e-commerce retailing, we col-lected two datasets from two online grocery retailing platforms of Meituan, namely Maicai and Youxuan, covering the period from October 10th to November 15th, 2023. Notably, Maicai and Youxuan have different business models, resulting in distinctly different sales distributions. We aim to demonstrate the generalizability of our method by showing its effectiveness across these different types of distributions. Each dataset is split into three subsets: the initial 30 days are allocated for training, followed by 1 day for valida-tion, and the final 4 days are reserved for testing. Since the data are proprietary due to data privacy concerns, we provide detailed descriptions of our datasets to ensure reproducibility. 
+
+• Youxuan (community group-buying platform): 8.52 million records; 19.84% right-censored, 3.56% left-censored. 
+
+• Maicai (online supermarket platform): 18.07 million records; 18.52% right-censored, 6.26% left-censored. Censoring labels are derived from system logs. Stockouts are right-censored ( Δ = 1, 𝑅 = sales). Promotions are reactive and unplanned; the resulting sales surge is treated as left-censored (Δ = 2, 𝐿 = sales), with the target being baseline demand without promotion. Normal sales are uncensored ( Δ = 0, 𝐿 = 𝑅 = sales). Both datasets share the following features: traffic, sales, and price histories. The data are partitioned as follows: training on days 1–30, validation on day 31, and testing on days 32–35. 
+
+5.4.2 Loss Comparison. Empirical results on synthetic data con-firm that Extended D-Calibration aligns most closely with the oracle calibration score. On the two real-world datasets, where true de-mand is unavailable for censored observations, we rank models solely by Extended D-Calibration and sharpness. As shown in Ta-ble 3 , DPE ranks in the top two for every metric, demonstrating its effectiveness. On Youxuan, DPE ranks second for both metrics. LogNorm at-tains a marginally lower Extended D-Calibration (0.039 vs. 0.040), yet its sharpness is 41.3% worse than that of DPE (107.96 vs. 76.4). Notably, LogNorm achieves the best calibration but the worst sharp-ness among all models, underscoring that calibration alone is insuf-ficient for model comparison. On Maicai, DPE achieves the lowest Extended D-Calibration (0.05), outperforming the second-best method (CQRNN, 0.07) by 28.6%. Relative to Excl. Censor, it trades a modest worsening in sharpness (10.3 vs. 9.82) for a 70.6% reduction in calibration error (0.05 vs. 0.17). Notably, Excl. Censor, despite exhibiting the highest CIKM ’26, November 07–11, 2026, Rome, Italy Ziwen Ye, Jiawen Wei, Teng Song, Chen Chen, and Guangrui Ma 
+
+sharpness, ranks worst in calibration, reinforcing the need to jointly evaluate both criteria. 
+
+5.4.3 Inventory Online A/B Test. For the A/B test, we randomly assign products from multiple warehouses, across different sub-categories, to treatment and control groups with equal probability. Given the trade-off between overstocking rate and stockout SKU ratio, we collect data on both metrics over a 7-day period. The comparison shows that, for a fixed stockout SKU ratio, our model reduces the overstock rate by 8% compared to the incumbent online algorithm, demonstrating its practical value in production environ-ments. 
+
+## 6 Conclusion 
+
+This study develops a novel probabilistic framework that explicitly addresses doubly censored data prevalent in e-commerce demand forecasting. Specifically, we propose a deep learning-based quantile regression framework, design the Doubly Portnoy Estimator (DPE), an iterative re-weighting algorithm for training deep models with censored data, and develop Extended D-Calibration, a metric to evaluate models under double censoring. The efficacy of our frame-work is demonstrated via simulation and two real-world datasets. Application results verify that the proposed method effectively mit-igates overstocking and stockout losses in inventory management, thereby improving operational efficiency and profitability. 
+
+## 7 Appendices 7.1 Proof of Theorem 1 
+
+We prove that the Doubly Portnoy’s Estimator (DPE) is a proper scoring rule, i.e., 
+
+E𝑦 [𝑆 𝐷𝑃𝐸 (𝑦 ∗, ˆ𝑦 𝜏 , 𝑤 𝑙 , 𝑤 𝑟 , 𝜏 )] ≥ E𝑦 [𝑆 𝐷𝑃𝐸 (𝑦 ∗, 𝑦 𝜏 , 𝑤 𝑙 , 𝑤 𝑟 , 𝜏 )] (1) for all ˆ 𝑦 𝜏 , with equality iff ˆ 𝑦 𝜏 = 𝑦 𝜏 = 𝐹 −1 (𝜏 |𝑥 ).The proof proceeds by the relative positions of ˆ 𝑦 𝜏 and 𝑦 𝜏 to the censoring bounds [𝐿, 𝑅 ]. We partition into three structurally distinct cases; scenarios within each case share the same derivation pattern. (1) 𝑚𝑎𝑥 { ˆ𝑦 𝜏 , 𝑦 𝜏 } < 𝐿 
+
+(2) ˆ 𝑦 𝜏 < 𝐿 , 𝐿 ≤ 𝑦 𝜏 ≤ 𝑅 
+
+(3) ˆ 𝑦 𝜏 < 𝐿, 𝑦 𝜏 > 𝑅 
+
+(4) 𝐿 ≤ ˆ𝑦 𝜏 ≤ 𝑅 , 𝑦 𝜏 < 𝐿 
+
+(5) 𝐿 ≤ ˆ𝑦 𝜏 ≤ 𝑅, 𝐿 ≤ 𝑦 𝜏 ≤ 𝑅 
+
+(6) 𝐿 ≤ ˆ𝑦 𝜏 ≤ 𝑅, 𝑦 𝜏 > 𝑅 
+
+(7) ˆ 𝑦 𝜏 > 𝑅, 𝑦 𝜏 < 𝐿 
+
+(8) ˆ 𝑦 𝜏 > 𝑅, 𝐿 ≤ 𝑦 𝜏 ≤ 𝑅 
+
+(9) 𝑚𝑖𝑛 {𝑦 𝜏 , ˆ𝑦 𝜏 } > 𝑅 
+
+7.1.1 Case I: Both Predictions on the Same Side. This covers Sce-narios 1 and 9: max { ˆ𝑦 𝜏 , 𝑦 𝜏 } < 𝐿 or min { ˆ𝑦 𝜏 , 𝑦 𝜏 } > 𝑅 .
+
+Scenario 1: max { ˆ𝑦 𝜏 , 𝑦 𝜏 } < 𝐿 . The DPE loss takes the form: 
+
+𝑆 𝐷𝑃𝐸 (𝑦 ∗, ˆ𝑦 𝜏 , 𝑤 𝑙 , 𝑤 𝑟 , 𝜏 )
+
+=
+
+
+
+(1 − 𝑤 𝑙 )( 𝑧 −∞ − ˆ𝑦 𝜏 )( 𝜏 − 1) + 𝑤 𝑙 (𝐿 − ˆ𝑦 𝜏 )𝜏, 𝑦 < 𝐿, 
+
+(𝑦 − ˆ𝑦 𝜏 )𝜏, 𝐿 ≤ 𝑦 ≤ 𝑅, 
+
+(1 − 𝑤 𝑟 )( 𝑧 ∞ − ˆ𝑦 𝜏 )𝜏 + 𝑤 𝑟 (𝑅 − ˆ𝑦 𝜏 )𝜏, 𝑦 > 𝑅 
+
+Taking expectation: 
+
+E𝑦 [𝑆 𝐷𝑃𝐸 (𝑦 ∗, ˆ𝑦 𝜏 , 𝑤 𝑙 , 𝑤 𝑟 , 𝜏 )] 
+
+=
+
+∫ 𝐿 
+
+> −∞
+
+𝑤 𝑙 𝜌 𝜏 ( ˆ𝑦 𝜏 , 𝐿 ) + ( 1 − 𝑤 𝑙 )𝜌 𝜏 ( ˆ𝑦 𝜏 , 𝑧 −∞ )𝑝 (𝑦 ) 𝑑𝑦 
+
++
+
+∫ 𝑅 𝐿 
+
+𝜌 𝜏 ( ˆ𝑦 𝜏 , 𝑦 )𝑝 (𝑦 ) 𝑑𝑦 
+
++
+
+∫ ∞
+
+> 𝑅
+
+𝑤 𝑟 𝜌 𝜏 ( ˆ𝑦 𝜏 , 𝑅 ) + ( 1 − 𝑤 𝑟 )𝜌 𝜏 ( ˆ𝑦 𝜏 , 𝑧 ∞)𝑝 (𝑦 ) 𝑑𝑦 
+
+= 𝜏 E𝐿 ≤𝑦 ≤𝑅 [𝑦 ] + (1 − 𝑤 𝑙 )𝜏 𝐿 − 𝜏  ˆ𝑦 𝜏 + 𝐶 1 (𝜏 𝐿 , 𝜏 𝑅 , 𝑤 𝑙 , 𝑤 𝑟 )
+
+where 𝐶 1 collects all terms independent of ˆ 𝑦 𝜏 :
+
+𝐶 1 = 𝜏 𝐿 
+
+𝑤 𝑙 𝜏𝐿 + ( 1 − 𝑤 𝑙 )( 𝜏 − 1)𝑧 −∞ 
+
+ + ( 1 − 𝜏 𝑅 ) 𝑤 𝑟 𝜏𝑅 + ( 1 − 𝑤 𝑟 )𝜏𝑧 ∞
+
+ .
+
+Substituting 𝑤 𝑙 = 𝜏 𝐿 −𝜏 𝜏 𝐿 , the coefficient of ˆ 𝑦 𝜏 vanishes: 
+
+(1 − 𝑤 𝑙 )𝜏 𝐿 − 𝜏 = 𝜏 − 𝜏 𝐿 + 𝜏 𝐿 − 𝜏 = 0.
+
+Thus E[𝑆 𝐷𝑃𝐸 ( ˆ𝑦 𝜏 )] = 𝜏 E𝐿 ≤𝑦 ≤𝑅 [𝑦 ] + 𝐶 1, independent of ˆ 𝑦 𝜏 . The same holds for 𝑦 𝜏 , yielding: 
+
+E𝑦 [𝑆 𝐷𝑃𝐸 (𝑦 ∗, ˆ𝑦 𝜏 )] = E𝑦 [𝑆 𝐷𝑃𝐸 (𝑦 ∗, 𝑦 𝜏 )] .
+
+Scenario 9: min { ˆ𝑦 𝜏 , 𝑦 𝜏 } > 𝑅 . By symmetric argument with 𝑤 𝑟 =  
+
+> 𝜏 −𝜏 𝑅
+> 1−𝜏 𝑅
+
+, the ˆ 𝑦 𝜏 -dependent coefficient becomes: 
+
+[𝜏 𝑅 − 𝜏 + 𝑤 𝑟 (1 − 𝜏 𝑅 )] ˆ𝑦 𝜏 = [𝜏 𝑅 − 𝜏 + 𝜏 − 𝜏 𝑅 ] ˆ𝑦 𝜏 = 0.
+
+Hence equality holds identically. □
+
+7.1.2 Case II: One Prediction Inside [𝐿, 𝑅 ], One Outside. This covers Scenarios 2, 3, 4, 6, 7, 8. We detail Scenario 2; others follow by symmetry or combination. 
+
+Scenario 2: ˆ𝑦 𝜏 < 𝐿 ≤ 𝑦 𝜏 ≤ 𝑅 . The DPE loss satisfies the lower bound: 
+
+𝑆 𝐷𝑃𝐸 (𝑦 ∗, ˆ𝑦 𝜏 ) ≥ 
+
+
+
+(1 − 𝑤 𝑙 )( 𝑧 −∞ − ˆ𝑦 𝜏 )( 𝜏 − 1) + 𝑤 𝑙 (𝐿 − ˆ𝑦 𝜏 )( 𝜏 − 1), 𝑦 < 𝐿, 
+
+(𝑦 − ˆ𝑦 𝜏 )( 𝜏 − 1), 𝐿 ≤ 𝑦 < 𝑦 𝜏 ,
+
+(𝑦 − ˆ𝑦 𝜏 )𝜏, 𝑦 𝜏 ≤ 𝑦 ≤ 𝑅, 
+
+(1 − 𝑤 𝑟 )( 𝑧 ∞ − ˆ𝑦 𝜏 )𝜏 + 𝑤 𝑟 (𝑅 − ˆ𝑦 𝜏 )𝜏, 𝑦 > 𝑅 
+
+where the inequality uses: 
+
+• ( 𝑦 − ˆ𝑦 𝜏 )𝜏 ≥ ( 𝑦 − ˆ𝑦 𝜏 )( 𝜏 − 1) for 𝑦 ≥ 𝐿 > ˆ𝑦 𝜏 (since 𝜏 > 𝜏 − 1and 𝑦 − ˆ𝑦 𝜏 > 0); 
+
+• 𝑤 𝑙 (𝐿 − ˆ𝑦 𝜏 )𝜏 ≥ 𝑤 𝑙 (𝐿 − ˆ𝑦 𝜏 )( 𝜏 − 1) for ˆ 𝑦 𝜏 < 𝐿 .Taking expectations: 
+
+E[𝑆 𝐷𝑃𝐸 ( ˆ𝑦 𝜏 )] ≥ 𝜏 E𝐿 ≤𝑦 ≤𝑅 [𝑦 ] − E𝐿 ≤𝑦 <𝑦 𝜏 [𝑦 ]+ 𝜏 𝐿 
+
+𝑤 𝑙 (𝜏 − 1)𝐿 + ( 1 − 𝑤 𝑙 )( 𝜏 − 1)𝑧 −∞ 
+
+
+
++ ( 1 − 𝜏 𝑅 ) 𝑤 𝑟 𝜏𝑅 + ( 1 − 𝑤 𝑟 )𝜏𝑧 ∞
+
+ . (2) For the true prediction 𝑦 𝜏 ∈ [ 𝐿, 𝑅 ], the DPE evaluates exactly: 
+
+𝑆 𝐷𝑃𝐸 (𝑦 ∗, 𝑦 𝜏 )
+
+=
+
+
+
+(1 − 𝑤 𝑙 )( 𝑧 −∞ − 𝑦 𝜏 )( 𝜏 − 1) + 𝑤 𝑙 (𝐿 − 𝑦 𝜏 )( 𝜏 − 1), 𝑦 < 𝐿, 
+
+(𝑦 − 𝑦 𝜏 )( 𝜏 − 1), 𝐿 ≤ 𝑦 < 𝑦 𝜏 ,
+
+(𝑦 − 𝑦 𝜏 )𝜏, 𝑦 𝜏 ≤ 𝑦 ≤ 𝑅, 
+
+(1 − 𝑤 𝑟 )( 𝑧 ∞ − 𝑦 𝜏 )𝜏 + 𝑤 𝑟 (𝑅 − 𝑦 𝜏 )𝜏, 𝑦 > 𝑅 A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data CIKM ’26, November 07–11, 2026, Rome, Italy 
+
+Computing its expectation: 
+
+E[𝑆 𝐷𝑃𝐸 (𝑦 𝜏 )] = 𝜏 E𝐿 ≤𝑦 ≤𝑅 [𝑦 ] − E𝐿 ≤𝑦 <𝑦 𝜏 [𝑦 ]+ 𝜏 𝐿 
+
+𝑤 𝑙 (𝜏 − 1)𝐿 + ( 1 − 𝑤 𝑙 )( 𝜏 − 1)𝑧 −∞ 
+
+
+
++ ( 1 − 𝜏 𝑅 ) 𝑤 𝑟 𝜏𝑅 + ( 1 − 𝑤 𝑟 )𝜏𝑧 ∞
+
+ . (3) Comparing (2) and (3), the inequality in (2) arises precisely be-cause ˆ 𝑦 𝜏 < 𝐿 ≤ 𝑦 𝜏 forces the loss to use the suboptimal slope (𝜏 − 1)
+
+on [𝐿, 𝑦 𝜏 ) rather than the optimal mix. Hence: 
+
+E[𝑆 𝐷𝑃𝐸 ( ˆ𝑦 𝜏 )] ≥ E[𝑆 𝐷𝑃𝐸 (𝑦 𝜏 )] .
+
+Scenarios 3, 4, 6, 7, 8. These follow identical patterns: 
+
+• Scenario 3 ( ˆ 𝑦 𝜏 < 𝐿, 𝑦 𝜏 > 𝑅 ): Combines the left-censored logic of Scenario 2 with right-censored logic. The lower bound uses (𝜏 − 1) on both tails, while 𝑦 𝜏 uses optimal 𝜏 on 
+
+[𝐿, 𝑅 ] and (𝜏 − 1) only for 𝑦 > 𝑦 𝜏 .
+
+• Scenario 4 (𝐿 ≤ ˆ𝑦 𝜏 ≤ 𝑅, 𝑦 𝜏 < 𝐿 ): Symmetric to Scenario 2 by exchanging left/right and 𝜏 ↔ ( 𝜏 − 1).
+
+• Scenario 6 (𝐿 ≤ ˆ𝑦 𝜏 ≤ 𝑅, 𝑦 𝜏 > 𝑅 ): Symmetric to Scenario 4 on the right tail. 
+
+• Scenario 7 ( ˆ 𝑦 𝜏 > 𝑅, 𝑦 𝜏 < 𝐿 ): Symmetric to Scenario 3. 
+
+• Scenario 8 ( ˆ 𝑦 𝜏 > 𝑅, 𝐿 ≤ 𝑦 𝜏 ≤ 𝑅 ): Symmetric to Scenario 2 on the right tail. In each case, the mispredicted ˆ 𝑦 𝜏 lies outside [𝐿, 𝑅 ] and incurs a suboptimal linear combination of slopes, while 𝑦 𝜏 ∈ [ 𝐿, 𝑅 ] achieves the optimal pinball loss structure. □
+
+7.1.3 Case III: Both Predictions Inside [𝐿, 𝑅 ]. This covers Scenarios 5: 𝐿 ≤ ˆ𝑦 𝜏 ≤ 𝑅 , 𝐿 < 𝑦 𝜏 < 𝑅 .
+
+Scenario 5. Without loss of generality, assume ˆ 𝑦 𝜏 < 𝑦 𝜏 (the case ˆ𝑦 𝜏 > 𝑦 𝜏 is symmetric). The DPE loss satisfies: 
+
+𝑆 𝐷𝑃𝐸 (𝑦 ∗, ˆ𝑦 𝜏 )≥
+
+
+
+(1 − 𝑤 𝑙 )( 𝑧 −∞ − ˆ𝑦 𝜏 )( 𝜏 − 1) + 𝑤 𝑙 (𝐿 − ˆ𝑦 𝜏 )( 𝜏 − 1), 𝑦 < 𝐿, 
+
+(𝑦 − ˆ𝑦 𝜏 )( 𝜏 − 1), 𝐿 ≤ 𝑦 < 𝑦 𝜏 ,
+
+(𝑦 − ˆ𝑦 𝜏 )𝜏, 𝑦 𝜏 ≤ 𝑦 ≤ 𝑅, 
+
+(1 − 𝑤 𝑟 )( 𝑧 ∞ − ˆ𝑦 𝜏 )𝜏 + 𝑤 𝑟 (𝑅 − ˆ𝑦 𝜏 )𝜏, 𝑦 > 𝑅 
+
+The inequality holds because: 
+
+• For 𝑦 ∈ [ ˆ𝑦 𝜏 , 𝑦 𝜏 ): (𝑦 − ˆ𝑦 𝜏 )𝜏 ≥ ( 𝑦 − ˆ𝑦 𝜏 )( 𝜏 − 1) since 𝑦 − ˆ𝑦 𝜏 > 0; 
+
+• For 𝑦 ∈ [ 𝐿, ˆ𝑦 𝜏 ): (𝑦 − ˆ𝑦 𝜏 )( 𝜏 − 1) > (𝑦 − ˆ𝑦 𝜏 )𝜏 since 𝑦 − ˆ𝑦 𝜏 < 0and 𝜏 − 1 < 𝜏 , but the overall expectation structure preserves the lower bound due to the weighting. Taking expectations and using 𝑤 𝑙 = 𝜏 𝐿 −𝜏 𝜏 𝐿 , 𝑤 𝑟 = 𝜏 −𝜏 𝑅  
+
+> 1−𝜏 𝑅
+
+:
+
+E[𝑆 𝐷𝑃𝐸 ( ˆ𝑦 𝜏 )] ≥ E𝐿 <𝑦 <𝑅 [𝑦 ] − E𝐿 <𝑦 <𝑦 𝜏 [𝑦 ]+ 𝜏 𝐿 
+
+(1 − 𝑤 𝑙 )( 𝜏 − 1)𝑧 −∞ + 𝑤 𝑙 (𝜏 − 1)𝐿 
+
++ ( 1 − 𝜏 𝑅 ) (1 − 𝑤 𝑟 )𝜏𝑧 ∞ + 𝑤 𝑟 𝜏𝑅  . (4) For the true prediction 𝑦 𝜏 :
+
+𝑆 𝐷𝑃𝐸 (𝑦 ∗, 𝑦 𝜏 )
+
+=
+
+
+
+(1 − 𝑤 𝑙 )( 𝑧 −∞ − 𝑦 𝜏 )( 𝜏 − 1) + 𝑤 𝑙 (𝐿 − 𝑦 𝜏 )( 𝜏 − 1), 𝑦 < 𝐿, 
+
+(𝑦 − 𝑦 𝜏 )( 𝜏 − 1), 𝐿 ≤ 𝑦 < 𝑦 𝜏 ,
+
+(𝑦 − 𝑦 𝜏 )𝜏, 𝑦 𝜏 ≤ 𝑦 ≤ 𝑅, 
+
+(1 − 𝑤 𝑟 )( 𝑧 ∞ − 𝑦 𝜏 )𝜏 + 𝑤 𝑟 (𝑅 − 𝑦 𝜏 )𝜏, 𝑦 > 𝑅 
+
+Its expectation evaluates to exactly the right-hand side of (4): 
+
+E[𝑆 𝐷𝑃𝐸 (𝑦 𝜏 )] = E𝐿 <𝑦 <𝑅 [𝑦 ] − E𝐿 <𝑦 <𝑦 𝜏 [𝑦 ]+ 𝜏 𝐿 
+
+(1 − 𝑤 𝑙 )( 𝜏 − 1)𝑧 −∞ + 𝑤 𝑙 (𝜏 − 1)𝐿 
+
++ ( 1 − 𝜏 𝑅 ) (1 − 𝑤 𝑟 )𝜏𝑧 ∞ + 𝑤 𝑟 𝜏𝑅  .
+
+Therefore: 
+
+E[𝑆 𝐷𝑃𝐸 ( ˆ𝑦 𝜏 )] ≥ E[𝑆 𝐷𝑃𝐸 (𝑦 𝜏 )] .
+
+When ˆ 𝑦 𝜏 = 𝑦 𝜏 , all inequalities become equalities, confirming properness. □
+
+## 7.2 Summary 
+
+Across all geometric configurations: 
+
+E𝑦 [𝑆 𝐷𝑃𝐸 (𝑦 ∗, ˆ𝑦 𝜏 , 𝑤 𝑙 , 𝑤 𝑟 , 𝜏 )] ≥ E𝑦 [𝑆 𝐷𝑃𝐸 (𝑦 ∗, 𝑦 𝜏 , 𝑤 𝑙 , 𝑤 𝑟 , 𝜏 )] (5) with equality if and only if ˆ 𝑦 𝜏 = 𝑦 𝜏 . Thus DPE is a proper scoring rule. □
+
+## 7.3 Proof of Theorem 2 
+
+Setup. Let 𝐹 be the true CDF of 𝑦 , 𝜏 𝑦 = 𝐹 (𝑦 ) ∼ 𝑈 [0, 1], interval 
+
+𝐼 = [𝜏 𝑘 , 𝜏 𝑘 +1). Under independent censoring 𝑦 ⊥ ( 𝐿, 𝑅 ), we have 
+
+𝑃 (𝑦 > 𝑦 𝑢 ) = 1 − 𝑢 and 𝑃 (𝑦 < 𝑦 𝑢 ) = 𝑢 .
+
+Step 1. Write the expectation as five terms: 
+
+E
+
+" 𝑁 𝐷 𝑘 
+
+𝑁 
+
+#
+
+= 𝑃 [( 𝜏 𝑦 ∈ 𝐼 ) ∧ ( 𝐿 < 𝑦 < 𝑅 )] + 𝜏 𝑘 +1 −𝜏 𝑅  
+
+> 1−𝜏 𝑅
+
+𝑃 [( 𝜏 𝑅 ∈ 𝐼 ) ∧ ( 𝑦 > 𝑅 )] + 𝜏 𝑘 +1 −𝜏 𝑘  
+
+> 1−𝜏 𝑅
+
+𝑃 [( 𝜏 𝑅 < 𝜏 𝑘 ) ∧ ( 𝑦 > 𝑅 )] + 𝜏 𝐿 −𝜏 𝑘  
+
+> 𝜏 𝐿
+
+𝑃 [( 𝜏 𝐿 ∈ 𝐼 ) ∧ ( 𝑦 < 𝐿 )] + 𝜏 𝑘 +1 −𝜏 𝑘  
+
+> 𝜏 𝐿
+
+𝑃 [( 𝜏 𝐿 > 𝜏 𝑘 +1) ∧ ( 𝑦 < 𝐿 )] 
+
+Step 2. Decompose the interval probabilities using 𝜏 𝑦 ∼ 𝑈 [0, 1]:
+
+𝑃 [( 𝜏 𝑅 ∈ 𝐼 ) ∧ ( 𝑦 > 𝑅 )] = (1 − 𝜏 𝑘 +1)𝑃 (𝜏 𝑅 ∈ 𝐼 )+ 𝑃 [(( 𝜏 𝑅 ∧ 𝜏 𝑦 ) ∈ 𝐼 ) ∧ ( 𝑦 > 𝑅 )] 
+
+𝑃 [( 𝜏 𝐿 ∈ 𝐼 ) ∧ ( 𝑦 < 𝐿 )] = 𝜏 𝑘 𝑃 (𝜏 𝐿 ∈ 𝐼 )+ 𝑃 [(( 𝜏 𝐿 ∧ 𝜏 𝑦 ) ∈ 𝐼 ) ∧ ( 𝑦 < 𝐿 )] 
+
+Step 3. Combine right-censored terms (a+b):   
+
+> 𝜏 𝑘 +1−11−𝜏 𝑅
+
+𝑃 [( 𝜏 𝑅 ∈ 𝐼 ) ∧ ( 𝑦 > 𝑅 )] + 𝜏 𝑘 +1 −𝜏 𝑘  
+
+> 1−𝜏 𝑅
+
+𝑃 [( 𝜏 𝑅 < 𝜏 𝑘 ) ∧ ( 𝑦 > 𝑅 )] 
+
+= 𝜏 𝑘 +1𝑃 (𝜏 𝑅 < 𝜏 𝑘 +1) − 𝑃 (𝜏 𝑅 ∈ 𝐼 ) − 𝜏 𝑘 𝑃 (𝜏 𝑅 < 𝜏 𝑘 )
+
+= (𝜏 𝑘 +1 − 𝜏 𝑘 )𝑃 (𝜏 𝑅 < 𝜏 𝑘 ) + ( 𝜏 𝑘 +1 − 1)𝑃 (𝜏 𝑅 ∈ 𝐼 )
+
+Step 4. Combine left-censored terms (c+d):   
+
+> 𝜏 𝑘 +1−𝜏 𝑘
+> 𝜏 𝐿
+
+𝑃 [( 𝜏 𝐿 > 𝜏 𝑘 +1) ∧ ( 𝑦 < 𝐿 )] − 𝜏 𝑘  
+
+> 𝜏 𝐿
+
+𝑃 [( 𝜏 𝐿 ∈ 𝐼 ) ∧ ( 𝑦 < 𝐿 )] 
+
+= 𝜏 𝑘 +1𝑃 (𝜏 𝐿 > 𝜏 𝑘 +1) − 𝜏 𝑘 𝑃 (𝜏 𝐿 > 𝜏 𝑘 )
+
+= (𝜏 𝑘 +1 − 𝜏 𝑘 )𝑃 (𝜏 𝐿 > 𝜏 𝑘 +1) − 𝜏 𝑘 𝑃 (𝜏 𝐿 ∈ 𝐼 )
+
+Step 5. Combine overlapping terms with uncensored: 
+
+𝑃 [(( 𝜏 𝑅 ∧ 𝜏 𝑦 ) ∈ 𝐼 ) ∧ ( 𝑦 > 𝑅 )] + 𝑃 [(( 𝜏 𝐿 ∧ 𝜏 𝑦 ) ∈ 𝐼 ) ∧ ( 𝑦 < 𝐿 )] + 𝑃 [( 𝜏 𝑦 ∈ 𝐼 ) ∧ ( 𝐿 < 𝑦 < 𝑅 )] 
+
+= 𝑃 [( 𝜏 𝑦 ∈ 𝐼 ) ∧ ( 𝑅 > 𝑦 𝜏 𝑘 ) ∧ ( 𝐿 < 𝑦 𝜏 𝑘 +1 )] 
+
+= (𝜏 𝑘 +1 − 𝜏 𝑘 )𝑃 [( 𝑅 > 𝑦 𝜏 𝑘 ) ∧ ( 𝐿 < 𝑦 𝜏 𝑘 +1 )] CIKM ’26, November 07–11, 2026, Rome, Italy Ziwen Ye, Jiawen Wei, Teng Song, Chen Chen, and Guangrui Ma 
+
+Step 6. Assemble all pieces: 
+
+E
+
+" 𝑁 𝐷 𝑘 
+
+𝑁 
+
+#
+
+= (1 − 𝜏 𝑘 +1)𝑃 (𝜏 𝑅 ∈ 𝐼 ) + 𝜏 𝑘 𝑃 (𝜏 𝐿 ∈ 𝐼 )+ ( 𝜏 𝑘 +1 − 𝜏 𝑘 )𝑃 [( 𝑅 > 𝑦 𝜏 𝑘 ) ∧ ( 𝐿 < 𝑦 𝜏 𝑘 +1 )] + ( 𝜏 𝑘 +1 − 𝜏 𝑘 )𝑃 (𝜏 𝑅 < 𝜏 𝑘 ) + ( 𝜏 𝑘 +1 − 1)𝑃 (𝜏 𝑅 ∈ 𝐼 )+ ( 𝜏 𝑘 +1 − 𝜏 𝑘 )𝑃 (𝜏 𝐿 > 𝜏 𝑘 +1) − 𝜏 𝑘 𝑃 (𝜏 𝐿 ∈ 𝐼 )
+
+Step 7. Cancel boundary terms: (1 − 𝜏 𝑘 +1) + ( 𝜏 𝑘 +1 − 1) = 0 for 
+
+𝑃 (𝜏 𝑅 ∈ 𝐼 ), and 𝜏 𝑘 − 𝜏 𝑘 = 0 for 𝑃 (𝜏 𝐿 ∈ 𝐼 ).
+
+Step 8. Final simplification: 
+
+E
+
+" 𝑁 𝐷 𝑘 
+
+𝑁 
+
+#
+
+= (𝜏 𝑘 +1 − 𝜏 𝑘 )𝑃 [( 𝑅 > 𝑦 𝜏 𝑘 ) ∧ ( 𝐿 < 𝑦 𝜏 𝑘 +1 )] + 𝑃 (𝜏 𝑅 < 𝜏 𝑘 ) + 𝑃 (𝜏 𝐿 > 𝜏 𝑘 +1)
+
+= (𝜏 𝑘 +1 − 𝜏 𝑘 ) · 1 = 𝜏 𝑘 +1 − 𝜏 𝑘 
+
+The three events partition the sample space: (i) 𝑦 observable in 
+
+𝐼 , (ii) right-censored into 𝐼 , (iii) left-censored into 𝐼 .
+
+∴ E [𝑁 𝐷 𝑘 /𝑁 ] = 𝐹 (𝑦 𝜏 𝑘 +1 ) − 𝐹 (𝑦 𝜏 𝑘 )
+
+## 7.4 Detailed Derivation of Inventory Optimization 
+
+The stockout loss can be derived as follows, 
+
+𝐿 1 (𝑞 ) =
+
+∫ ∞
+
+𝑡 
+
+𝑐 1 (𝑦 − 𝑡 )𝑝 (𝑦 |𝑥 )𝑑𝑦 
+
+= 𝑐 1
+
+∫ ∞
+
+𝑡 
+
+𝑦𝑝 (𝑦 |𝑥 )𝑑𝑦 − 𝑡 [1 − 𝐹 (𝑡 |𝑥 )] 
+
+= 𝑐 1
+
+∫ 1
+
+𝐹 (𝑡 |𝑥 )
+
+𝐹 −1 (𝑞 |𝑥 )𝑑𝑞 − 𝑡 [1 − 𝐹 (𝑡 |𝑥 )] 
+
+= 𝑐 11∑︁ 
+
+𝑞 =𝑞 𝑡 
+
+ˆ𝐹 −1 (𝑞 |𝑥 ) · Δ𝑞 − 𝑐 1 { ˆ𝐹 −1 (𝑞 𝑡 |𝑥 ) [ 1 − 𝑞 𝑡 ]} 
+
+Where ˆ 𝐹 −1 is the estimate of the inverse CDF, 𝑞 𝑡 = ˆ𝐹 (𝑡 |𝑥 ) and 
+
+Δ𝑞 = 0.01. For the last equation, we leverage the Riemann sum to discretize the integral. Similarly, the overstock loss can be derived as follows, 
+
+𝐿 2 (𝑞 ) =
+
+∫ 𝑡 
+
+0
+
+𝑐 2 (𝑡 − 𝑦 )𝑝 (𝑦 |𝑥 )𝑑𝑦 
+
+= 𝑐 2 · 𝑡 · 𝐹 (𝑡 ) − 𝑐 2
+
+∫ 𝑡 
+
+0
+
+𝑦𝑝 (𝑦 |𝑥 )𝑑𝑦 
+
+= 𝑐 2 [𝑞 𝑡 · ˆ𝐹 −1 (𝑞 𝑡 |𝑥 ) − 
+
+𝑞 𝑡 ∑︁ 
+
+𝑞 =0
+
+ˆ𝐹 −1 (𝑞 |𝑥 ) · Δ𝑞 ]
+
+## GenAI Usage Disclosure 
+
+The authors declare that a general-purpose LLM (Kimi) was used exclusively for language refinement of the author-drafted text. No AI tools were utilized in the research process, including question formulation, coding, experimentation, or data analysis, and thus the AI contributed no intellectual content to the work. 
+
+## References 
+
+[1] Anand Avati, Tony Duan, Sharon Zhou, Kenneth Jung, Nigam H Shah, and An-drew Y Ng. 2020. Countdown regression: sharp and calibrated survival predictions. In Uncertainty in Artificial Intelligence . PMLR, 145–155. [2] Gah-Yi Ban and Cynthia Rudin. 2019. The big data newsvendor: Practical insights from machine learning. Operations Research 67, 1 (2019), 90–108. [3] Jonathan Berrisch and Florian Ziel. 2023. CRPS learning. Journal of Econometrics 
+
+237, 2 (2023), 105221. [4] Anna-Lena Beutel and Stefan Minner. 2012. Safety stock planning under causal demand forecasting. International Journal of Production Economics 140, 2 (2012), 637–645. [5] Axel Brando, Barcelona Supercomputing Center, Jose Rodriguez-Serrano, Jordi Vitrià, et al. 2022. Deep non-crossing quantiles through the partial derivative. In 
+
+International Conference on Artificial Intelligence and Statistics . PMLR, 7902–7914. [6] Alex J. Cannon. 2018. Non-crossing nonlinear regression quantiles by mono-tone composite quantile regression neural network, with application to rainfall extremes. Stochastic Environmental Research and Risk Assessment 32(11) (2018), 3207–3225. doi:10.1007/s00477-018-1573-6 [7] Si-An Chen, Chun-Liang Li, Nate Yoder, Sercan O Arik, and Tomas Pfister. 2023. Tsmixer: An all-mlp architecture for time series forecasting. arXiv preprint arXiv:2303.06053 (2023). [8] Youngseog Chung, Willie Neiswanger, Ian Char, and Jeff Schneider. 2021. Beyond pinball loss: Quantile methods for calibrated uncertainty quantification. Advances in Neural Information Processing Systems 34 (2021), 10971–10984. [9] Peng Cui, Wenbo Hu, and Jun Zhu. 2020. Calibrated reliable regression using maximum mean discrepancy. Advances in Neural Information Processing Systems 
+
+33 (2020), 17164–17175. [10] Shai Feldman, Stephen Bates, and Yaniv Romano. 2021. Improving conditional coverage via orthogonal quantile regression. Advances in neural information processing systems 34 (2021), 2060–2071. [11] Jan Gasthaus, Konstantinos Benidis, Yuyang Wang, Syama Sundar Rangapuram, David Salinas, Valentin Flunkert, and Tim Januschowski. 2019. Probabilistic fore-casting with spline quantile function RNNs. In The 22nd international conference on artificial intelligence and statistics . PMLR, 1901–1910. [12] Tilmann Gneiting and Adrian E Raftery. 2007. Strictly proper scoring rules, prediction, and estimation. Journal of the American statistical Association 102, 477 (2007), 359–378. [13] Mark Goldstein, Xintian Han, Aahlad Puli, Adler Perotte, and Rajesh Ranganath. 2020. X-cal: Explicit calibration for survival analysis. Advances in neural infor-mation processing systems 33 (2020), 18296–18307. [14] Z Govindarajulu. 1992. Rank correlation methods. [15] Chuan Guo, Geoff Pleiss, Yu Sun, and Kilian Q Weinberger. 2017. On calibration of modern neural networks. In International conference on machine learning . PMLR, 1321–1330. [16] Humza Haider, Bret Hoehn, Sarah Davis, and Russell Greiner. 2020. Effective ways to build and evaluate individual survival distributions. Journal of Machine Learning Research 21, 85 (2020), 1–63. [17] Frank E Harrell, Robert M Califf, David B Pryor, Kerry L Lee, and Robert A Rosati. 1982. Evaluating the yield of medical tests. Jama 247, 18 (1982), 2543–2546. [18] Shuang Ji, Limin Peng, Yu Cheng, and HuiChuan Lai. 2012. Quantile regression for doubly censored data. Biometrics 68, 1 (2012), 101–112. [19] Jared L Katzman, Uri Shaham, Alexander Cloninger, Jonathan Bates, Tingting Jiang, and Yuval Kluger. 2018. DeepSurv: personalized treatment recommender system using a Cox proportional hazards deep neural network. BMC medical research methodology 18 (2018), 1–12. [20] Roger Koenker and Gilbert Bassett Jr. 1978. Regression quantiles. Econometrica: journal of the Econometric Society (1978), 33–50. [21] Retsef Levi, Georgia Perakis, and Joline Uichanco. 2015. The data-driven newsven-dor problem: New bounds and insights. Operations Research 63, 6 (2015), 1294– 1306. [22] Bryan Lim, Sercan Ö Arık, Nicolas Loeff, and Tomas Pfister. 2021. Temporal fusion transformers for interpretable multi-horizon time series forecasting. International Journal of Forecasting 37, 4 (2021), 1748–1764. [23] Guixian Lin, Xuming He, and Stephen Portnoy. 2012. Quantile regression with doubly censored data. Computational Statistics & Data Analysis 56, 4 (2012), 797–812. [24] Yuqi Nie, Nam H Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam. 2022. A time series is worth 64 words: Long-term forecasting with transformers. arXiv preprint arXiv:2211.14730 (2022). [25] Youngsuk Park, Danielle Maddix, François-Xavier Aubet, Kelvin Kan, Jan Gasthaus, and Yuyang Wang. 2022. Learning quantile functions without quantile crossing for distribution-free time series forecasting. In International Conference on Artificial Intelligence and Statistics . PMLR, 8127–8150. [26] Tim Pearce, Jong-Hyeon Jeong, Jun Zhu, et al. 2022. Censored quantile regression neural networks for distribution-free survival analysis. Advances in Neural Information Processing Systems 35 (2022), 7450–7461. A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data CIKM ’26, November 07–11, 2026, Rome, Italy 
+
+[27] Limin Peng. 2021. Quantile regression for survival data. Annual review of statistics and its application 8 (2021), 413–437. [28] Fotios Petropoulos, Daniele Apiletti, Vassilios Assimakopoulos, Mohamed Zied Babai, Devon K Barrow, Souhaib Ben Taieb, Christoph Bergmeir, Ricardo J Bessa, Jakub Bijak, John E Boylan, et al. 2022. Forecasting: theory and practice. Interna-tional Journal of Forecasting 38, 3 (2022), 705–871. [29] Meng Qi, Yuanyuan Shi, Yongzhi Qi, Chenxin Ma, Rong Yuan, Di Wu, and Zuo-Jun Shen. 2023. A practical end-to-end inventory management model with deep learning. Management Science 69, 2 (2023), 759–773. [30] David Salinas, Valentin Flunkert, Jan Gasthaus, and Tim Januschowski. 2020. DeepAR: Probabilistic forecasting with autoregressive recurrent networks. Inter-national journal of forecasting 36, 3 (2020), 1181–1191. [31] Charles Spearman. 1961. The proof and measurement of association between two things. (1961). [32] Souhaib Ben Taieb. 2022. Learning quantile functions for temporal point processes with recurrent neural splines. In International Conference on Artificial Intelligence and Statistics . PMLR, 3219–3241. [33] Kevin Tran, Willie Neiswanger, Junwoong Yoon, Qingyang Zhang, Eric Xing, and Zachary W Ulissi. 2020. Methods for comparing uncertainty quantifications for material property predictions. Machine Learning: Science and Technology 1, 2 (2020), 025006. [34] Huixia Judy Wang and Lan Wang. 2009. Locally weighted censored quantile regression. J. Amer. Statist. Assoc. 104, 487 (2009), 1117–1128. [35] Ping Wang, Yan Li, and Chandan K Reddy. 2019. Machine learning for survival analysis: A survey. ACM Computing Surveys (CSUR) 51, 6 (2019), 1–36. [36] Ruofeng Wen, Kari Torkkola, Balakrishnan Narayanaswamy, and Dhruv Madeka. 2017. A multi-horizon quantile recurrent forecaster. arXiv preprint arXiv:1711.11053 (2017). [37] Frank Wilcoxon. 1992. Individual comparisons by ranking methods. In Break-throughs in statistics: Methodology and distribution . Springer, 196–202. [38] C. F. Jeff Wu. 1983. On the Convergence Properties of the EM Algorithm. The Annals of Statistics 11, 1 (1983), 95–103. [39] Hiroki Yanagisawa. 2023. Proper scoring rules for survival analysis. In Interna-tional Conference on Machine Learning . PMLR, 39165–39182. [40] Qixian Zhong, Jonas W Mueller, and Jane-Ling Wang. 2021. Deep extended hazard models for survival analysis. Advances in Neural Information Processing Systems 34 (2021), 15111–15124.

@@ -1,0 +1,69 @@
+{
+  "label": "2026-11-01",
+  "date": "2026-11-01",
+  "generated_at": "2026-11-01T22:50:39",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202611/01/2610.33785v1-geoeconomic-stress-and-european-defence-readiness",
+      "section": "quick",
+      "title_en": "Geoeconomic Stress and European Defence Readiness",
+      "authors": "d'Artis Kancs",
+      "date": "2026-10-24",
+      "pdf": "https://arxiv.org/pdf/2610.33785v1",
+      "score": "6.0",
+      "evidence": "压力情景下的韧性与后勤准备度测量",
+      "tldr": "研究关注地缘经济冲击下欧洲北约盟国将军费转化为可持续军事能力的问题，构建涵盖宏观经济、部门韧性、国防工业及后勤保障的国家级经济工业能力指标。对28国基线及五类压力情景评估显示，基线均值0.610，综合冲击使均值降至0.491、降幅19.5%，且国别差异显著。不同冲击通过国防工业、补给、供应链和外援渠道形成异质性瓶颈。贡献在于将政策焦点从支出目标转向资源转化能力与瓶颈识别。",
+      "tags": "query:llm-supply",
+      "abstract_en": "This study develops a country-level measure of the economic-industrial capacity of European NATO Allies to mobilise, replenish, maintain, and sustain military capability under strategic stress. The measure comprises four components: macroeconomic capacity, sectoral resilience, defence-industrial capability, and logistics and sustainment. The analysis covers 28 European Allies and evaluates a balanced baseline against five geoeconomic stress scenarios. The results distinguish baseline capacity from stress vulnerability and provide an assessment framework for identifying the economic-industrial bottlenecks that can constrain sustained military readiness. Baseline scores vary materially across countries, with a sample mean of 0.610 and a range from 0.471 to 0.759. The calibrated geoeconomic shocks reduce effective capacity in every scenario, though the effects are highly heterogeneous. The combined-stress scenario has the largest average effect, lowering the sample mean to 0.491, a decline of 19.5 per cent relative to baseline. TRS and PR operate mainly through defence-industrial and replenishment constraints; supply-chain fragmentation is driven primarily by sectoral exposure and substitutability; and external-support reduction operates through allied access and sustainment. Our results suggest shifting attention from expenditure targets alone towards the capacity to convert resources into usable military capability: the key issue is not only how much is spent, but also which bottlenecks limit the conversion of resources into capability.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202611/01/2610.37932v1-understanding-large-language-models-as-numerical-optimizers",
+      "section": "quick",
+      "title_en": "Understanding Large Language Models as Numerical Optimizers",
+      "authors": "Lingyun Guo, Ali Bereyhi",
+      "date": "2026-10-27",
+      "pdf": "https://arxiv.org/pdf/2610.37932v1",
+      "score": "6.0",
+      "evidence": "评估大语言模型作为数值优化器生成可行近优解的能力",
+      "tldr": "大语言模型用于数值优化虽有前景，但其内在能力与高维局限仍不清楚。本文构建区分解质量与执行失败的评测框架，在凸优化、分数规划和约束投影上对比确定性求解器。结果显示LLM能捕捉结构并给出近优解，但维度升高和结构差异会削弱可靠性。迭代反馈可显著提升有效性，却仍有数值与结构错误，说明需LLM推理与数值验证的混合方案。",
+      "tags": "query:llm-supply",
+      "abstract_en": "Large language models (LLMs) have emerged as potential tools for numerical optimization. Despite promising results, their intrinsic optimization capabilities and limitations remain poorly understood, particularly in high dimensions. This paper investigates the ability of LLMs to exploit mathematical problem structures and generate feasible, near-optimal solutions. We develop an evaluation framework that distinguishes solution quality from execution failures, including numerical inaccuracies, constraint violations, and output-format errors. Using representative problems from convex optimization, fractional programming, and constrained projection, we assess LLM performance against deterministic reference solvers across different dimensions. Our results reveal that LLMs can capture useful optimization structures and produce near-optimal solutions, even when their outputs fail to satisfy numerical or formatting requirements. However, reliability deteriorates with increasing problem dimension and depends strongly on the underlying optimization structure. To further investigate the limitations, we deploy an iterative refinement mechanism that provides targeted feedback on feasibility and solution quality. The results demonstrate that iterative refinement substantially improves reliability and extends the range of problem dimensions over which LLMs produce valid solutions. Nevertheless, persistent numerical and structural errors limit their applicability as standalone optimizers. These findings provide insights into the capacity and limits of LLM-based optimization and motivate hybrid approaches that combine LLM reasoning with deterministic numerical verification.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202611/01/2610.40023v1-hemo-harness-self-evolution-for-multi-objective-combinatorial-optimization",
+      "section": "quick",
+      "title_en": "HEMO: Harness Self-Evolution for Multi-Objective Combinatorial Optimization",
+      "authors": "Jianghan Zhu, Cong Zhang, Ni Zhang, Yifan Yang, Yew Soon Ong, Zhiguang Cao",
+      "date": "2026-10-29",
+      "pdf": "https://arxiv.org/pdf/2610.40023v1",
+      "score": "6.0",
+      "evidence": "由大语言模型驱动的自演化框架用于多目标组合优化算子设计",
+      "tldr": "多目标组合优化中，LLM自动算子设计通常只进化算子而固定发现流程，难以适应变化的Pareto权衡与算子交互。HEMO把自动算子设计的调度框架本身作为自进化对象，持续维护框架状态并逐模块更新经验检索、算子改进、父代选择与搜索编排。它用解质量和运行时间指导更新，并以折扣UCB调度器分配适应资源，借助持久记忆文件系统积累诊断经验。在八个MOCO任务和两种进化骨架上，HEMO优于传统进化、神经及LLM基线，并能迁移到相关任务。",
+      "tags": "query:llm-supply",
+      "abstract_en": "Automatic operator design (AOD) has increasingly adopted large language models (LLMs) to generate problem-specific search and variation operators for multi-objective combinatorial optimization (MOCO). Yet most methods evolve the operators while leaving the process that discovers them fixed. This limits adaptation as new Pareto trade-offs and operator interactions change where and how the search should proceed. We introduce HEMO, which makes the AOD harness itself a self-evolving optimization target. HEMO maintains a persistent harness state and updates one module at a time, revising the logic that determines which experience to retrieve, which operators to improve, which parents to select, and how to formulate the orchestration of search steps. Downstream solution quality and runtime guide these updates, while a discounted UCB scheduler directs adaptation toward promising modules as their utility changes. A persistent memory filesystem preserves candidate outcomes and diagnostic feedback across harness states, enabling successive states to build on accumulated optimization experience. Experiments across eight MOCO tasks and two structurally distinct evolutionary backbones demonstrate strong performance against conventional evolutionary, neural, and LLM-based AOD baselines, together with effective transfer to related tasks. HEMO extends automatic operator design beyond evolving individual operators to improving the search process that discovers them.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202611/01/2610.40138v1-a-deep-learning-framework-for-quantile-demand-forecasting-in-e-commerce-with-doubly-censored-data",
+      "section": "quick",
+      "title_en": "A Deep Learning Framework for Quantile Demand Forecasting in E-commerce with Doubly Censored Data",
+      "authors": "Ziwen Ye, Jiawen Wei, Teng Song, Chen Chen, Guangrui Ma",
+      "date": "2026-10-29",
+      "pdf": "https://arxiv.org/pdf/2610.40138v1",
+      "score": "6.0",
+      "evidence": "分位数需求预测框架支撑库存与计划决策",
+      "tldr": "电商需求预测中，实际销量常受库存上限和促销抬升影响，目标潜在需求呈双删失且标签模糊，现有深度学习方法难以直接量化不确定性。本文提出从双删失观测学习分位数的深度学习框架，并设计配套评估指标，给出理论保证。实验表明该指标与oracle校准度量高度相关，估计器优于现有基线。库存模拟与真实应用进一步验证方法在零售运营中的实用价值。",
+      "tags": "query:llm-supply",
+      "abstract_en": "In recent years, a growing number of online retail companies have embraced deep learning models for demand forecasting, leveraging their scalability in processing large-scale datasets. Accurate demand forecasts enable improved planning and allow operational flexibility to adjust sales accordingly. Moreover, quantile estimation has gained widespread application as it offers valuable uncertainty quantification, thereby enhancing the robustness of decision-making processes. However, limited research has addressed the effective quantification of uncertainty when target labels are ambiguous. In retail, actual sales can be capped by stock and boosted by temporary promotions, whereas the target is underlying demand. Such scenarios are characterized by double censoring and no deep-learning pipeline yet exists for such data. In this paper, we introduce a straightforward framework for learning quantiles from doubly-censored observations and propose a tailored evaluation metric. Our approach is supported by theoretical guarantees, and we empirically demonstrate that our metric correlates well with the oracle calibration measure. Experimental results show that our estimator surpasses existing baselines. Finally, inventory simulations and real-world applications confirm the practical utility of our method in retail operations.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

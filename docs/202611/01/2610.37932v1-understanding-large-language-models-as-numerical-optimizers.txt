@@ -1,0 +1,894 @@
+Title: Understanding Large Language Models as Numerical Optimizers
+
+URL Source: https://arxiv.org/pdf/2610.37932v1
+
+Published Time: Fri, 30 Oct 2026 00:24:51 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+> 1
+
+# Understanding Large Language Models as Numerical Optimizers 
+
+Lingyun Guo and Ali Bereyhi, Senior Member, IEEE 
+
+Abstract —Large language models (LLMs) have emerged as potential tools for numerical optimization. Despite promising results, their intrinsic optimization capabilities and limitations remain poorly understood, particularly in high dimensions. This paper investigates the ability of LLMs to exploit mathematical problem structures and generate feasible, near-optimal solutions. We develop an evaluation framework that distinguishes solution quality from execution failures, including numerical inaccu-racies, constraint violations, and output-format errors. Using representative problems from convex optimization, fractional programming, and constrained projection, we assess LLM per-formance against deterministic reference solvers across different dimensions. Our results reveal that LLMs can capture useful optimization structures and produce near-optimal solutions, even when their outputs fail to satisfy numerical or formatting require-ments. However, reliability deteriorates with increasing problem dimension and depends strongly on the underlying optimization structure. To further investigate the limitations, we deploy an iterative refinement mechanism that provides targeted feedback on feasibility and solution quality. The results demonstrate that iterative refinement substantially improves reliability and extends the range of problem dimensions over which LLMs produce valid solutions. Nevertheless, persistent numerical and structural errors limit their applicability as standalone optimizers. These findings provide insights into the capacity and limits of LLM-based optimization and motivate hybrid approaches that combine LLM reasoning with deterministic numerical verification. 
+
+Impact Statement —Large language models (LLMs) are increas-ingly being considered for optimization and automated decision-making in engineering and other computational applications. Deploying these models without understanding their numerical limitations may lead to infeasible or unreliable decisions, par-ticularly in systems governed by strict operational constraints. This work provides empirical insights into the capabilities and limitations of LLMs as numerical optimizers. It depicts that the ability of LLMs to identify useful structures does not necessarily translate into accurate numerical execution. By characterizing failure modes and investigating the impact of iterative feedback, this study highlights the importance of independent feasibility verification and numerical validation. The findings can inform the development of more reliable LLM-aided optimization systems, in which LLMs support problem interpretation and solution gener-ation while deterministic algorithms enforce mathematical rigour. Such hybrid approaches may facilitate the responsible integration of LLMs into engineering optimization and automated decision-making workflows. 
+
+Index Terms —Artificial intelligence, large language models, constrained optimization, iterative refinement, numerical opti-mization, resource allocation. 
+
+Lingyun Guo and Ali Bereyhi are with the Edward S. Rogers Sr. Depart-ment of Electrical and Computer Engineering (ECE), University of Toronto, Toronto, ON, Canada; emails: lingyun.guo@mail.utoronto.ca and 
+
+ali.bereyhi@utoronto.ca .Ali Bereyhi is Faculty Affiliate at the Schwartz Reisman Institute (SRI) for Technology and Society. 
+
+I. I NTRODUCTION 
+
+Recent advances in large language models (LLMs) have demonstrated their ability to interpret natural language context, take feedback, and generate solutions through reasoning [1]– [4]. These capabilities motivate the exploration of LLMs as numerical optimizers for different tasks, especially in applica-tions such as resource allocation and scheduling [5]–[7]. Existing work has studied LLM-based optimization methods in various contexts. Yang et al. [8] consider optimization tasks described in natural language, including linear regression, the traveling salesman problem, and prompt optimization for task accuracy, and propose the optimization by prompting (OPRO) 
+
+scheme, which iteratively generates candidate solutions using the guidance of an external evaluator. The LLM-driven evo-lutionary algorithm (LMEA) approach applies mutation and crossover operations on high-quality candidates to search for better solutions [9]. Closely related lines of work have further explored learning-based approaches instead of direct LLM prompting [10]–[13]. A recent example is the unified learning-based optimization (LLMOPT) framework in [13] that pro-poses fine-tuning LLMs to represent and solve optimization problems more reliably. LLMOPT also introduces mechanisms for self-correction and improved output validation. 
+
+A. Motivation: Reliability of LLM-based Optimizers 
+
+The mentioned studies suggest that LLMs can serve as a useful component in optimization pipelines. Nevertheless, the available lines of work focus mostly on developing new designs that improve the solution inferred from a given context and pay less attention to understanding the intrinsic optimiza-tion capabilities of LLMs. In numerical optimization, however, baseline algorithms rely on the problem structure deterministi-cally and exploit it to determine the solution, e.g., water-filling for parallel-channel power allocation, Dinkelbach iterations for fractional programming, and the alternating direction method of multipliers (ADMM) for constrained optimization [14]– [18]. This enables the algorithms to guarantee satisfaction of feasibility constraints and numerical precision requirements. Although prior work demonstrates the capability of LLM-based pipelines for inferring the solution, it fails to understand the underlying intrinsic process. The lack of this knowledge, restricts the reliability and efficiency of these optimizers, especially in high-dimensional and high-precision settings. In particular, there is limited empirical evidence on how LLM performance scales with problem dimension or whether LLMs effectively exploit the underlying problem structure throughout the reasoning tree. Existing studies do not clearly distinguish arXiv:2610.37932v1 [cs.AI] 27 Oct 2026 2
+
+poor decisions from execution failures. This lack of under-standing makes the guaranties for the feasibility, precision, and optimality gap of the output unclear. This work develops a framework that addresses this research gap. 
+
+B. Contributions and Organization 
+
+We study the intrinsic behaviour of LLMs, when deployed as numerical optimizers. Our contributions are as follows. 1) We propose a framework that evaluates how an LLM exploits the problem structure throughout its optimization pipeline. The framework uses a loop to assess the main feature extracted by the LLM and distinguish poor in-context learning from execution errors. 2) Motivated by recent findings on reasoning procedure in LLMs [19], [20], we propose an iterative refinement protocol for numerical optimization via LLMs. In this protocol, the LLMs receive an assessment about the structure of the solutions they previously produced and are prompted to propose an improvement. This protocol enables LLMs to correct execution errors and improve their solutions over multiple attempts, which as a result provides means to evaluate the understanding of problem structure by the LLM. 3) We study three different optimization families, namely convex optimization, fractional programming, and opti-mization problems with mixed equality and inequality constraints. For each family, we evaluate whether LLMs exploit the problem structure in its reasoning chain and investigate the feasibility and optimality of inferred solu-tions by comparing the results with that of deterministic optimal solvers. Our findings suggest that LLMs use the problem context to estimate the structure of the underlying problem and utilize it to infer the solution. 4) We study the scalability of LLM-based optimization for the considered three problem families. For each family, we characterize how the reliability and accuracy of the inferred solution scales with dimension and identify prac-tical failure modes. The results are compared to determin-istic reference solvers in terms of feasibility, optimality, and execution time. The results are consistent with our earlier findings: in problems with known structure, LLM-based optimization can better scale, while in problems with unknown algorithmic solution, the evaluation loop starts to report failure at lower dimensions. This finding suggests that the underlying structure actively contributes to the inferred solution by LLM. The remainder of this manuscript is organized as follows: Section II reviews the background and related work on LLM-based optimization. We present our proposed framework in Section III and elaborate the evaluation metrics. Experimental settings are presented in Section IV, where we report our findings. The results and their implications for LLM-based optimization are discussed in Section V. Finally, the paper is concluded in Section VI. II. R ELATED WORK 
+
+The work on LLM-based optimization can be categorized into two main directions: ( i) design of LLM-assisted optimiz-ers, and ( ii ) evaluation of LLM-based optimization pipelines. In the sequel, we go over these two directions. 
+
+A. LLMs as Optimizers 
+
+Classical LLM-based optimizers use prompting methods to infer a solution for the underlying optimization. A rep-resentative approach that deploys LLMs as general-purpose optimizers is OPRO [8]. The approach solves problems in an iterative manner. An LLM first proposes candidate solutions, and an external scorer evaluates them. The best candidates are then summarized and returned to the LLM to guide the next round of proposals. This black-box workflow is attractive for problems in which ( i) gradients are unavailable, ( ii ) the objective is only accessible through simulation, and ( iii ) the constraints are difficult to encode in standard solvers. An alternative, called LMEA, approach is proposed in [9]. LMEA applies mutation and crossover operations to diversify high-quality candidate solutions and combine them. The exper-iments in [9] depict that LMEA can achieve competitive performance on combinatorial benchmarks. A prior line of work on the use of learning models for opti-mization considers learning-based approaches to train models as optimizers [10]–[13]. Early studies in this direction focus on explicit training of learning models as solvers; see for example [10], [11]. With advances in LLMs, this approach has been extended to LLM-based optimization. The study in [13] proposes the LLMOPT framework that uses textual problem information to fine-tune LLMs as optimization solvers. The post-training in LLMOPT yields more reliability, as the LLM learns to attend to the properties of the underlying problem. LLMOPT further includes mechanisms for self-correction and improved output validity. The study in [5] develops a retrieval-based approach for the specific problem of power allocation in wireless networks. In the proposed approach, an LLM is fed with numerical representations of the network state and selects the best allocations from a quantized action set. Selections are evaluated using a task-specific reward. The solution to each sample problem is then stored in an experience pool. For subsequent decisions, examples are retrieved from this pool and fed back to LLM as prompts to adapt its behaviour to the underlying optimization problem. Although findings in the former studies suggest that LLMs can serve as proposal generators in optimization pipelines, they highlight various practical challenges when dealing with strict feasibility requirements, e.g., non-negativity of solutions, equality budget constraints, and fixed dimensionality [5], [13]. The limits of LLM-based optimizers in these challenging set-tings come from two different sources: ( i) failure in grasping the problem structure, and ( ii ) errors in execution. While the latter can be refined through feedback loops in the pipeline, the former seems to be more restrictive. This work develops a framework to distinguish between these sources and charac-terize the limits of LLM-based optimizers. 
+
+B. LLM Capability Evaluation 
+
+Recent work has developed basic schemes to evaluate the performance of LLMs as optimizers in applications such as GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 3
+
+code generation and mathematical problem solving [21]–[23]. The measuring massive multitask language understanding (MMLU) approach [24] evaluates LLMs across a wide range of subjects, including mathematics, history, and computer science. The initial results in [24] showed that the evaluated models were particularly weak in socially important areas such as morality and law. More recent studies, including MMLU-Pro [25] and MMLU-Redux [26], demonstrate substantial improvements in LLM performance while also highlighting re-maining limitations and considerable variation across domains. MMLU-Pro further shows that more challenging, reasoning-intensive questions remain difficult for modern LLMs, while MMLU-Redux identifies errors in the original MMLU bench-mark that can affect reported performance. The beyond the imitation game benchmark (BIG-bench) evaluates language models across 204 diverse tasks designed to be challenging for existing models. The authors investigate whether performance trends observed in smaller models can be used to predict the capabilities of larger models [27]. Their results show that model performance generally improves with scale, but the rate and pattern of improvement vary substantially across tasks. The study also shows that apparent capability breakthroughs can depend on how performance is measured. This highlights the importance of evaluation metrics and separating distinct failure modes when assessing LLMs. In addition to LLMs performance evaluation on generic subjects, several recent studies have focused on evaluation of LLMs as mathematical problem solvers. Cobbe et al. introduce the GSM8K dataset and evaluate the mathematical capability of LLMs when tested on this dataset. The results show that LLMs can perform multi-step mathematical reasoning. Interestingly, the verification mechanism they proposed can substantially improve answer accuracy [28]. This can follow from the fact that many inconsistencies in the LLM responses are due to execution errors . The study, however, does not eval-uate the scalability of this behaviour, i.e., to characterize the performance scaling with problem dimension. Recent studies in [19], [20] elaborate the importance of such evaluations, as they provide means to distinguish different failure modes. III. P ROPOSED FRAMEWORK 
+
+We present our framework by first describing the proposed LLM-assisted optimization protocol with iterative refinement loop. The proposed protocol enables us to distinguish between execution error and failure mode of LLMs. We then present the representative optimization families and deterministic ref-erence solvers and define the key evaluation metrics. 
+
+A. LLM-assisted Optimization with Iterative Refinement 
+
+Consider a generic constrained optimization of form 
+
+min  
+
+> x
+
+f (x) s.t. gi(x) ≤ 0 for i ∈ { 1, . . . , I }, (1a) 
+
+hj (x) = 0 for j ∈ { 1, . . . , J }. (1b) We denote the problem dimension, i.e., the dimension of x,by K. The proposed framework deploys LLMs to estimate a solution to this problem by first prompting an LLM to generate candidate solutions, and then utilizing an LLM to iteratively refine the solution with the help of an external evaluator. We go through the details in the sequel. 
+
+1) Prompt Design: For the initial prompt, we provide the following information to the LLM: a. general description of problem, b. problem structure along with key corresponding proper-ties, e.g., “concavity implies more balanced levels yield higher rates” for sum-rate maximization, c. an example to illustrate the calculation and output format, d. detailed problem parameters, e.g., problem dimension K,exact shape of the objective and constraints, e. return format specification, e.g., a JSON list of K non-negative numbers. A full example of the initial prompt for sum-rate optimization is given in Appendix A-A. 
+
+2) Output Formatting Requirements: LLMs are instructed to return a list of exactly K variables. i.e., x = [ x1, x 2, . . . , x K ].We parse the response and check its format. A valid output 
+
+must be a JSON list with K variables. 
+
+3) Parsing and Feasibility Check: A parsing mechanism is implemented to extract the output from the response and con-firm its validity. Once the validity of the output is confirmed, we check its feasibility using the problem constraints. 
+
+4) Iterative Refinement: Once the one-shot response of the LLM is confirmed, we apply an iterative refinement protocol to detect failure or suboptimal solutions and provide feedback. The feedback contains two informative components: the failure mode , which informs the LLM about possible failure in the candidate solution, and the evaluation feedback , which evaluates a feasible and valid candidate solution. Possible failure modes are a. Format Error. This mode indicates that output does not satisfy the formatting requirements. b. Constraint Violation. It indicates that output does not meet the constraints. Given potential execution errors, we activate this mode for each type of constraint differently. (i) For inequality constraints, this mode is activated if the constraint is violated with a tolerable margin ε, i.e., if 
+
+max  
+
+> i∈{ 1,...,I }
+
+gi(x) > ε. (2) A typical choice is ε = 10 −6.(ii ) For equality constraints, this mode is activated if 
+
+max  
+
+> j∈{ 1,...,J }
+
+|hj (x)| > τ, (3) for some tolerable margin τ . A typical interval for τ
+
+is τ ∈ [10 −4, 10 −2].c. Other Errors. Errors such as network issues, interrupted API calls, or unexpected system-level failures that are not related to the LLM response are included in this mode. d. No Error. This mode confirms the validity and feasibility of the solution. If a failure is detected, the loop provides feedback and requests a new candidate solution. When no failure is detected, the feasible solution is evalu-ated using its objective value. The comparison can be baseline-aided, where we compare the result to a deterministic optimum 4
+
+TABLE I: Examples of feedback prompts used in the refine-ment loop of the sum-rate maximization problem.                                                                                                
+
+> invalid format Your output is not avalid JSON list. Return aJSON list of Knonnegative numbers summing to P. Try again.
+> invalid result length Your output has <...> items, but K=<...>. Return alist of exactly Knonnegative numbers summing to P. Try again.
+> overbudget error With solution <...>, total power=<...> and is over budget. The total power must be less than <...>. Try again.
+> suboptimal solution With solution <...> you get <...>. Best assignment so far produces <...>. Try adjusting solution to balance levels to achieve better result, but do not repeat solutions you have already seen.
+> general feedback With solution <...> you get <...>. Try adjusting solution to balance levels to achieve better result, but do not repeat solutions you have already seen.
+
+computed by a baseline algorithm. The baseline result serves as an external target and stopping criterion and is not shown to the LLM. If the optimality criterion is not satisfied, the candidate’s objective value and, where applicable, the best ob-jective value among previously generated feasible candidates are provided as feedback to the LLM through textual prompts. Table I gives some feedback prompt examples. The iterative refinement is executed in a conversational format. Each new feedback prompt is appended to a conversation containing previous prompts and proposed solutions. This ensures that the LLM has sufficient context to refine its output and correct the execution errors. A schematic of the proposed framework is given in Figure 1. 
+
+B. Representative Optimization Families 
+
+We evaluate our framework on three optimization families, namely known convex optimization, fractional programming, and general-form constrained optimization. For each family, we consider a representative problem and a baseline solver. The problems and their solvers are given in the sequel. 
+
+1) Convex Optimization: For this family, we consider the problem of sum-rate maximization in wireless communication networks [29], [30] with K parallel Gaussian channels: assume link i has real-valued gain gi > 0. Assuming additive zero-mean Gaussian noise in the channel with variance Ni > 0, the quality of this link can be assessed by its capacity as [31] 
+
+Ri(xi) = log 2
+
+
+
+1 + xi
+
+fi
+
+
+
+, (4) where fi denotes the inverse of signal-to-noise ratio (SNR) gain in link i, defines as 
+
+fi ≜ Ni
+
+gi
+
+, (5) and xi ≥ 0 denotes the transmit power allocated to link i. The power is allocated subject to a total budget, i.e., 
+
+> K
+
+X
+
+> i=1
+
+xi ≤ Ptotal , (6) for some total power budget Ptotal > 0 [29]. To optimize the system throughput, we maximize the sum-rate over the K parallel links subject to the power budget. We can formulate this problem as 
+
+max  
+
+> x
+
+R(x) = 
+
+> K
+
+X
+
+> i=1
+
+log 2
+
+
+
+1 + xi
+
+fi
+
+
+
+, (7a) s.t. 
+
+> K
+
+X
+
+> i=1
+
+xi ≤ Ptotal , x i ≥ 0, for i ∈ { 1, . . . , K }. (7b) The objective R(x) in (7a) is concave because it is a sum of concave terms. It therefore has diminishing marginal returns. Allocating additional power to a channel with a larger SNR produces a smaller rate increase than allocating the same power to a channel with a smaller SNR. The optimization in (7a) is a classical problem in wireless communications. For this problem, the Karush-Kuhn-Tucker (KKT) conditions yield the well-known water-filling solution [14, p. 245], where the optimal transmit power of link i is given by 
+
+x⋆i = max 
+
+
+
+μ − Ni
+
+gi
+
+, 0
+
+
+
+, (8) for the water level μ that is chosen such that 
+
+X
+
+> i
+
+x⋆i = Ptotal . (9) This solution provides an efficient baseline. The sum-rate maximization problem tests whether an LLM can infer and deploy this well-known structure in the resource-allocation problem. The problem is also scalable in K, allow-ing us to study how LLM performs with the problem size. 
+
+2) Fractional Programming: Fractional programming is a class of generally non-convex problems. Although non-convex, there are various approaches to efficiently approximate their solutions [15]–[17], [32]. For this family, we consider the problem of energy-efficiency maximization: considering the sum-rate R(x) in (7a), we can define the energy-efficiency as the sum-rate per unit of consumed power in the system, i.e., 
+
+η(x) = R(x)
+
+Pconst +
+
+> K
+
+X
+
+> i=1
+
+xi
+
+, (10) where Pconst ≥ 0 denotes the fixed power dissipation in the system, e.g., circuit power consumption. Considering energy-efficiency as the throughput, we can formulate the throughout optimization problem as 
+
+max 
+
+> x
+
+R(x)
+
+Pconst +
+
+> K
+
+X
+
+> i=1
+
+xi
+
+, (11a) s.t. 
+
+> K
+
+X
+
+> i=1
+
+xi ≤ Ptotal , x i ≥ 0, for i ∈ { 1, . . . , K }. (11b) GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 5 
+
+> Problem specification Initialize conversation LLM generates a candidate solution Evaluator: parse and check constraints Valid and feasible? Prepare feedback on format or constraint errors Compute objective value Update best feasible candidate Deterministic baseline as target criterion Target criterion satisfied? Prepare objective feedback Include best-so-far result where applicable Attempts remaining? Return best feasible candidate or report failure if none
+> same problem instance No Yes Yes No Yes Append feedback to conversation No: attempt limit reached
+
+Fig. 1: Schematic of the LLM-assisted optimization framework. Validation and objective evaluation are performed by a deterministic evaluator. Dashed arrows show the deterministic baseline path, which supplies only the external stopping target. Refinement ends when the target criterion is satisfied or the attempt limit is reached. In (11a), R(x) is concave; however, the fractional objective 
+
+η(x) is generally not concave. The problem belongs to the standard class of concave fractional programs and can be solved via Dinkelbach’s method [15], [17]. The key idea is to iteratively parameterize the ratio by a scalar λt and solve the parameterized subproblem 
+
+max 
+
+> x
+
+h
+
+R(x) − λt
+
+ Pconst +
+
+> K
+
+X
+
+> i=1
+
+xi
+
+i
+
+s.t. (11b) . (12) The baseline solver for this problem is illustrated in the next subsection. Energy efficiency optimization is more complex than sum-rate maximization, since it deals with a ratio objective. The classical solution also builds a sequence of converging water-filling problems. We use this problem to test whether the LLM can recognize this structure, and whether it deploys the connections between this task and the water-filling problem. 
+
+3) General-Form Optimization: As the third family, we look into general-form optimizations, which unlike the previous two classes do not have a well-known standard solver. For this class, we consider the problem of projecting a target point onto a convex feasible set. In addition to the inequality constraints, this problem includes equality constraints, which did not exist in the former problems. Consider a randomly generated target point y ∈ RK . Let 
+
+(A, b) ∈ Rp×K × Rp and (U, d) ∈ Rm×K × Rm specify two affine transforms that map x ∈ RK to points in Rp and Rm,respectively. The optimization problem is given by 
+
+min  
+
+> x
+
+∥x − y∥2 (13a) s.t. xi ≥ 0, for i ∈ { 1, . . . , K }, (13b) 
+
+U x − d ≤ 0, (13c) 
+
+Ax + b = 0, (13d) To instantiate this problem, we first sample a strictly feasible point, and then construct (A, b) and (U, d), such that the feasible point satisfies all constraints. This guarantees that the feasible set is nonempty, and hence the problem is well-posed. The problem in (13a) is a general convex quadratic program with mixed constraints that can be solved deterministically by a convex solver. Note that former representative problems have well-known solvers that appear frequently in wireless communications literature [14], [15], [17]. Unlike them, the projection problem with specific random instances does not correspond to any standard textbook formulation that LLMs would likely have memorized. As a result, this problem provides a reference to evaluate the level of understanding the LLMs can obtain from the problem structure. A key consideration in our framework is the tolerance τ
+
+used to check the equality constraint in (13d). Since LLMs produce outputs with limited numerical precision, requiring exact equality can lead to dominance of execution error in evaluation. We therefore accept a solution as satisfying the equality constraint if max j |[Ax + b]j | ≤ τ . We further study 6
+
+the effect of τ on validity and optimality rates and tune it for minimal impact of execution errors in the evaluation. 
+
+C. Reference Solvers 
+
+For the first two problems, the baseline solver is given by directly implementing the given solution. For the latter one, one can deploy various approaches. In the sequel, we briefly elaborate the baseline solver for each problem. 
+
+1) Water-Filling Solver: For sum-rate maximization, we directly implement the water-filling algorithm. The algorithm sorts the noise floors fi in ascending order and computes their prefix sums . We determine the number of active channels 
+
+m⋆ by testing candidate values m ∈ { 1, . . . , K }. For each candidate m, we compute the corresponding water level as 
+
+μm = Ptotal 
+
+m + 1
+
+m
+
+> m
+
+X
+
+> j=1
+
+f(j), (14) where f(j) denotes the j-th smallest floor. Using the resulting water level μm, we check if the assigned powers to the m
+
+active channels are positive. The unique consistent value of m
+
+is used to compute the solution as x∗ 
+
+> i
+
+= max {0, μ ∗ − fi}. The algorithm runs in O(K log K) time, dominated by sorting. 
+
+2) Fractional Solver: We implement Dinkelbach’s method to solve the energy-efficiency problem. The algorithm initial-izes a scalar λ0 from an equal-power solution, and iteratively solves the parameterized subproblem in (12). For the separable logarithmic objective in our setting, the Karush–Kuhn–Tucker (KKT) conditions of (12) imply a water-filling structure, i.e., for each iteration t [14] 
+
+x(t) 
+
+> i
+
+= max {μt − fi, 0}, (15) for some water level μt. If the power constraint is inactive, the stationarity gives the unconstrained water level 
+
+μuncon  
+
+> t
+
+= 1
+
+λt ln 2 . (16) If the power constraint is active, an additional dual variable 
+
+νt ≥ 0 appears in the stationarity condition, yielding 
+
+μt = 1(λt + νt) ln 2 , (17) where μt, and hence νt, is chosen such that the power budget is met, i.e., KX
+
+> i=1
+
+max {μt − fi, 0} = Ptotal . (18) After solving for x(t), we update λt+1 as the ratio of the current objective value to the current denominator, i.e., 
+
+λt+1 = R(x(t))
+
+Pconst +
+
+> K
+
+X
+
+> i=1
+
+x(t)
+
+> i
+
+. (19) The iteration converges to the optimal energy efficiency when the optimality condition is satisfied. Convergence of the algorithm is guaranteed by the proper-ties of Dinkelbach’s method [17]. Throughout our experiments, the algorithm typically converges within 20 to 50 iterations. Our implementation caps the number of iterations at 200. 
+
+3) ADMM Solver: For the convex projection problem, we use the alternating direction method of multipliers (ADMM) as the baseline solver. ADMM is a general-purpose algorithm for solving convex optimization problems with separable structure and linear constraints [18]. By decomposing a constrained optimization into smaller sub-problems, ADMM efficiently solves mixed constrained problems, i.e., problems with both equality and inequality constraints. For the optimization in (13a), ADMM reformulates the problem by introducing auxiliary variables z1 ∈ RK and z2 ∈
+
+Rm, with x = z1 ≥ 0 and U x−d = z2 ≤ 0, corresponding to the nonnegativity constraint in (13b) and inequality constraint in (13c), respectively. The equality constraint Ax + b = 0 is enforced directly in the x-update. The augmented Lagrangian with scaled dual variables u1 ∈ RK , u2 ∈ Rm and penalty parameter ρ leads to the following iterative updates. 
+
+x-update. Solve the linear system of equations 
+
+M xt+1 = 2 y + ρ(zt 
+
+> 1
+
+− ut
+
+> 1
+
+) (20a) 
+
++ ρU ⊤(zt 
+
+> 2
+
+− ut 
+
+> 2
+
++ d) − A⊤νt+1 ,Axt+1 = −b. (20b) for xt+1 and νt+1 , where M = (2 + ρ)I + ρU ⊤U . The x-update introduces the Lagrange multiplier νt+1 to minimize the augmented Lagrangian subject to the equality constraint 
+
+Ax + b = 0. We pre-compute a Cholesky factorization of M
+
+for fast computation across iterations. At each iteration, νt+1 
+
+is determined jointly with xt+1 by these two equations and requires no separate dual update. 
+
+z-updates. Each auxiliary variable is updated via a proximal operator that enforces its corresponding constraint as 
+
+zt+1 1 = max {xt+1 + ut
+
+> 1
+
+, 0}, (21a) 
+
+zt+1 2 = min {U xt+1 − d + ut
+
+> 2
+
+, 0}. (21b) 
+
+u-updates. The scaled dual variables accumulate constraint residuals as 
+
+ut+1 1 = ut 
+
+> 1
+
++ xt+1 − zt+1 1 , (22a) 
+
+ut+1 2 = ut 
+
+> 2
+
++ U xt+1 − d − zt+1 2 . (22b) The algorithm terminates when both the primal residual and the iterate change fall below 10 −5.
+
+D. Evaluation Metrics 
+
+We evaluate the performance of LLM-based solver using the a set of metrics described below. These metrics enable direct analysis of scaling with the problem dimension K and impact of different failure modes. 
+
+1) Validity Rate: If the LLM encounters one of the failure modes mentioned in Section III-A4, we log it as invalid . The 
+
+validity rate is then defined as the fraction of valid outputs over the total number of attempts. 
+
+VR = # valid outputs # total attempts . (23) GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 7
+
+2) Optimality Rate: The optimality rate is defined as the fraction of valid outputs that are optimal ,1 i.e., they achieve the deterministic solution given by the reference solver. To compare the two solutions, we consider an error tolerance of 
+
+τ , often τ = 10 −4. We can hence write 
+
+OR = # optimal outputs # valid outputs . (24) 
+
+3) End-to-end Optimality Rate: The end-to-end optimality rate is defined as the fraction of all attempts that produce valid and optimal outputs, i.e., 
+
+OR E2E = # optimal outputs # total attempts . (25) It is easy to see that 
+
+OR E2E = VR · OR . (26) 
+
+4) Failure Mode Frequency: To analyze how failure patterns scale with problem dimension K, we categorize the unsuccess-ful attempts based on the specific failure mode by evaluating the frequency of each mode. 
+
+5) Performance Ratio: The performance ratio measures how close the best LLM solution is to the optimal solution. For valid outputs, we define this metric as the ratio of the objective value computed by the LLM solver to the one given by the deterministic solver. More precisely, for the rate-maximization task, the performance rate is given by 
+
+PR = R(ˆ x)
+
+R(x⋆) , (27) for the energy-efficiency maximization it reads 
+
+PR = η(ˆ x)
+
+η(x⋆) , (28) and for the projection task, it is given by 2
+
+PR = ∥x⋆ − y∥2
+
+∥ˆx − y∥2 , (29) where ˆx is the best valid LLM-based solution, and x⋆ denotes the reference solution. If the ratio is less than 1 given a tolerance of ε = 10 −4, i.e. PR < 1 − ε, we consider the LLM solution to be suboptimal. 
+
+6) Runtime: In addition to performance metrics, we report the runtime of the LLM-based optimization process. Classical deterministic solvers are computationally efficient. For K parallel channels, water-filling can be implemented in 
+
+O(K log K) time, or in O(K) time with specialized selection routines. Dinkelbach’s method typically requires a moderate number of iterations. Each iteration solves a convex subprob-lem with a comparable computational cost. In practice, these baselines often run in the order of milliseconds. In contrast, LLM-based optimization incurs substantially higher latency per iteration, often on the order of seconds. Execution time has three main components: LLM generation, API commu-nication, and local code execution. Local execution includes   
+
+> 1For the fractional programming problem, we mis-use the term optimal to refer to the solution given by Dinkelbach’s method.
+> 2Note that this is a minimization problem.
+
+TABLE II: Context size and key settings in the experiments.                
+
+> Model Parameter Setting
+> o4-mini Max window size 100,000 gemini-3-flash-preview Max window size ( K≤160 )100,000 Max window size ( 160 < K ≤400 )200,000 Max window size ( K > 400 )400,000 Thinking level HIGH
+
+tasks such as scenario setup and solution recording. The latter overhead is small compared with model generation and API communication, so we treat it as negligible. IV. E XPERIMENTAL INVESTIGATION 
+
+We now investigate the proposed framework and character-ize the behaviour of the LLM-based solvers. 
+
+A. Experimental Setup 1) Evaluated LLMs: We use two LLMs in our experiments: OpenAI’s o4-mini [33] and Google’s Gemini 3 Flash Preview (gemini-3-flash-preview ) [34]. Hereafter, we denote the models by μ-O4 and φ-G3 , respectively. Both models are accessed via their respective APIs with the settings described in Table II. For this experiment, we do not consider methods to mitigate the limitation of context window size (e.g., context window management). The sum-rate and energy-efficiency problems are evaluated with both LLMs, in single-turn and multi-turn settings. The projection problem is evaluated only with φ-G3 using iterative refinement with n = 5 . Therefore, projection problem results should be interpreted as a case study of the LLM’s feasibility and optimality capabilities. 
+
+2) Problem Instances: To study scaling behaviour, we vary the number of channels over a wide range, depending on the LLM. In all problems, the total power is set proportional to the problem dimension K. For each K, we simulate different scenarios, sample random channel gains, and evaluate both models and baseline algorithms on the same set of instances. To better assess LLM optimization capabilities, we consider two cases: ( i) single-turn generation, i.e., no refinement, and (ii ) multi-turn iterative refinement. The detailed parameter grid can be found in Table III. 
+
+3) Experimental Protocol: For each optimization family, model, and problem dimension, we evaluate the LLM on 30 randomly generated instances. For sum-rate and energy-efficiency maximization, we consider both a single-turn setting and a multi-turn setting, while for the projection problem we only consider the multi-turn setting. To better understand the improvement from iterative refinement, we test sum-rate maximization with a finer grid of iteration count n using φ-G3 
+
+and report the optimality rate for each (K, n ) pair. Each LLM response is parsed and validated using rules defined in Section III-A before the performance is scored. For valid solutions, we compute the objective value and compare it with the deterministic reference solution. Invalid responses are not treated as feasible candidates and are instead recorded 8
+
+TABLE III: Experiment parameters for the representative optimization problems.                                                                                
+
+> Task Parameter Setting
+> Sum-rate (Water-filling) Channel count OpenAI:
+> K∈ { 50 ,60 , . . . , 140 ,150 }
+> Gemini:
+> K∈ { 80 ,90 , . . . , 200 ,300 , . . . , 700 ,800 }
+> Gains hi∼ CN (0 ,1) ,gi=|hi|2
+> Noise Ni= 1
+> Power budget Ptotal = 0 .4K
+> Objective R(x) = PKi=1 log 2
+> 
+> 1 + xi
+> fi
+> 
+> Iteration per Scenario n∈ { 1,5}
+> Energy efficiency (Fractional) Channel count OpenAI:
+> K∈ { 40 ,50 , . . . , 140 ,150 }
+> Gemini:
+> K∈ { 40 ,60 , . . . , 180 ,200 }
+> Gains hi∼ CN (0 ,1) ,gi=|hi|2
+> Noise Ni= 1
+> Power budget Ptotal = 0 .4K
+> Circuit power Pconst = 0 .1K
+> Objective η(x) = R(x)
+> Pconst +PKi=1 xi
+> Iteration per Scenario n∈ { 1,5}
+> Projection Variables K∈ { 30 ,40 ,50 ,60 }
+> Equality constraints p= 1
+> Inequality constraints m= 1
+> Equality tolerance τ∈ { 10 −4,10 −3,10 −2}
+> Objective ∥x−y∥2
+> Iteration per Scenario n= 5
+
+as failure . In the multi-turn setting, the best valid solution obtained within the allowed attempts is recorded for each instance. If no valid solution is obtained, the instance is counted as a failure .
+
+B. Results on Optimization Capability 
+
+We evaluate μ-O4 and φ-G3 on the two power-allocation problems. Both models produce valid solutions that are close to the deterministic optimum for small and moderate problem dimensions. Performance varies with the optimization family, model, and problem dimension K. For the projection problem, we only evaluate φ-G3 in the iterative setting, since single-turn results does not yield enough valid outputs for a mean-ingful quality comparison. Results for single-turn sum-rate maximization are given in Figure 2. As the figure shows, both models produce valid and near-optimal allocations at smaller problem dimensions. The proportions of valid and optimal solutions decrease as K
+
+increases. In the single-turn setting, valid outputs at smaller K
+
+frequently achieve the optimal or near-optimal objective value. 
+
+φ-G3 maintains consistent performance over a wider range of dimensions than μ-O4 . At K = 90 , μ-O4 produces valid solutions in approximately 50% of the scenarios. The validity rate declines relatively slower for φ-G3 . It remains above 
+
+50% through K = 170 and above 33 .3% through K = 400 .Figure 2(a) shows smaller K ranges and Figure 2(b) presents the results for larger K ranges. The energy-efficiency maximization task produces fewer op-timal solutions than the sum-rate task. Although both models generate valid and occasionally optimal allocations at small K,the variance across sample instances is higher. For instance, 
+
+μ-O4 reaches optimality in approximately 3% of scenarios at K = 40 . φ-G3 produces optimal solutions at higher dimensions, but at lower rates than in sum-rate maximization. The results are given in Figure 3. The projection task provides an additional test beyond the two power-allocation formulations. As shown in Figure 4, va-lidity decreases with increasing K, while relaxing the equality-constraint tolerance improves validity. Among valid outputs, the model achieves high optimality rates across the evaluated 
+
+(K, τ ) configurations. Compared with sum-rate maximization, the LLM-based solver shows a degraded performance in this case. Noting that both problems belong to convex optimization family, this observation suggests that LLM is aided by the known structure of sum-rate maximization task. 
+
+C. Results on Scaling Behaviour 
+
+Across all problems, validity and optimality rates decrease as the problem dimension increases. However, the two mea-sures scale differently. For sum-rate maximization, the single-turn validity rate of μ-O4 decreases to approximately 50% 
+
+at K = 90 . In comparison, φ-G3 remains valid more than 
+
+50% up to approximately K = 170 and continues to return valid outputs beyond K = 200 . The end-to-end optimality rate of φ-G3 decreases substantially at larger K, with no optimal solutions observed when K ≥ 190 , as shown in Figure 2(b). The energy-efficiency task shows a narrower reliable op-erating range than sum-rate maximization, which is intuitive GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 9
+
+80 90 100 110 120 130 140 150 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K
+
+> Percentage of outcomes
+
+o4-mini Optimal Suboptimal Counting error Over budget Other error 80 90 100 110 120 130 140 150 
+
+K
+
+gemini-3-flash-preview      
+
+> (a) 80 ≤K≤150
+
+160 170 180 190 200 400 600 800 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K     
+
+> Percentage of outcomes
+> (b) K≥160 ,φ-G3 only
+
+Fig. 2: Distribution of optimization outcomes for sum-rate maximization without iterative refinement ( n = 1 ): (a) both models for 80 ≤ K ≤ 150 ; (b) φ-G3 only for K ≥ 160 .due to the higher complexity of underlying optimization. Both models experience counting and validity failures at lower dimensions, and the optimality rate drops noticeably as compared with sum-rate maximization. The projection results show a similar scaling trend. With 
+
+τ = 10 −3, the validity rate decreases from 93 .3% at K = 30 to 
+
+13 .3% at K = 60 . Relaxing the equality-constraint tolerance improves validity by a shift on the K-axis, but it does not meaningfully impact the slope of drop in the probability of generating a feasible solution. 
+
+D. Failure Modes 
+
+The observed failures vary across models, optimization families, and problem dimensions. At smaller dimensions, overbudget allocations are a common failure mode in the two power-allocation tasks. These outputs often resemble the allocation pattern of the deterministic solution but exceed the total-power constraint by a small amount; see Appendix A-B. As the problem dimension increases, counting errors be-come the dominant failure mode. In these cases, the model returns a numerical list whose length does not match the re-quired dimension. This failure becomes particularly prevalent for μ-O4 in sum-rate maximization when K ≥ 100 . φ-G3 
+
+maintains correct output length over a wider range, but also exhibits counting failures at sufficiently large dimensions. Format violations are more prominent for φ-G3 at very large K. Rather than returning a numerical list in the requested JSON format, the model may include additional text or alterna-tive delimiters, which is a behaviour we have not observed for 
+
+μ-O4 . For the projection task, numerical constraint violations are the main source of invalidity. Candidate solutions may be close to feasible but fail the equality constraint Ax + b = 0
+
+under a strict tolerance. 
+
+E. Effect of Iterative Refinement 
+
+We compare the single-turn setting with a multi-turn refine-ment setting that allows up to five attempts. Figures 5 and 6 show the resulting outcome distributions for sum-rate and energy-efficiency maximization, respectively. For sum-rate maximization, allowing up to five attempts extends the range of dimensions for which valid solutions can be obtained. With refinement, μ-O4 maintains a validity rate above 50% through K = 130 , whereas φ-G3 maintains validity above 90% at K = 200 .10 
+
+40 50 60 70 80 90 100 110 120 130 140 150 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K
+
+> Percentage of outcomes
+
+o4-mini Optimal Suboptimal Counting error Over budget Format error 40 60 80 100 120 140 160 180 200 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K
+
+> Percentage of outcomes
+
+gemini-3-flash-preview Fig. 3: Distribution of LLM fractional programming results for single-turn energy efficiency maximization. Compared to convex optimization, fractional programming represents a more complicated structure, resulting in lower optimality rates.      
+
+> 30 40 50 60 10 −4
+> 10 −3
+> 10 −2
+> ———66 .7%
+> 93 .3%
+> 96 .7%
+> 73 .3%
+> 83 .3%
+> 43 .3%
+> 53 .3%
+> 13 .3%
+> 33 .3%
+> K
+> Tolerance
+> 0%
+> 33 %
+> 67 %
+> 100 %
+
+(a) Validity rate      
+
+> 30 40 50 60 10 −4
+> 10 −3
+> 10 −2
+> ———77 .3%
+> 75 %
+> 82 .8%
+> 90 .9%
+> 80 %
+> 100 %
+> 93 .8%
+> 76 .9%
+> 64 %
+> K
+> Tolerance
+> 0%
+> 20 %
+> 40 %
+> 60 %
+> 80 %
+> 100 %
+
+(b) Optimality rate 
+
+Fig. 4: Heatmap of projection problem validity and optimality rates across different variable counts ( K) and equality-constraint tolerance levels, using φ-G3 .Refinement also improves solution quality among valid outputs. As shown in Figures 7 and 8, increasing the num-ber of attempts raises the proportion of valid solutions that achieve the deterministic optimum. The refinement heatmap in Figure 9 further reports the optimal-solution ratio of φ-G3 
+
+across problem dimensions and iteration counts. Across both power-allocation tasks, the multi-turn setting produces higher validity and optimality rates than the single-turn baseline. The improvement is larger for φ-G3 , particu-larly at higher problem dimensions. 
+
+F. Generalization Across Optimization Families 
+
+Performance differs across the three optimization families. Sum-rate maximization supports the widest range of valid and high-quality LLM outputs. Energy-efficiency maximiza-tion exhibits lower end-to-end optimality rates and earlier validity failures as K increases. For the projection task, valid outputs achieve high optimality rates, while feasibility remains GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 11 
+
+80 90 100 110 120 130 140 150 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K
+
+> Percentage of outcomes
+
+o4-mini Optimal Suboptimal Counting error Over budget Other error 80 90 100 110 120 130 140 150 
+
+K
+
+gemini-3-flash-preview      
+
+> (a) 80 ≤K≤150
+
+160 170 180 190 200 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K   
+
+> Percentage of outcomes
+> (b) K≥160 , gemini-3-flash-preview only
+
+Fig. 5: Distribution of LLM optimization results for sum-rate maximization with iterative refinement ( n = 5 ). Compared to the single-turn setting, providing targeted numerical feedback substantially recovers format validity and pushes the optimality boundary to larger K domains. sensitive to the equality-constraint tolerance. The comparison across problems suggests that LLM perfor-mance depends on both problem dimension and mathematical structure. Sum-rate maximization is the most accessible of the evaluated tasks, where its concave objective and simple total-power constraint allow both models to produce valid, high-quality allocations over the widest range of dimensions. Energy-efficiency maximization is more difficult due to its fractional objective. The ratio structure requires the model to balance rate improvement against total power consumption, and the resulting solutions are less consistently optimal even when they are valid. The earlier onset of counting errors and the lower optimality rates indicate that LLM performance is sensitive to the complexity of the underlying optimization structure, rather than being determined by dimension alone. The projection task provides complementary evidence of generalization. Although it does not use a familiar power-allocation objective, φ-G3 produces near-optimal projections whenever it satisfies the constraints. This suggests that LLMs 
+
+can reason about optimization structures beyond the specific named formulations, while the bottleneck remains the ability to generate valid outputs that meet problem constraints strictly. 
+
+G. Computational Cost 
+
+Figure 10 shows the runtime distributions for both models executing the two power-allocation tasks. The LLM response time remains relatively stable across the evaluated values of 
+
+K, although the two models exhibit different task-dependent latency patterns. For μ-O4 , fractional programming often has a lower median latency and smaller variance than sum-rate maximization. For φ-G3 , the difference between the two tasks is less consistent as K increases. V. D ISCUSSIONS 
+
+A. Main Source of Difficulty for LLMs 
+
+The results suggest that it is difficult for LLMs to satisfy all requirements simultaneously. Among all requirements, numer-ical precision is a key challenge. In the two power-allocation tasks, model outputs often follow reasonable allocation pat-terns, but violate budget requirements by a margin. In the projection task, candidate solutions often fail to fulfill the equality constraint under strict tolerance. High-dimensional counting and structured-output generation are additional limitations. At larger K, the dominant failure 12 
+
+40 50 60 70 80 90 100 110 120 130 140 150 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K
+
+> Percentage of outcomes
+
+o4-mini Optimal Suboptimal Counting error Over budget Other error 40 60 80 100 120 140 160 180 200 
+
+0%
+
+33 %
+
+67 %
+
+100 %
+
+K
+
+> Percentage of outcomes
+
+gemini-3-flash-preview Fig. 6: Distribution of LLM fractional programming results for power efficiency maximization leveraging iterative refinement (n = 5 ). Providing boundary feedback actively mitigates structural errors, helping both models explore fractional spaces more efficiently. mode is the incorrect number of decision variables. Format violations also prevent the model from producing valid outputs for following steps. Besides the infamous difficulty of LLMs with counting studied in previous work, e.g., [35], [36], these failures also suggest that LLMs face challenges to abide by strict output specifications, when context windows are large and the output is long. Finally, optimization difficulty depends on the mathematical structure of the task. Sum-rate maximization, which describes a well-known classical convex programming task, produces the strongest overall results. Energy-efficiency maximization, which has a more demanding fractional objective, shows lower optimality rates and earlier failures. The projection task shows a different limitation, as it includes a strict equality constraint, making feasibility more sensitive to numerical precision. 
+
+B. Understanding LLM Optimization Capabilities 
+
+The empirical results indicate that the evaluated models capture useful high-level optimization structure. In sum-rate maximization, LLM-generated allocations often resemble the deterministic water-filling solution. However, a small budget violation may still lead to invalid outputs, as shown in Ap-pendix A-B. In the projection task, the high optimality rate among valid outputs indicates that the model can generate solutions close to the constrained optimum as long as fea-sibility is achieved. However, LLMs cannot reliably perform the exact arithmetic and strict constraint enforcement required by numerical optimization. Structured feedback helps models correct some formatting, counting, and feasibility errors and improve objective quality. Nevertheless, iterative refinement does not guarantee success, particularly at larger dimensions. Meanwhile, although μ-O4 and φ-G3 exhibit different optimization capabilities, their results reveal similar overall trends. φ-G3 shows a larger operating range, but still suffers from failures at larger dimensions. This suggests that stronger models can extend the usable range of direct LLM opti-mization, while reliable large-scale applications still require additional mechanisms for verification and repair. 
+
+C. Implications for LLM-Based Optimization 
+
+These findings have several implications for the design of LLM-based optimization systems. First, prompts should state output and feasibility requirements explicitly. They should specify the expected output length, and numerical format. All constraints should be given in a machine-checkable form. Shorter prompts, clearer instructions, and strategic placement GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 13 
+
+50 60 70 80 90 100 110 120 130 0%
+
+20 %
+
+40 %
+
+60 %
+
+80 %
+
+100 %
+
+K
+
+> Optimality rate
+
+o4-mini 
+
+80 90 100 110 120 130 140 150 160 170 180 190 200 
+
+K
+
+gemini-3-flash-preview 
+
+n = 1 n = 5 
+
+Fig. 7: Optimality rate in the sum-rate maximization task. Applying 5 refinement iterations improves this rate across all K
+
+values. 
+
+40 50 60 70 80 90 100 110 120 130 140 150 00.20.40.60.81
+
+K
+
+> Optimality rate
+
+o4-mini 
+
+40 60 80 100 120 140 160 180 
+
+K
+
+gemini-3-flash-preview 
+
+n = 1 n = 5 
+
+Fig. 8: Optimality rate in the power efficiency task. Iterative refinement pushes the models to discover higher-quality solutions, with a more pronounced improvement for φ-G3 .of key requirements may provide further improvements. When supported by the model interface, output schemas, JSON-mode generation, function calling, or constrained decoding may further improve reliability. The results further suggest that the LLMs are more useful as components of hybrid optimization systems rather than as standalone solvers. An LLM can interpret a natural-language specification and propose initial solutions, followed by a deter-ministic solver or numerical verification step to ensure feasi-bility and optimality. This division of responsibility combines the flexibility of LLMs with the reliability and guarantees of conventional optimization methods. The findings also imply that rather than focusing on the final objective values, more metrics should be used to evaluate LLM optimization performance in future benchmarks. Validity, fail-ure mode distribution, format compliance and the magnitude of constraint violation can all be used for characterization. We see these findings as a starting point for future research on LLM-based optimization. Future work should address the execution errors that limit LLM-based optimization on large numerical problems. One direction is to enforce structured outputs, such as using predefined JSON schemas. Better prompts and context-management methods may also improve reliability. Another option is to decompose the problem so that the model does not need to generate a long numerical vector at once. LLMs could also be combined with conventional solvers. In such a system, the LLM would handle high-level reasoning, while the solver would ensure numerical accuracy and feasibility. These methods should be tested on more optimization problems, larger constraint sets, and real engineering applications. Future studies should also reduce inference time and the cost of iterative refinement. Together, these improvements could make LLMs more useful and reli-able within practical optimization pipelines. VI. C ONCLUSIONS 
+
+This paper presented a systematic evaluation of LLMs for numerical optimization. We benchmarked LLM-based op-timization loops against deterministic reference solvers on three representative problems: sum-rate maximization, energy-efficiency maximization, and constrained minimum-distance projection. The results show that the performance of LLM-based solvers depends strongly on the optimization family and problem dimension. For small and moderate problem instances, models can produce valid and near-optimal so-lutions, while at large dimensions, the models increasingly exhibit errors. Sum-rate maximization supported the widest range of valid and high-quality outputs, whereas energy-efficiency maximization exhibited lower optimality rates and earlier reliability failures. In the projection task, valid outputs were frequently near-optimal, but feasibility was sensitive to the equality-constraint tolerance. Iterative refinement can 14 
+
+100 120 140 160 180 200 24             
+
+> 50 %47 %60 %20 %
+> 63 %50 %57 %40 %
+> 60 %60 %43 %
+> 57 %63 %57 %60 %
+> 50 %53 %60 %
+
+K
+
+> iteration
+
+0%
+
+33 %
+
+67 %
+
+100 %Fig. 9: Heatmap of the end-to-end optimality rate generated by φ-G3 for sum-rate maximization across different problem dimensions ( K) and refinement iterations ( n). Deeper colour intensities denote higher optimality ratios. 50 70 90 110 130 150 
+
+0200 400 
+
+K
+
+> Execution time (s)
+
+(a) μ-O4 
+
+80 90 100 110 120 130 140 150 160 
+
+0200 400 
+
+K 
+
+> Execution time (s)
+> Sum-rate Power efficiency
+
+(b) φ-G3 
+
+Fig. 10: Execution time distributions for attempts with different values of K. For μ-O4 (a), shorter runtimes are observed in the more complex fractional programming task. In contrast, φ-G3 (b) exhibits more consistent execution times across both problem types. improve the validity and optimality of LLM-based solver and extends its scalability. Nonetheless, it cannot eliminate persistent failures and increases end-to-end latency. The results suggest that LLMs are best viewed as flexible candidate-solution generators rather than replacements for deterministic solvers. Their ability to interpret optimization problems and propose competitive solutions can be useful when problem formulation, solver selection, or human in-teraction is difficult to automate. Applications that require strict feasibility, reproducibility, or low latency should con-sider a hybrid approach. In such systems, an LLM generates candidate solutions, while deterministic algorithms validate and refine them. Future work can investigate constrained output generation, solver-in-the-loop refinement, and problem decompositions for high-dimensional tasks. ACKNOWLEDGMENT 
+
+The authors used LLMs solely for grammar correction and language polishing throughout the manuscript. All suggested revisions were reviewed by the authors, who take full respon-sibility for the content. APPENDIX ALLM P ROMPT AND RESULTS 
+
+Below, we present a sample prompt and the results gener-ated by the LLM for sum-rate maximization task. 
+
+A. Initial Prompt for Sum-Rate Maximization 
+
+You are solving a problem by choosing nonnegative number x_1,...,x_K (sum capped) to maximize the total rate R = sum(log2(L_i)) where L_i = 1 + x_i * g_i / N_i. Concepts to use: * For fixed others, increasing x_i increases log2(L_i). * Concavity: The extra benefit from adding to a large L_i is small than from adding to a small L_i. * Balancing: Increasing a small L_i while decreasing a large L_j tends to increase total R. * Implication: For a total sum(x_i) with fixed maximum, more balanced levels L_i tend to give higher total rate than very uneven ones. GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 15 
+
+Example: P = 15, G = [3,1,9], N = [1, 1, 1] x = [0,0,15] -> L = [1,1,136] -> lower Rx = [4, 10, 1] -> L = [13, 11, 10] -> higher RTask: K = 10 P = sum(x_i) <= 3g_1=3.6409156481810863, N_1=1.0 g_2=0.11952989450819125, N_2=1.0 g_3=1.1623212806322352, N_3=1.0 g_4=5.496000867022677, N_4=1.0 g_5=0.9760133249930699, N_5=1.0 g_6=0.4715046846895365, N_6=1.0 g_7=1.5327662965629543, N_7=1.0 g_8=0.14916894342800793, N_8=1.0 g_9=4.273319004236757, N_9=1.0 g_10=1.643596707263682, N_10=1.0 Reply format: Return a list of K nonnegative numbers summing to P, wrapped in square brackets, e.g., [54, 33, 33]. Now output the optimal list [x_1, x_2, ..., x_K]. Output only the list, no explanations or text. 
+
+B. LLM Result and Deterministic Solution Comparison 
+
+The following results in Table IV are two overbudget solu-tion produced by LLM models (o4-mini and gemini-3-flash-preview) on scenarios with K = 150 channels and Ptotal = 60 ,compared with their respective deterministic optimal solution. APPENDIX BLLM R EASONING TRACE 
+
+The following are representative reasoning traces (thinking summaries) produced by φ-G3 when solving optimization problems. These traces are extracted from the model’s internal chain-of-thought and illustrate how the LLM approaches each problem. 
+
+A. Sum-Rate Maximization 
+
+The following trace shows the model solving a sum-rate maximization instance. Notably, the model derives the water-filling strategy without identifying the problem as one being solved by “water-filling”. 
+
+Alright, let’s break this down. My objective is to maximize the sum of logarithms of levels, each level being acombination of a fixed component and a resource allocation multiplied by a constant. The key here is the concavity of the logarithm, which pushes me towards balancing these levels as much as possible. I’ve got a budget constraint - I can only allocate a total of 6000 units of the resource. There are 50 different "floors", and an increment of 0.05 can be added to the base for each floor. The f_i values are provided. My initial approach is to try and make each level roughly equal. Ican think about this by setting a target level, L*. I can try to solve for x_i, the resource allocation to each floor, by setting f_i + x_i * delta approx L*. The smallest base and Q=6000.0 are provided. Calculating: I first determine the target level L*. If I could use fractions of resource quanta, x_i = (L* -f_i) / delta, setting f_i + x_i * delta = L*. I can sum over all i to solve for L*, and determine how much resource to allocate to each of the 50 "floors". But the prompt has integer values, so I have to come up with whole units. I see a pattern, where the final allocation will be x_i = 20 * (10.68 - f_i). This yields non-integer values for x_i. I will calculate x_i = (L* - f_i) / delta, which might lead to fractional numbers. I take the sum of the f_i values to be 234. I find the target level L* = (Q * delta + sum(f_i)) / |S|, which comes out as 10.68. The set S includes all 50 floors. I calculate a value of x_i. I calculate Q * delta = 300, so my formula is L* = (300 + 234) / 50 = 534 / 50 = 10.68. I will have to check the fractional value of x_i to ensure that sum(x_i) is at most 6000. I realize all the x_i have the form 213.6 - 20 * f_i, and all fractional parts will have 0.6. I see asolution! I realize that I have to round all the x_i values to integers, and to make it fit with the constraint that the sum equals 6000, 30 must be rounded up, and 20 must be rounded down. I see the sum of the allocated resource is 6000. L_i = f_i + x_i * 0.05. So when the rounding occurs, the values are almost the same. I have the set of x_i values. All non-negative integers. L_i values are f_i + x_i * delta. I need the 30 round ups and the 16 
+
+TABLE IV: Sample overbudget allocations comparing raw decisions from μ-O4 and φ-G3 to a deterministic optimum ( K =150 , Ptotal = 60 ). While LLMs grasp the water-filling distribution pattern intuitively, poor arithmetic precision inherently breaks the total budget. 
+
+P xi x1 x2 x3 x4 x5 x6 . . . μ-O4 60.4482 0 0.595 0.0835 0 0.6618 0.7147 . . . 
+
+optimal 60.0 0.0 0.5905688075 0.07903040838 0.0 0.6574058524 0.7101931468 . . . φ-G3 60.0105 0 0.6804 0 0.8104 0.3233 0 . . . 
+
+optimal 60.0 0 0.6803830239 0 0.8103994294 0.3233392392 0 . . . 
+
+20 round downs. Sum of allocation equals 6000. The L_i values are almost identical, and very balanced. I verify that my logic is correct. I see the allocation must be integers. I’ve chosen 30 indices to round up. I’ve chosen 20 indices to round down. I recalculate. The total sum of allocation is exactly 6000, as required. The rounding strategy doesn’t impact the overall result. Therefore, the allocations have been decided. I choose to assign the x_i to ensure L_i are as balanced as possible. I double-check. I can show that sum(log2(L_i)) will be very large. 
+
+B. Minimum-Distance Projection 
+
+The following trace shows the model solving a projec-tion problem instance with K = 40 variables, one equality constraint, and one inequality constraint. The model applies KKT conditions and Lagrangian analysis from first principles to derive the solution structure. The trace was truncated by the model’s reasoning token limit before the numerical computation was completed. However, the reasoning up to that point demonstrates correct formulation and case analysis. 
+
+Okay, here’s the deal. I’m faced with aminimization problem. The goal is to make f(x) = 1/2 ||x - y||ˆ2 as small as possible, effectively finding the point x closest to afixed point y. However, there are rules. I’m dealing with a vector xin 40 dimensions (K=40, y is a 40-dim vector, x is the variable I’m optimizing over), so that the objective is to find avector x, subject to afew constraints. First, all components of x must be non-negative: x_i >= 0. This is straightforward. Second, there’s an equality constraint: Ax + b = 0. Think of A as a row vector (1x40 matrix), and b is just a number. It defines a hyperplane. My solution x must lie on this plane, since I want Ax=-b, given A_i (40 element vector) and b (the intercept), and x_i which are the elements of x (40 element vector). Finally, I’ve got an inequality constraint: Ux <= d. Here U is another row vector (1x40 matrix), d a scalar. So, I need to keep x "below" this hyperplane too. To handle these constraints formally, I’m using the Lagrangian method. I introduce Lagrange multipliers: lambda for the equality constraint, mu >= 0 for the inequality, and nu_i >= 0 for the non-negativity constraints. The Lagrangian L(x, lambda, mu, nu) is formed by combining the original objective function with the constraints, each multiplied by its corresponding Lagrange multiplier. Applying the Karush-Kuhn-Tucker (KKT) conditions is the next step. I’m differentiating the Lagrangian with respect to x and setting it to zero, which gives me: x_i = y_i - lambda A_i - mu U_i + nu_i. Furthermore, I recognize that x_i >= 0, nu_i >= 0 and x_i * nu_i = 0. This implies x_i = max(0, y_i - lambda A_i - mu U_i). I also have to obey that Ax + b = 0, and the inequality constraint U x - d <= 0, mu >= 0, mu (U x - d) = 0. Now, I split into cases. The most obvious one to consider is when mu = 0. That is, the inequality constraint is inactive, and not binding. The inequality constraint is non-binding if the solution xsatisfies Ux < d. In this scenario, x_i = max(0, y_i - lambda A_i). The main goal now is to find lambda so that the equality constraint, Sum A_i x_i + b = 0 holds. Or solving for lambda in g(lambda) = Sum A_i max(0, y_i - lambda A_i) + b = 0. The next, and critical, question is whether to actually choose mu or GUO AND BEREYHI: UNDERSTANDING LARGE LANGUAGE MODELS AS NUMERICAL OPTIMIZERS 17 
+
+not. Let’s see if this choice is the right choice. Finally, I will check whether the solution x satisfies the inequality constraint, and if it satisfies U x <= d. If that doesn’t work (which, I suspect, it won’t), the next case, mu > 0, becomes active. Now, the inequality is binding. This means that my solution x must satisfy the inequality with equality: Ux = d. Here, x_i = max(0, y_i - lambda A_i -mu U_i). Now, I have two unknowns: lambda and mu. I need to solve two equations: Sum A_i x_i + b = 0 and Sum U_i x_i - d = 0. Ok, now, I’m given the specific values: A, b, U, and y. And that’s where things get interesting. I started by checking mu = 0. Icomputed g(lambda) = Sum A_i max(0, y_i -lambda A_i) + b = 0, setting b = -2.5285. Using some algebra, Ifound 
+
+[Trace truncated at the model’s reasoning token limit.] 
+
+REFERENCES [1] T. Brown, B. Mann, N. Ryder et al. , “Language models are few-shot learners,” in Proc. Advances in Neural Information Processing Systems (NeurIPS) , H. Larochelle, M. Ranzato, R. Hadsell et al. , Eds., vol. 33. Curran Associates, Inc., 2020, pp. 1877–1901. [2] L. Ouyang, J. Wu, X. Jiang et al. , “Training language models to follow instructions with human feedback,” in Proc. Advances in Neural Information Processing Systems (NeurIPS) , vol. 35. Curran Associates, Inc., 2022, pp. 27 730–27 744. [3] J. Wei, X. Wang, D. Schuurmans et al. , “Chain-of-thought prompting elicits reasoning in large language models,” in Proc. Advances in Neural Information Processing Systems (NeurIPS) , vol. 35. Curran Associates, Inc., 2022, pp. 24 824–24 837. [4] J. Sun, C. Zheng, E. Xie et al. , “A survey of reasoning with founda-tion models: Concepts, methodologies, and outlook,” ACM Computing Surveys , vol. 57, no. 11, pp. 1–43, 2025. [5] H. Zhou, C. Hu, D. Yuan et al. , “Large language model (LLM)-enabled in-context learning for wireless network optimization: Acase study of power control,” 2025. [Online]. Available: https: //arxiv.org/abs/2408.00214 [6] H. Abgaryan, A. Harutyunyan, and T. Cazenave, “LLMs can schedule,” 2025, presented at the Seventh DSO Workshop at ECML-PKDD. [Online]. Available: https://www.lamsade.dauphine.fr/ ∼cazenave/papers/ LLMsCanSchedule-DSO-2025.pdf [7] H. Zhou, C. Hu, Y. Yuan et al. , “Large language model (LLM) for telecommunications: A comprehensive survey on principles, key tech-niques, and opportunities,” IEEE Communications Surveys & Tutorials ,vol. 27, no. 3, pp. 1955–2005, 2025. [8] C. Yang, X. Wang, Y. Lu et al. , “Large language models as optimizers,” 2024. [Online]. Available: https://arxiv.org/abs/2309.03409 [9] S. Liu, C. Chen, X. Qu et al. , “Large language models as evolutionary optimizers,” 2024. [Online]. Available: https://arxiv.org/abs/2310.19046 [10] K. Li and J. Malik, “Learning to optimize,” in Advances in Neural Information Processing Systems (NeurIPS) – Workshop on Optimizing the Optimizers , 2016, arXiv:1606.01885. [11] H. Sun, X. Chen, Q. Shi et al. , “Learning to optimize: Training deep neural networks for interference management,” IEEE Transactions on Signal Processing , vol. 66, no. 20, pp. 5438–5453, 2018. [12] T. Chen, X. Chen, W. Chen et al. , “Learning to optimize: A primer and a benchmark,” Journal of Machine Learning Research , vol. 23, no. 189, pp. 1–59, 2022. [13] C. Jiang, X. Shu, H. Qian et al. , “LLMOPT: Learning to define and solve general optimization problems from scratch,” in Proc. International Conference on Learning Representations (ICLR) , 2025, pp. 101 580– 101 606. [14] S. Boyd and L. Vandenberghe, Convex Optimization . Cambridge University Press, 2004. [15] K. Shen and W. Yu, “Fractional programming for communication systems–part i: Power control and beamforming,” IEEE Transactions on Signal Processing , vol. 66, no. 10, pp. 2616–2630, 2018. [16] ——, “Fractional programming for communication systems—part ii: Uplink scheduling via matching,” IEEE Transactions on Signal Pro-cessing , vol. 66, no. 10, pp. 2631–2644, 2018. [17] W. Dinkelbach, “On nonlinear fractional programming,” Management Science , vol. 13, no. 7, pp. 492–498, Mar. 1967. [18] S. Boyd, N. Parikh, E. Chu et al. , “Distributed optimization and statistical learning via the alternating direction method of multipliers,” 
+
+Foundations and Trends in Machine Learning , vol. 3, no. 1, pp. 1–122, 2011. [19] B. Y. Lin, R. L. Bras, K. Richardson et al. , “Zebralogic: On the scaling limits of LLMs for logical reasoning,” in Proc. International Conference on Machine Learning (ICML) , 2025. [20] Y. Zhou, H. Liu, Z. Chen et al. , “GSM-∞: How do your LLMs behave over infinitely increasing reasoning complexity and context length?” in 
+
+Proc. International Conference on Machine Learning (ICML) , vol. 267, 2025, pp. 78 933–78 983. [21] R. Peran, L. Hobor, M. Kovac, and M. Brcic, “Large language models as optimizers: A survey of direct vs. tool-augmented approaches and their performance frontiers,” in Proc. ICT and Electronics Convention (MIPRO) , 2026, pp. 93–98. [22] M. Chen, J. Tworek, H. Jun et al. , “Evaluating large language models trained on code,” 2021, arXiv preprint arXiv:2107.03374. [23] D. Hendrycks, C. Burns, S. Kadavath et al. , “Measuring mathematical problem solving with the MATH dataset,” in Proc. Conference on Neural Information Processing Systems Datasets and Benchmarks Track , 2021. [24] D. Hendrycks, C. Burns, S. Basart et al. , “Measuring massive multitask language understanding,” in Proc. International Conference on Learning Representations (ICLR) , 2021. [25] Y. Wang, X. Ma, G. Zhang et al. , “Mmlu-pro: A more robust and challenging multi-task language understanding benchmark,” in Proc. Advances in Neural Information Processing Systems (NeurIPS) , vol. 37. Curran Associates, Inc., 2024, pp. 95 266–95 290. [26] A. P. Gema, J. O. J. Leang, G. Hong et al. , “Are we done with MMLU?” in Proc. Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics (NAACL) , 2025, pp. 5069– 5096. [27] A. Srivastava et al. , “Beyond the imitation game: Quantifying and extrapolating the capabilities of language models,” Transactions on Machine Learning Research , 2023. [Online]. Available: https: //arxiv.org/abs/2206.04615 [28] K. Cobbe, V. Kosaraju, M. Bavarian et al. , “Training verifiers to solve math word problems,” 2021. [29] A. El Gamal and Y.-H. Kim, Network Information Theory . Cambridge, UK: Cambridge University Press, 2011. [30] Q. Shi, M. Razaviyayn, Z.-Q. Luo, and C. He, “An iteratively weighted mmse approach to distributed sum-utility maximization for a mimo interfering broadcast channel,” IEEE Transactions on Signal Processing ,vol. 59, no. 9, pp. 4331–4340, 2011. [31] C. E. Shannon, “A mathematical theory of communication,” Bell System Technical Journal , vol. 27, no. 3, pp. 379–423, Jul. 1948, part I; Part II appears in Vol. 27, No. 4, pp. 623–656, Oct. 1948. [32] S. Schaible, “Fractional programming. II, on Dinkelbach’s algorithm,” 
+
+Management science , vol. 22, no. 8, pp. 868–873, 1976. [33] OpenAI, “o4-mini,” OpenAI API documentation, accessed: 2026-10-18. [Online]. Available: https://developers.openai.com/api/docs/models/ o4-mini [34] Google, “Gemini 3 Flash preview,” Gemini API documentation, accessed: 2026-10-18. [Online]. Available: https://ai.google.dev/ gemini-api/docs/models/gemini-3-flash-preview [35] T. Fu, R. Ferrando, J. Conde et al. , “Why do large language models (LLMs) struggle to count letters?” 2024. [Online]. Available: https://arxiv.org/abs/2412.18626 [36] N. Xu and X. Ma, “Llm the genius paradox: A linguistic and math expert’s struggle with simple word-based counting problems,” 2025. [Online]. Available: https://arxiv.org/abs/2410.14166

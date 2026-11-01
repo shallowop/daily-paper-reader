@@ -1,0 +1,442 @@
+Title: Geoeconomic Stress and European Defence Readiness
+
+URL Source: https://arxiv.org/pdf/2610.33785v1
+
+Published Time: Tue, 27 Oct 2026 00:49:35 GMT
+
+Number of Pages: 31
+
+Markdown Content:
+# Geoeconomic Stress and European Defence Readiness ‗
+
+# d’Artis Kancs †
+
+# 12 January 2026 
+
+Abstract 
+
+This study develops a country-level measure of the economic-industrial capacity of European NATO Allies to mobilise, replenish, maintain, and sustain military capability under strategic stress. The measure comprises four components: mac-roeconomic capacity, sectoral resilience, defence-industrial capability, and logistics and sustainment. The analysis covers 28 European Allies and evaluates a balanced baseline against five geoeconomic stress scenarios. The results distinguish baseline capacity from stress vulnerability and provide an assessment framework for identi-fying the economic-industrial bottlenecks that can constrain sustained military readiness. Baseline scores vary materially across countries, with a sample mean of 0.610 and a range from 0.471 to 0.759. The calibrated geoeconomic shocks reduce effective capacity in every scenario, though the effects are highly heterogeneous. The combined-stress scenario has the largest average effect, lowering the sample mean to 0.491, a decline of 19.5 per cent relative to baseline. TRS and PR operate mainly through defence-industrial and replenishment constraints; supply-chain fragmentation is driven primarily by sectoral exposure and substitutability; and external-support reduction operates through allied access and sustainment. Our results suggest shifting attention from expenditure targets alone towards the capa-city to convert resources into usable military capability: the key issue is not only how much is spent, but also which bottlenecks limit the conversion of resources into capability. 
+
+Keywords: Defence economics; readiness; geoeconomic fragmentation; supply chains; defence-industrial base; Europe; strategic stockpiling; procurement. 
+
+JEL Codes: F51; F52; H56; L64; O25; R11. 
+
+> ‗
+
+The authors acknowledge helpful comments from participants of meetings of the NATO STO Operations Research and Analysis conferences, and NATO STO Modelling and Simulation Group meetings. The authors are solely responsible for the content of the paper. The views expressed are purely those of the authors and may not in any circumstances be regarded as stating an official position of the European Commission, NATO or Latvian National Armed Forces. Any remaining errors are ours. 
+
+> †
+
+Science Research Innovation Implementation Centre, Latvian National Armed Forces. 
+
+1arXiv:2610.33785v1 [econ.GN] 24 Oct 2026 1 Introduction 
+
+Europe’s security environment has entered a period of sustained strategic stress. Russia’s full-scale invasion of Ukraine has increased the salience of conventional deterrence and defence, while competition in other theatres can absorb allied production capacity, munitions, air defence, intelligence assets, sealift, maintenance resources, and political attention (Kendall-Taylor et al., 2025; Lee, 2024; Cancian and Park, 2026). At the same time, trade, finance, technology transfer, raw-material access, energy, shipping, and industrial capacity are increasingly shaped by geopolitical alignment (Farrell and Newman, 2019; Aiyar et al., 2023; European Commission, 2024; NATO, 2024). These developments raise a question that defence expenditure alone cannot answer: can European states convert available resources into military capability quickly enough, and sustain that conversion when economic and industrial conditions deteriorate? This study asks how geoeconomic and industrial conditions shape the capacity of European NATO Allies to mobilise, replenish, and sustain military capability under prolonged strategic stress. The analysis focuses on readiness-enabling conversion capacity :the capacity to convert economic, industrial, and logistical resources into replacement, replenishment, maintenance, and sustained military capability. This capacity is primar-ily a dimension of mobilisation readiness and is analytically distinct from both general economic resilience (Alloush and Carter, 2024) and contemporaneous operational readiness (Betts, 1995). We make three contributions. First, we conceptualise and operationalise the intermediate conversion mechanism linking economic resources to sustained military capability. Second, we develop a transparent country-level measurement framework that integrates macroeconomic capacity ( 𝑀 ), defence-relevant supply-chain resilience ( 𝑆 ), defence-industrial capability ( 𝐷 ), logistics and sustainment ( 𝐿 ), and effective access to allied or foreign supply. Third, we separate baseline capacity from stress vulnerability by applying harmonised geoeconomic shocks within the same measurement framework, making it possible to assess heterogeneous effects on countries that start from similar readiness levels but respond differently when supply, replenishment, or external support deteriorates. The empirical analysis covers 28 European NATO Allies. The composite index combines four components— 𝑀 , 𝑆 , 𝐷 , and 𝐿 —constructed from 25 indicators. A balanced baseline is stress-tested against five scenarios: transfer-and-replenishment stress, prolonged rivalry, supply-chain fragmentation, external-support reduction, and combined stress. Low, Central, and High calibrations capture scenario intensity. The analysis is conducted at the country level, and results are decomposed to component and indicator level. Independent external benchmarks are used to assess whether the resulting index exhibits the expected relationships with industrial, innovation, and logistics capabilities. The empirical analysis is a structured measurement and stress-testing exercise rather than an estimated causal model or conflict forecast. Scenario results identify how Allies’ conversion capacity changes under common calibrated geoeconomic shocks; they do not estimate battlefield outcomes or the probability of military success. This distinction is important because actual crises are heterogeneous and can expose countries to very 2different levels of physical destruction, attrition, infrastructure disruption, and external support, as Russia’s full-scale invasion of Ukraine demonstrates. The remainder of the paper proceeds as follows. Section 2 develops the conceptual framework and empirical propositions. Section 3 compares the measure with existing readiness, mobilisation, defence-industrial, resilience, and geoeconomic approaches. Section 4 describes the sample, data architecture, and scenario design. Section 5 presents the index. Section 6 reports the empirical results. Section 7 presents external validation. Section 8 discusses interpretation, policy implications, and limitations. Section 9 concludes. The online appendix documents the full indicator construction, coverage matrix, scoring methodology, scenario calibration, transformation equations, and robustness procedures. 
+
+# 2 Conceptual framework 
+
+# 2.1 Readiness concepts and the analytical boundary 
+
+Military readiness is not determined by military inventories alone. In a protracted crisis or conflict, a state must also be able to replace equipment, replenish stocks, maintain platforms, expand production, secure critical inputs, and sustain the movement of materiel. These functions draw on economic and industrial resources that lie partly outside the armed forces. The analytical question is therefore not only what resources a country possesses, but how effectively they can be converted into usable and sustainable military capability when conditions deteriorate. Following Betts (1995), the framework distinguishes three related concepts. Structural readiness concerns the forces, equipment, and force structure available for employment. 
+
+Operational readiness concerns the ability of existing forces to perform assigned missions. 
+
+Mobilisation readiness concerns the capacity to generate, expand, replace, replenish, and sustain capability beyond the forces and stocks already available. These concepts are connected but not interchangeable. A force can be operationally ready at the beginning of a conflict yet possess limited capacity to replace losses or replenish munitions. Conversely, a state can possess substantial industrial potential without maintaining a powerful standing force. The analysis focuses primarily on mobilisation readiness. We define readiness-enabling conversion capacity as the capacity of a state to convert economic, industrial, and logist-ical resources into replacement, replenishment, maintenance, and sustained military capability under strategic stress. This capacity is narrower than national preparedness or whole-of-society resilience, but broader than defence-industrial production alone. It captures the economic-industrial conditions that enable military capability to be regen-erated and sustained once initial stocks, peacetime production rates, and established supply arrangements come under pressure. This formulation builds on the distinction between possessing latent resources and being able to translate them into military power. Kancs (2026a) characterises mobilisation readiness in terms of the convertibility and expansibility of civilian personnel and 3industrial resources and similarly links latent power, defence investment, capabilities, capacity, and security outcomes. Readiness-enabling conversion capacity therefore occupies an intermediate position between general economic resilience and sustained operational readiness (Figure 1). Economic resilience preserves the resource base from which mobilisation can occur; conversion capacity determines whether those resources can be directed into defence production, replacement, maintenance, and sustainment; operational readiness concerns whether forces can perform assigned missions. We do not measure combat effectiveness, force quality, or contemporaneous operational readiness. A high index value indicates favourable economic-industrial conditions for sustaining capability under stress, not that a country’s armed forces would prevail in a particular military operation.         
+
+> Economic resources
+> Fiscal space, output, labour, energy
+> Readiness-enabling conversion capacity
+> 𝑀 : macroeconomic capacity
+> 𝑆 : sectoral resilience
+> 𝐷 : defence-industrial capability
+> 𝐿 : logistics and sustainment
+> Mobilisation and sustainment
+> Replacement, replenishment, maintenance, delivery
+> Sustained operational readiness
+> Military capability over time
+> Strategic stress tests the conversion process
+> TRS ·PR ·SCF ·ESR ·CS
+
+Figure 1: Readiness-enabling conversion capacity in the readiness chain 
+
+# 2.2 Four mechanisms of conversion capacity 
+
+The empirical framework decomposes readiness-enabling conversion capacity into four mechanisms: macroeconomic capacity 𝑀 , sectoral resilience 𝑆 , defence-industrial capability 𝐷 , and logistics and sustainment 𝐿 . The decomposition separates resource availability from the specific mechanisms through which those resources become militarily useful. The four-part decomposition follows the economic sequence from resource mobilisation, through input continuity and defence-specific production, to sustainment and delivery. Mobilisation research motivates the aggregate resource constraint (Harrison, 1988); production-network and geoeconomic research identifies direct and indirect input dependencies (Acemoglu et al., 2012; Farrell and Newman, 2019; Kancs, 2024); defence-economics and mobilisation research highlights procurement, surge capacity, and lead times (Smith, 2022; Mueller, 2025; Kancs, 2026a); and military-logistics research links maintenance, transport, and repair capacity to operational availability (McGee et al., 2005; García-Benito and Martín-Peña, 2021). 
+
+Macroeconomic capacity 𝑀 . Government fiscal space, economic scale, domestic absorption capacity, inflationary pressures, energy dependence, and labour availability condition the feasible rate at which defence demand can expand. Mobilisation entails opportunity costs because labour, finance, energy, and productive capacity have alternative civilian uses. Macroeconomic capacity therefore defines the resource envelope within which industrial mobilisation occurs. It is a necessary, though not 4sufficient, condition: a large economy with weak defence-specific production or severe supply dependencies may convert resources more slowly than a smaller but better-prepared industrial system (Harrison, 1988; Kancs, 2026a). 
+
+Sectoral resilience 𝑆 . Advanced defence production relies on multi-tier supply chains containing specialised components, critical raw materials, machine tools, electronics, and technologies for which substitution can require lengthy qualification or redesign. Direct import dependence captures only first-order exposure. Production can also depend indirectly on foreign inputs embodied in domestically purchased intermediates. Sectoral resilience therefore depends on direct and indirect exposure, supplier concentration, the availability of alternatives, and the technical and logistical feasibility of substitution. Security of supply becomes a constraint on nominal industrial capacity when suppliers restrict exports, transport deteriorates, or simultaneous allied demand rises (Acemoglu et al., 2012; Kancs, 2024). 
+
+Defence-industrial capability 𝐷 . The defence-industrial mechanism determines whether demand can be translated into materiel at the speed of relevance. Supplier depth, baseline production, usable surge capacity, procurement activity, qualification bottlenecks, lead times, and access to foreign or allied supply all affect effective output (Cancian et al., 2020). The relevant distinction is between nominal and expandable capacity. Measured headroom is not necessarily immediately usable because additional production can require specialised labour, energetic materials, components, tooling, testing facilities, or regulatory qualification. Time therefore matters directly: a produc-tion system capable of eventually replacing a platform is not equivalent to one able to replace it within the operationally relevant period. Kancs (2026a) makes this time dimension explicit through inventory-expansion time, which depends on the required inventory, production rate, and production lead time. 
+
+Logistics and sustainment 𝐿 . Conversion is incomplete until generated capability can be maintained and delivered. Transport infrastructure, maintenance and repair capacity, spare-parts availability, logistics-support capacity, replenishment speed, and replacement flows determine whether military systems remain available after initial use. Initial stocks can temporarily compensate for slow production or delivery, but their contribution declines as equipment requires repair and inventories are consumed. Logistics and sustainment therefore connect industrial output to persistent operational capability (McGee et al., 2005; García-Benito and Martín-Peña, 2021). The four mechanisms also define the boundary with linked concepts of readiness. Force structure and contemporaneous operational readiness are downstream outcomes rather than conversion mechanisms; broad societal resilience is upstream and wider than the capacity we study; defence procurement and defence-specific labour constraints enter 
+
+𝐷 ; stocks, maintenance, transport, and replenishment enter 𝐿 ; and allied or foreign supply access enters the production and sustainment mechanisms rather than forming a separate fifth capacity. This nesting keeps the framework parsimonious while retaining the principal economic-industrial constraints identified in the literature (Betts, 1995; Kancs, 2026a; Smith, 2022; McGee et al., 2005). 52.3 Strategic stress, allied access, and vulnerability 
+
+Peacetime capacity and stressed capacity are not the same. Many arrangements that increase efficiency in normal conditions—international specialisation, lean inventor-ies, concentrated suppliers, or reliance on allied production—can create contingent vulnerability when access, transport, or simultaneous demand changes. Domestic production is only one source of replenishment. For capability or production category 𝑔 , effective supply is represented as: 
+
+𝑄 𝐸 𝑐,𝑔,𝑠 = 𝑄 𝐷𝑂𝑀 𝑐,𝑔,𝑠 + 𝐴 𝑐,𝑔,𝑠 𝑄 𝐹𝑂𝑅 𝑐,𝑔,𝑠 , (1) where 𝑄 𝐷𝑂𝑀 is effective domestic supply, 𝑄 𝐹𝑂𝑅 is potentially available foreign or allied supply, and 𝐴 𝑐,𝑔,𝑠 ∈ [ 0, 1] is the effective foreign-access factor. 𝐴 captures contractual access, expected delivery availability, supplier-country concentration, export and licensing restrictions, transport conditions, competing allied demand, and emergency access arrangements. This formulation treats allied supply as part of effective capacity rather than equating readiness with domestic self-sufficiency. Strategic stress acts on the conversion process through several channels. Trade frag-mentation and technology denial affect imported inputs and substitutability; transfer and replenishment pressure raises replacement demand and production queues; pro-longed rivalry changes the duration over which production and sustainment constraints operate; and reduced external support lowers effective foreign access. These shocks can propagate from macroeconomic and sectoral exposure into production bottlenecks, longer lead times, maintenance pressure, spare-parts scarcity, and slower replenishment. A narrow disruption to a defence-critical input can therefore have a small effect on aggregate GDP but a large effect on military conversion capacity, while a broad trade shock can have a modest readiness effect if the affected inputs are readily substitutable or militarily unimportant. For country 𝑐 , let baseline conversion capacity be 𝑅 𝑐, 0 and stressed capacity under scenario 𝑠 be 𝑅 𝑐,𝑠 . Scenario vulnerability is: 
+
+𝑉 𝑐,𝑠 = 𝑅 𝑐, 0 − 𝑅 𝑐,𝑠 . (2) Baseline capacity and stress vulnerability therefore capture distinct dimensions of readiness. Countries with similar baseline scores can experience heterogeneous losses under the same scenario because their capacity rests on different combinations of domestic production, imported inputs, supplier diversity, allied access, and logistics. 
+
+# 2.4 Complementarity, bottlenecks, and time 
+
+Decomposing readiness-enabling conversion capacity into four mechanisms helps identify bottlenecks and clarify how they interact. In operational and technological terms, however, the mechanisms are complementary. Fiscal resources cannot replace a missing qualified component immediately. Production capacity has limited military value if maintenance and delivery systems cannot sustain the resulting equipment. 6Allied procurement cannot fully compensate for domestic shortfalls when allies face sim-ultaneous replenishment requirements. Infrastructure cannot substitute for unavailable replacement materiel. Readiness-enabling conversion capacity therefore exhibits a bottleneck property, whereby system output may be disproportionately constrained by its weakest component. This does not require the empirical index to impose a strict Leontief production function. It implies instead that stress can reveal dependencies that remain latent in normal conditions. The component decomposition is therefore provided alongside the composite index because similar aggregate scores can reflect very different configurations of constraints. Time introduces a second distinction between stock and flow constraints. Stock constraints concern inventories, stored munitions, spare parts, and pre-positioned equipment. Flow constraints concern the speed of production, contracting, maintenance, transport, and replacement. A country with adequate initial stocks but weak replenishment can appear resilient in the first phase of a crisis and constrained later; a country with limited stocks but stronger replenishment can face immediate vulnerability yet regenerate more rapidly. The five stress scenarios are designed to expose these differences rather than to forecast a single conflict path. The mechanism is sequential for analytical clarity but allows feedback: missing inputs can delay production and accelerate inventory drawdown; logistics problems can increase emergency procurement demand; and external-support diversion can redirect demand towards already constrained domestic suppliers. 
+
+# 2.5 Empirical propositions 
+
+The conceptual framework yields four propositions about the relationships that should be visible in the country-level decomposition and stress tests. 
+
+Proposition 1: Conversion and bottlenecks. Readiness-enabling conversion capa-city depends jointly on macroeconomic resources, resilient strategic inputs, defence-industrial capability, and logistics and sustainment. Because these mechanisms are complementary, a weak component can constrain effective conversion even when other components are strong: 
+
+𝑅 𝑐 = 𝑓 (𝑀 𝑐 , 𝑆 𝑐 , 𝐷 𝑐 , 𝐿 𝑐 ), 𝜕 𝑅 
+
+𝜕 𝑀 , 𝜕 𝑅 
+
+𝜕 𝑆 , 𝜕 𝑅 
+
+𝜕 𝐷 , 𝜕 𝑅 
+
+𝜕 𝐿 > 0. (3) 
+
+Proposition 2: Stress heterogeneity. Geoeconomic shocks operating through different channels generate different patterns of country vulnerability. Replenishment pressure should load primarily on defence-industrial and sustainment mechanisms, while supply-chain fragmentation should load more strongly on sectoral exposure, concentration, and substitutability. Distinct channel contributions and country vulnerability profiles therefore provide evidence that the scenarios reveal different constraints rather than reproducing a single generic stress ranking. 7Proposition 3: Allied-access contingency. Allied and foreign supply expands ef-fective conversion capacity when access is reliable, but dependence on that supply creates contingent vulnerability when contractual access, delivery, transport, or allied availability deteriorates: 
+
+𝜕 𝑉 𝑐,𝐸𝑆𝑅 
+
+𝜕 foreign-access dependence > 0. (4) 
+
+Proposition 4: Compound stress. When several complementary constraints deterior-ate simultaneously, combined stress should produce a larger loss of effective conversion capacity than the corresponding single-channel stresses, subject to the model’s non-double-counting rules: 
+
+𝑉 𝑐,𝐶𝑆 ≥ max (𝑉 𝑐,𝑇𝑅𝑆 , 𝑉 𝑐,𝑆𝐶𝐹 , 𝑉 𝑐,𝐸𝑆𝑅 ) . (5) 
+
+# 3 Related literature 
+
+Our key contribution is best understood through a measurement comparison: what do existing approaches measure, and what remains missing? The relevant strands of literature provide strong treatments of military readiness, mobilisation, defence-industrial ca-pacity, societal resilience, and geoeconomic dependence, but they generally observe different parts of the readiness chain. The gap is not an absence of readiness indicators. It is the absence of a transparent, country-comparable measure of the economic-industrial conversion mechanism defined in Section 2. 
+
+# 3.1 Military readiness and mobilisation 
+
+Military-readiness systems are primarily designed to assess the condition and deploy-ability of forces. They organise information around personnel, equipment, training, supply, maintenance, and mission capability (Betts, 1995; DoD, 2024; USMC, 2020). Their unit of analysis is commonly a force, service, unit, or mission, and many of the most decision-relevant measures are classified or organisation-specific. These systems are therefore closely linked to military decision-making but are not designed to compare states’ economic-industrial capacity to regenerate capability after stocks are depleted or equipment is damaged. Mobilisation research is more closely aligned with the present study because it focuses on expansion and regeneration. Kancs (2026a), for example, measures mobilisation through the convertibility and expansibility of personnel, materiel, and industrial resources. Other mobilisation approaches use inventories, production lines, mobilisation plans, historical benchmarks, or capability-specific replacement requirements. These measures reveal important bottlenecks but are often tied to particular systems, national plans, or restricted information. They do not generally provide a harmonised country-level measure of the broader conversion mechanism. The present study therefore complements the existing structural and operational 8readiness measures. Our empirical object is upstream of mission readiness: the economic-industrial capacity that enables mobilisation, replenishment, maintenance, and sustained force availability once peacetime stocks and production arrangements come under pressure. 
+
+# 3.2 Defence-industrial capacity and mobilisation 
+
+Defence economics has long emphasised features that distinguish defence markets from ordinary product markets: state-dominated demand, security restrictions, low-volume specialised production, long development cycles, scale economies, uncertainty, and the strategic value of retaining production capabilities that often remain underused for longer periods in peacetime (Sandler and Hartley, 1995; Dunne, 1995; Hartley, 2007). Work on defence output and procurement further distinguishes budgetary inputs from delivered military capability (Hartley, 2012; IISS, 2022). Recent policy debates and academic literature place greater emphasis on surge capacity, production bottlenecks, procurement credibility, supply-chain resilience, and sustained replenishment demand (Cancian et al., 2020; NATO, 2024, 2025; European Commission, 2024). This literature identifies a central part of the conversion mechanism. Defence expendit-ure produces military output only if demand can pass through contracting, qualified suppliers, specialised labour, production capacity, certification, testing, maintenance, and delivery. Large increases in budgets or orders therefore need not translate into proportionate near-term output. Kancs (2026a) makes the time constraint explicit through inventory-expansion time, while analyses of munitions and replenishment similarly emphasise the speed at which stocks can be regenerated (Cancian and Park, 2026). The measurement gap is one of scope. Defence-industrial studies generally examine particular weapon systems, production lines, firms, procurement institutions, or national industrial bases. Industrial capacity is indispensable to the present analysis, but it does not by itself capture macroeconomic absorption, indirect geoeconomic exposure, logistics and maintenance, or contingent access to allied supply. The 𝐷 component is therefore one mechanism within a broader conversion system. 
+
+# 3.3 Economic and societal resilience 
+
+A third strand of literature studies to what extent economies and societies can absorb shocks, maintain essential functions, adapt to disruption, and recover (Alloush and Carter, 2024). In defence policy this includes continuity of government and critical services, infrastructure, civil preparedness, stockpiles, production and distribution systems, and the capacity of society to sustain essential functions during a protracted crisis. Kancs (2026a), for example, treats sustained whole-of-society resilience as a strategic-readiness dimension and compares preparedness, shock resistance, and recovery capacity across countries. This literature is closely related to the paper’s resource base but measures a broader object. Resilience literature asks whether economic and societal functions persist under disruption (Alloush and Carter, 2024). It does not normally ask whether those resources 9can be converted into additional ammunition, repaired platforms, qualified substitute inputs, spare parts, maintenance capacity, or military logistics at the required rate. A country can maintain aggregate output and essential services while still facing a narrow defence-industrial bottleneck; conversely, a broad macroeconomic shock need not become a military bottleneck if defence-critical inputs and conversion channels remain available. The distinction is therefore at the analytical level. Economic and societal resilience is conceptually upstream of readiness-enabling conversion capacity. External validation can reveal whether the concepts overlap where expected without requiring a defence-specific conversion measure to reproduce a general resilience index. 
+
+# 3.4 Geoeconomic vulnerability and supply-chain resilience 
+
+Research on global value chains, production networks, and geoeconomic fragmentation shows that final production depends on international chains of intermediate inputs and that shocks propagate beyond directly exposed firms and sectors (Hummels et al., 2001; Antràs and Chor, 2013; Acemoglu et al., 2012; Boehm et al., 2019; Bonadio et al., 2021; Baqaee and Farhi, 2024). The geoeconomic literature adds a strategic dimension: networks that improve efficiency can also create leverage and vulnerability when access to trade, finance, technology, transport nodes, or critical raw materials becomes politically constrained (Farrell and Newman, 2019; Aiyar et al., 2023). Work on critical raw materials further shows that exposure depends on concentrated extraction and processing, by-product dependence, and the difficulty of expanding supply rapidly (Nassar et al., 2015; Graedel et al., 2015; OECD, 2023; European Commission, 2023). This literature supplies the transmission logic for the sectoral-resilience component. Direct import dependence captures first-order exposure; input-output linkages capture foreign inputs embedded in domestically purchased intermediates; supplier concen-tration affects the availability of alternatives; and qualification or input specificity determines whether nominal substitutes can be used within the relevant horizon. The missing link is military conversion. Geoeconomic vulnerability is commonly measured in terms of trade exposure, output, welfare, or dependence on foreign inputs and markets. A large aggregate exposure can have limited readiness consequences when inputs are readily substitutable or militarily unimportant, while a small trade flow can become strategically important when it contains a certified component with no near-term substitute. The present framework therefore maps geoeconomic exposure into defence-relevant production and sustainment by combining direct and indirect dependence with concentration, substitutability, critical-input relevance, production lead times, and foreign-access conditions. 
+
+# 3.5 Composite measurement 
+
+Taken together, existing studies identify the relevant mechanisms that condition sus-tained military capability, but they measure different objects. Military-readiness systems measure force condition and mission capability; mobilisation studies measure selected expansion and regeneration capacities; defence-industrial research measures production 10 and procurement constraints; resilience indices measure shock absorption and recovery; and geoeconomic measures identify external dependencies and propagation channels. Table 1 summarises the distinction. None of these approaches is designed to provide a harmonised, reproducible country-level measure of the intermediate conversion mechanism linking economic resources to military replenishment and sustainment across European states. Table 1: Measurement comparison: existing approaches and readiness-enabling conver-sion capacity 
+
+Approach Primary object measured Typical unit of analysis Measurement gap relative to this paper Military readiness Force condition, training, mission capability, equipment, personnel Unit, service, force, mission Measures operational deployability but generally not the economic-industrial capacity to regenerate capability under prolonged strategic stress. Mobilisation and preparedness Expansion of personnel, materiel, inventories, and selected industrial capacity Country, force, capability, weapon system Captures regeneration directly but often through selected stocks, production lines, historical benchmarks, or restricted planning information rather than a harmonised country framework. Defence-industrial capacity Production, procurement, supplier base, lead times, surge, industrial policy Firm, sector, programme, weapon system, country Measures the industrial conversion stage but usually does not jointly incorporate macroeconomic absorption, indirect geoeconomic exposure, logistics, sustainment, and contingent foreign access. Economic and societal resilience Shock absorption, continuity, adaptation, and recovery Country, economy, society, infrastructure system Measures whether essential economic and societal functions persist, not whether resources can be converted into military replacement and replenishment at the required rate. Geoeconomic and supply-chain vulnerability Trade dependence, network exposure, concentration, fragmentation, critical inputs Product, sector, firm, country, network Identifies where shocks propagate but not whether the affected dependency becomes a binding military production, maintenance, or replenishment constraint. 
+
+This study Readiness-enabling conversion capacity Country, with indicator and component de-composition Links macroeconomic capacity, defence-relevant supply-chain resilience, defence-industrial capability, logistics and sustainment, and effective foreign access under common strategic stress scenarios. 
+
+> Note: The categories summarise dominant measurement objects rather than mutually exclusive literatures. Individual studies may span more than one category.
+
+11 4 Empirical implementation 
+
+# 4.1 Country sample 
+
+The empirical sample covers 28 European NATO Allies: Albania, Belgium, Bulgaria, Croatia, Czechia, Denmark, Estonia, Finland, France, Germany, Hungary, Iceland, Italy, Latvia, Lithuania, Luxembourg, Montenegro, the Netherlands, North Macedonia, Norway, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden, and the United Kingdom. The United States and Canada are excluded because the analysis concerns European defence readiness. Greece and Türkiye are excluded by a pre-specified comparability rule. Their defence postures are shaped to a significant degree by security requirements that are analytically distinct from the Russian conventional threat that defines the comparison set: Aegean and Eastern Mediterranean security, bilateral Greek–Turkish competition, Cyprus, wider Middle Eastern contingencies, maritime access, and other regional requirements. The exclusion does not imply that either state is unaffected by Russia or does not contribute to NATO deterrence. It reflects the fact that the same observed indicator can represent a different underlying readiness requirement across the Aegean and northern/eastern European Allies. 
+
+# 4.2 Public replication and restricted validation 
+
+The empirical architecture separates the public measurement layer from a restricted validation environment. Let 𝑅 𝑃 𝑐,𝑠 denote the public country-level index for country 𝑐 
+
+under scenario 𝑠 :
+
+𝑅 𝑃 𝑐,𝑠 = 𝑤 𝑀,𝑠 𝑀 𝑐,𝑠 + 𝑤 𝑆,𝑠 𝑆 𝑐,𝑠 + 𝑤 𝐷,𝑠 𝐷 𝑃 𝑐,𝑠 + 𝑤 𝐿,𝑠 𝐿 𝑃 𝑐,𝑠 , (6) where 𝐷 𝑃 and 𝐿 𝑃 use public or reproducible proxy information. Let 𝑅 𝐴 𝑐,𝑠 denote an augmented validation result using authorised restricted information. The validation difference is: 
+
+Δ𝑅 𝑐,𝑠 = 𝑅 𝐴 𝑐,𝑠 − 𝑅 𝑃 𝑐,𝑠 . (7) The public model produces the presented results. Restricted inventories, target stocks, maintenance states, production rates, or contract information test whether more precise information materially changes country levels, ranks, binding components, or scenario sensitivities, but they do not define a result that cannot be reproduced from the public model. 1
+
+# 4.3 Variables and data sources 
+
+Table 2 summarises the four public-core components. The online appendix provides the detailed component indicator registers and scoring rules in Tables 4–7, the partial-observation register in Table 8, and the applied normalisation bounds in Table 9,     
+
+> 1To simplify notation, the remainder of the paper writes the readiness index as 𝑅 𝑐,𝑠 ≡𝑅 𝑃 𝑐,𝑠 . The superscript is retained only when the distinction between the public and augmented layers is discussed.
+
+12 including exact source identifiers, transformations, weights, vintages, country coverage, missing-data rules, and public/restricted status for the indicators used in computations. Table 2: Variables and data sources: overview 
+
+Compo-nent Concept measured Public-core indicator groups Principal public sources 
+
+𝑀 Macroeconomic capacity Fiscal headroom, price exposure, labour/absorption capacity, energy sensitivity Eurostat, IMF, ECB, OECD and national statistical sources 
+
+𝑆 Sectoral resilience Import concentration, upstream exposure, substitutability, critical-material dependence OECD ICIO/TiVA, Eurostat, Comtrade/BACI, PRODCOM, JRC/EC critical-material sources 
+
+𝐷 𝑃 Public defence-industrial capability Supplier depth, procurement activity, public production proxies, lead-time evidence, certification and surge proxies TED and national procurement portals, firm reports, Eurostat SBS/PRODCOM sources, EDA/NATO/EC industrial sources 
+
+𝐿 𝑃 Public/proxy logistics and sustainment Transport and reinforcement infrastructure, public maintenance/MRO capacity, replenishment evidence, inventory-replacement proxies TEN-T/infrastructure data, procurement and MRO sources, public readiness and logistics reports       
+
+> Note: The table defines Layer A, the public replication model. Restricted inventories, target stocks, maintenance states, production rates, or contract information enter only Layer B validation and are not required to reproduce the presented results. Higher scores indicate stronger capacity. 𝑀 ,𝑆 ,𝐷 𝑃 ,and 𝐿 𝑃 denote macroeconomic capacity, sectoral resilience, public defence-industrial capability, and public/proxy logistics and sustainment, respectively.
+
+The source hierarchy, country-specific fallbacks, vintages, and indicator-level scoring rules are reported in Online Appendix Tables 4–9. 
+
+# 4.4 Unified scenario architecture 
+
+The analysis uses one balanced baseline and five geoeconomic stress scenarios. Scen-ario names, symbols, stress multipliers, foreign-access assumptions, and calibration parameters are identical in the paper, online appendix, and replication files. Top-level component weights remain fixed across scenarios; stress is introduced through indicator-level transformations. Scenario analysis is a stress-testing exercise. We do not speculate about the events that might trigger these scenarios, nor do we assign probabilities to their occurrence or treat them as desirable outcomes. Low, Central, and High calibrations represent scenario intensity rather than alternative component-weighting schemes. 13 Table 3: Overview of geoeconomic stress scenarios 
+
+Code Scenario Core mechanism BL Balanced baseline Elevated defence demand and geopolitical tension with moderate supply-chain stress and currently expected allied availability. TRS Transfer-and-replenishment stress Combat attrition occurs outside the sample; European effects arise through transfers, inventory drawdown, replacement demand, procurement queues, maintenance pressure, and replenishment requirements. PR Prolonged rivalry Persistent strategic competition with gradual adaptation, managed de-risking, supplier diversification, longer-term contracting, and progressive capacity expansion. SCF Supply-chain fragmentation Trade restrictions, critical-input disruption, technology denial, supplier concentration, transport disruption, and reduced substitutability. ESR External-support reduction Effective access to foreign/allied production, inventories, maintenance, enabling capability, or delivery capacity declines; the principal model channel is a reduction in 𝐴 𝑐,𝑔,𝑠 .CS Combined stress Simultaneous transfer/replenishment pressure, supply-chain fragmentation, price and fiscal stress, and reduced external support. 
+
+> Note: Under TRS, the kinetic event is external to the analysed countries; the model captures the resulting non-kinetic economic-industrial transmission into Europe. The corresponding classification is reported in Online Appendix Table 12; parameter domains, exact Low, Central, and High vectors, and indicator-level transformation rules are reported in Online Appendix Tables 13–15.
+
+14 5 Readiness-enabling index 
+
+# 5.1 Aggregation 
+
+The index combines 25 indicators into four components: macroeconomic capacity 𝑀 ,sectoral resilience 𝑆 , defence-industrial capability 𝐷 , and logistics and sustainment 
+
+𝐿 . All scores lie on [0, 1], with higher values indicating stronger readiness-enabling conversion capacity. Within each component, applicable indicators receive equal weight. Structural non-applicability, such as absence of armed forces in Iceland, is handled by reweighting the remaining indicators rather than assigning a synthetic score. For component 𝐾 ∈ { 𝑀, 𝑆, 𝐷, 𝐿 },
+
+𝐾 𝑐,𝑠 =
+
+Õ
+
+> 𝑖 ∈𝐼 𝐾
+
+𝑤 ′ 
+
+> 𝑐𝑖
+
+𝑁 𝑐,𝑖,𝑠 , (8) where 𝑁 𝑐,𝑖,𝑠 is the normalised indicator score and 𝑤 ′ 
+
+> 𝑐𝑖
+
+is the applicable within-component weight. The composite index gives equal weight to the four components in the baseline and in every stress scenario: 
+
+𝑅 𝑐,𝑠 = 14 (𝑀 𝑐,𝑠 + 𝑆 𝑐,𝑠 + 𝐷 𝑐,𝑠 + 𝐿 𝑐,𝑠 ) . (9) Fixed top-level weights ensure that differences between scenarios reflect changes in the underlying indicators rather than changes in the aggregation rule. 
+
+# 5.2 Normalisation, coverage, and confidence 
+
+Indicators are transformed so that higher values always denote stronger capacity. Variables without natural bounds are normalised using baseline fifth and ninety-fifth percentiles among countries with Full coverage; highly skewed non-negative variables are log-transformed before normalisation. Lead-time indicators use a non-linear decay so that delays have progressively larger readiness costs over operationally relevant horizons. The same baseline normalisation bounds are retained in every scenario. The scoring procedure separates the estimated indicator value from confidence in that value. Structural N/A observations are reweighted within the component. Partial observations use the same scoring equation as Full observations but carry lower confidence according to provenance, coverage quality, and vintage. Confidence does not alter the composite score, thereby avoiding mechanical advantages for countries with more extensive disclosure. Detailed transformations, confidence factors, and missing-data rules are reported in Online Appendix Tables 4–8; the baseline normalisation bounds retained in all stress states are reported in Online Appendix Table 9. 
+
+# 5.3 Scenario transformations 
+
+The calibrated shocks operate through sectoral resilience, defence-industrial capability, and logistics and sustainment. In all geoeconomic stress scenarios, the aggregation 15 weights and baseline measurement scale remain fixed, and the macroeconomic compon-ent 𝑀 is held constant. The shock magnitudes are calibrated from empirical evidence rather than selected as unconstrained hypothetical values. The calibration domains draw on production-network evidence on direct and indirect shock propagation and substitution (Acemoglu et al., 2012; Boehm et al., 2019; Bonadio et al., 2021), geoeconomic and supply-chain evidence on concentrated dependencies and trade disruption (Farrell and Newman, 2019; Baldwin and Freeman, 2022; Kancs, 2024), and defence-industrial evidence on surge production, replacement times, lead times, and replenishment requirements (Cancian et al., 2020; Kancs, 2026a). Online Appendix Table 13 reports the evidence-supported parameter domains, Table 14 reports the definitive Low, Central, and High calibration values, and Table 15 maps those parameters to the 25 baseline indicators. TRS and PR increase pressure on replenishment demand, production and procurement lead times, surge capacity, and delivery. SCF changes strategic-input availability, trade frictions, substitutability, supplier concentration, and critical-input exposure. ESR lowers effective allied or foreign access and the sustainment channels that depend on it. CS activates several channels simultaneously using a directly calibrated parameter vector rather than mechanically multiplying the constituent scenarios. Low, Central, and High calibrations therefore represent scenario intensity within evidence-supported parameter ranges rather than arbitrary uncertainty bands. 
+
+# 5.4 Interpretation 
+
+The index is a comparative measure of the economic-industrial conditions that support mobilisation and sustained capability. The presented score is therefore interpreted together with its component and indicator decomposition. Scenario vulnerability is the absolute loss relative to the balanced baseline: 
+
+𝑉 𝑐,𝑠 = 𝑅 𝑐, 0 − 𝑅 𝑐,𝑠 . (10) This quantity is distinct from the stressed level. A country can experience a relatively large absolute loss and still retain a stronger stressed score than a country that began from a lower baseline. Within each scenario and intensity, countries receive the same calibrated shock vector; cross-country differences therefore arise from baseline structure, exposure, substitut-ability, industrial capacity, allied access, and sustainment. This symmetry supports comparative stress testing but abstracts from the asymmetric shocks experienced in actual crises. 
+
+# 6 Empirical results 
+
+Throughout this section, scenario vulnerability is the absolute score loss defined in Equation 2, 𝑉 𝑐,𝑠 = 𝑅 𝑐, 0 − 𝑅 𝑐,𝑠 . Because this is an absolute rather than proportional measure, a country with a high baseline can record a relatively large vulnerability 16 while still retaining a higher stressed level than a lower-capacity country. Results therefore distinguish between the level of stressed capacity, the amount of capacity lost, and changes in cross-country rank. Unless otherwise stated, the discussion of simulated stress scenarios refers to the Central calibration; Low and High calibrations enter the sensitivity analysis. The discussion below uses Propositions 1–4 to organise the interpretation of country-level mechanisms and stress responses. 
+
+# 6.1 How much baseline conversion capacity differs across countries 
+
+Baseline readiness-enabling conversion capacity varies substantially across the sample. The mean estimated score is 0.610 , with a standard deviation of 0.083 , and the country range extends from 0.471 to 0.759 . Germany records the highest baseline score ( 0.759 ), followed by France ( 0.749 ), Sweden ( 0.725 ), Italy ( 0.712 ), and the United Kingdom (0.708 ). At the lower end are Albania ( 0.518 ), Latvia ( 0.517 ), Iceland ( 0.486 ), North Macedonia ( 0.484 ), and Montenegro ( 0.471 ). The component structure is at least as informative as the overall ranking. Across countries, mean scores are 0.550 for macroeconomic capacity 𝑀 , 0.787 for sectoral resilience 𝑆 , 0.558 for defence-industrial capability 𝐷 , and 0.545 for logistics and sustainment 𝐿 . The widest cross-country ranges occur in 𝐷 , from 0.294 to 0.862 , and 𝑀 ,from 0.279 to 0.823 . By comparison, 𝑆 is compressed between 0.718 and 0.829 , while 
+
+𝐿 ranges from 0.354 to 0.657 . The baseline ranking is therefore driven primarily by differences in macroeconomic and defence-industrial conversion capacity rather than by uniformly weak sectoral resilience. The component profiles also illustrate Proposition 1’s bottleneck logic: similar composite scores can conceal materially different weak links in the conversion chain. Table 4 reports the country-level baseline scores. The results illustrate why the compon-ent decomposition matters. Germany’s baseline strength is concentrated in macroeco-nomic capacity and the highest 𝐷 score in the sample ( 0.862 ), whereas France combines a high 𝐷 score ( 0.806 ) with the strongest 𝐿 score ( 0.657 ). Sweden is distinguished by the highest 𝑆 score ( 0.829 ) and strong values across all four components. Denmark has the strongest 𝑀 score ( 0.823 ) but a lower 𝐿 score ( 0.474 ), placing it sixth overall. Norway similarly combines high 𝑀 and 𝑆 with weaker 𝐷 and 𝐿 , producing an overall rank of thirteenth. At the lower end, Montenegro’s score reflects particularly weak 𝑀 
+
+and 𝐷 ; North Macedonia combines the lowest 𝑀 score with a middling 𝐿 score; and Iceland’s main weaknesses are 𝐷 and 𝐿 . Similar aggregate scores can therefore arise from different underlying conversion constraints. 
+
+# 6.2 How geoeconomic shocks reduce capacity 
+
+Every simulated geoeconomic stress scenario reduces mean readiness-enabling conver-sion capacity, but the magnitude differs materially across scenarios. Table 5 reports the scenario results. The external-support-reduction scenario is the least severe in aggregate: mean 𝑅 falls from 0.610 to 0.588 , an absolute deterioration of 0.022 , equivalent to 3.6 per cent of the baseline mean. Prolonged rivalry reduces the mean to 0.569 , a loss of 0.041 
+
+or 6.7 per cent. Supply-chain fragmentation and transfer-and-replenishment stress 17 Table 4: Baseline readiness-enabling conversion capacity by country 
+
+Country 𝑀 𝑆 𝐷 𝐿 𝑅 Rank Germany 0.758 0.815 0.862 0.600 0.759 1France 0.711 0.820 0.806 0.657 0.749 2Sweden 0.702 0.829 0.753 0.615 0.725 3Italy 0.646 0.796 0.798 0.606 0.712 4United Kingdom 0.687 0.817 0.744 0.585 0.708 5Denmark 0.823 0.815 0.654 0.474 0.691 6Spain 0.596 0.804 0.715 0.639 0.689 7Czechia 0.589 0.796 0.612 0.629 0.656 8Netherlands 0.572 0.793 0.687 0.553 0.651 9Finland 0.553 0.802 0.662 0.571 0.647 10 Portugal 0.654 0.794 0.567 0.536 0.638 11 Belgium 0.490 0.797 0.698 0.557 0.636 12 Norway 0.747 0.824 0.532 0.434 0.634 13 Poland 0.586 0.805 0.609 0.522 0.631 14 Romania 0.533 0.805 0.523 0.540 0.600 15 Slovenia 0.527 0.776 0.476 0.604 0.596 16 Hungary 0.359 0.775 0.505 0.654 0.573 17 Bulgaria 0.473 0.779 0.463 0.558 0.568 18 Croatia 0.523 0.784 0.428 0.533 0.567 19 Slovakia 0.325 0.782 0.525 0.616 0.562 20 Estonia 0.456 0.789 0.510 0.430 0.546 21 Luxembourg 0.493 0.758 0.339 0.561 0.538 22 Lithuania 0.467 0.782 0.442 0.438 0.532 23 Albania 0.523 0.729 0.321 0.498 0.518 24 Latvia 0.469 0.768 0.428 0.401 0.517 25 Iceland 0.521 0.761 0.307 0.354 0.486 26 North Macedonia 0.279 0.734 0.355 0.569 0.484 27 Montenegro 0.336 0.718 0.294 0.536 0.471 28       
+
+> Note: Scores are on the [0,1]scale, with higher values indicating stronger readiness-enabling conversion capacity. Countries are ordered by the Central baseline score. The composite index gives equal weight to
+> 𝑀 ,𝑆 ,𝐷 , and 𝐿 .
+
+18 generate similar average level effects in the simulation, lowering the mean to 0.560 and 
+
+0.556 , respectively. Their mechanisms, however, are different, as shown below. The combined-stress scenario is substantially more severe. Under combined stress, mean 𝑅 falls to 0.491 , an absolute loss of 0.119 , or 19 .5 per cent of the baseline mean. Country scores range from 0.374 to 0.627 under combined stress, compared with 0.471 
+
+to 0.759 at baseline. Table 5: Scenario effects on readiness-enabling conversion capacity                                             
+
+> Scenario Mean 𝑅 Mean loss Loss / BL (%) Low–High range 𝜌 vs BL Max rank move TRS 0.556 0.054 8.8 0.038 0.997 2PR 0.569 0.041 6.7 0.014 0.998 1SCF 0.560 0.051 8.3 0.062 0.998 2ESR 0.588 0.022 3.6 0.024 0.999 1CS 0.491 0.119 19.5 0.069 0.993 2
+> Note: Mean loss is 𝑅 𝐵𝐿 −𝑅 𝑠 .“Loss / BL” divides the mean absolute loss by the baseline sample mean. The Low–High range is the difference between the mean country score under the Low and High calibrations of each scenario. 𝜌 is the Spearman correlation between scenario and baseline country scores.
+
+Country-level losses also differ by scenario. Under TRS, the largest absolute reductions occur in France ( 0.069 ), Sweden ( 0.068 ), the United Kingdom ( 0.066 ), Italy ( 0.066 ), and Germany ( 0.066 ). PR produces almost the same ordering, with the largest losses again concentrated in France, Sweden, the United Kingdom, Italy, and Germany. This does not imply greater preparedness among lower-baseline countries; it reflects, in part, the use of an absolute loss measure: countries with larger defence-industrial capacity have more measured capacity exposed to demand, production, and replenishment shocks. SCF produces a different pattern. Iceland records the largest central absolute loss ( 0.059 ), followed by Bulgaria, Slovakia, Lithuania, and Croatia at approximately 0.052 . Germany, Norway, Estonia, the United Kingdom, and Sweden are among the countries with the smaller SCF losses. ESR is narrower in cross-country magnitude, with Iceland again recording the largest loss ( 0.029 ); most other countries fall close to 0.020 –0.023 . Under combined stress, the largest absolute losses occur in France, Sweden, Italy, Germany, and Spain, at approximately 0.131 –0.134 .The main empirical implication is that strategic stress changes capacity levels much more than it changes the broad cross-country ordering. Even under combined stress, the Spearman correlation with baseline scores remains 0.993 , and the maximum rank movement is two places. Germany and France remain first and second under every simulated scenario. High-baseline countries can nevertheless record large absolute losses because more measured capacity is exposed to production, replenishment, and sustainment shocks. Baseline strength and absolute vulnerability should therefore be read together rather than as competing rankings. 19 6.3 Why countries respond differently 
+
+The scenario engine is designed so that different shocks act on different conversion mechanisms. Because 𝑀 is held constant within the stress transformations, central vulnerability can be written as: 
+
+𝑉 𝑐,𝑠 = 14 [( 𝑆 𝑐, 0 − 𝑆 𝑐,𝑠 ) + ( 𝐷 𝑐, 0 − 𝐷 𝑐,𝑠 ) + ( 𝐿 𝑐, 0 − 𝐿 𝑐,𝑠 )] . (11) Table 6 decomposes the mean deterioration. Table 6: Component decomposition of scenario vulnerability 
+
+Scenario Mean vulnerability 
+
+𝑆 share (%) 
+
+𝐷 share (%) 
+
+𝐿 share (%) Dominant component across countries TRS 0.054 0.0 65.7 34.3 D: 25; L: 3 PR 0.041 0.0 65.0 35.0 D: 24; L: 4 SCF 0.051 59.0 21.4 19.6 S: 28 ESR 0.022 0.0 49.6 50.4 D: 12; L: 16 CS 0.119 33.7 43.3 23.0 D: 22; S: 5; L: 1   
+
+> Note: Component shares are the sample-average shares of total country-level deterioration. 𝑀 is unchanged by design in all stress scenarios. “Dominant component” reports the number of countries for which the named component contributes the largest share of scenario deterioration.
+
+TRS and PR are predominantly defence-industrial shocks. On average, 𝐷 accounts for 65 .7 per cent of TRS deterioration and 65 .0 per cent of PR deterioration, with 𝐿 
+
+accounting for the remainder. 𝐷 is the dominant component in 25 of 28 countries under TRS and 24 under PR. At indicator level, the largest mean TRS contributions come from baseline domestic production 𝐷 1.2 (22.7 per cent of total deterioration), procurement activity and demand credibility 𝐷 1.6 (19.1 per cent), replenishment speed 𝐿 1.5 (16.7 per cent), and production/procurement lead time 𝐷 1.4 (12.0 per cent). PR has a similar profile: 𝐷 1.2 and 𝐷 1.6 jointly account for just over half of the mean deterioration, while 
+
+𝐿 1.5 contributes 17.6 per cent. The similarity of TRS and PR shows that the two scenarios stress closely related replenishment mechanisms despite their different horizons; this becomes important for evaluating Proposition 2 below. SCF is qualitatively different. Sectoral resilience 𝑆 contributes 59.0 per cent of the mean deterioration and is the dominant component in all 28 countries. The single largest indicator contribution is input and supplier substitutability 𝑆 1.4, accounting for 25.9 per cent of mean SCF deterioration. Indirect upstream exposure 𝑆 1.2 contributes 11.7 per cent, critical-material and technology dependence 𝑆 1.5 9.3 per cent, and supplier concentration 𝑆 1.3 6.3 per cent. The largest non-𝑆 contribution is replenishment speed 𝐿 1.5, at 15.2 per cent. The contrast with TRS and PR supports Proposition 2: supply-chain fragmentation exposes a distinct set of upstream and substitutability constraints. ESR is concentrated in access and sustainment channels. The mean deterioration is split almost evenly between 𝐷 (49.6 per cent) and 𝐿 (50.4 per cent). Effective allied or foreign supply access 𝐷 1.8 alone contributes 45.8 per cent of the mean loss, while 20 replenishment speed 𝐿 1.5 contributes 35.8 per cent. The concentration of the ESR loss in allied-access and replenishment channels is consistent with Proposition 3: foreign supply expands effective capacity in the baseline but creates contingent vulnerability when access and delivery deteriorate. Under combined stress, several geoeconomic shocks occur simultaneously and affect all adjustment channels. 𝐷 accounts for 43.3 per cent of mean deterioration, 𝑆 for 33.7 per cent, and 𝐿 for 23.0 per cent. 𝐷 is the dominant component in 22 countries, 𝑆 in five, and 
+
+𝐿 in one. No single indicator dominates the combined result. The largest contributions are 𝑆 1.4 substitutability (13.7 per cent), 𝐷 1.2 baseline domestic production (12.1 per cent), 𝐷 1.8 effective allied access (10.5 per cent), 𝐿 1.5 replenishment speed (9.4 per cent), and 𝐷 1.6 procurement activity (8.6 per cent). CS therefore operates as a multi-channel stress rather than as a simple rescaling of one component. The country profiles reinforce this mechanism-based interpretation. Germany and France retain the highest stressed scores because they begin with broad strength across 
+
+𝑀 , 𝐷 , and 𝐿 , even though their absolute TRS and CS losses are comparatively large. Iceland’s relative weakness shifts by scenario: its baseline constraints are concentrated in 𝐷 and 𝐿 , while SCF and ESR expose additional dependence on supply-chain and access channels. Norway provides the converse example: its high 𝑀 and 𝑆 support the baseline score, but lower 𝐷 and 𝐿 constrain replenishment-oriented performance. The same aggregate baseline score therefore cannot be interpreted without its component structure. 
+
+# 6.4 How robust and distinct the scenarios are 
+
+Scenario validation tests implementation integrity, calibration sensitivity, rank stability, channel importance, and scenario discrimination. All nine checks pass. Scenario scores remain within [0, 1], structural N/A observations are preserved, baseline indicator and component scores reconcile, Low–Central–High intensity is monotonic, indicators specified as unchanged remain invariant, component and top-level weights sum correctly, and the workbook contains no formula errors. Independent recomputation of the scenario results from the embedded baseline inputs, bounds, calibration, and transformation rules yields a maximum discrepancy of 1.11 × 10 −16 .Calibration uncertainty affects levels more than ranks. As Table 7 shows, the widest interval in the mean country score is under CS, from 0.531 at Low intensity to 0.461 
+
+at High intensity, followed by SCF ( 0.582 to 0.521 ), TRS ( 0.574 to 0.536 ), ESR ( 0.600 
+
+to 0.576 ), and PR ( 0.575 to 0.561 ). Yet scenario rank correlations with the baseline all exceed 0.993 , and the maximum scenario rank shift is only two places. Even under the High CS calibration, the maximum observed rank movement is three places. The principal findings are therefore not driven by large rank reversals across plausible shock intensities. Within the calibrated ranges, TRS is most sensitive to replenishment demand 𝜃 𝑆 ∗,allied access 𝜃 𝐴 , and lead time 𝜃 𝐿 . SCF is most sensitive to import availability 𝜃 𝑀 ,substitutability 𝜃 𝜎 , and trade or transport friction 𝜃 𝜏 . ESR is driven by allied access 𝜃 𝐴 .CS has the broadest sensitivity profile: import availability has the largest within-range 21 Table 7: Scenario robustness and channel sensitivity 
+
+Scenario Mean 𝑅 
+
+[Low, High] 𝜌 vs BL Max rank move Largest within-range effect Largest leave-one-channel-out recovery TRS [0.574, 0.536] 0.997 2 𝜃 𝑆 ∗ (0.0136) Replenishment demand (0.0303) PR [0.575, 0.561] 0.998 1 𝜃 𝑆 ∗ (0.0091) Replenishment demand (0.0274) SCF [0.582, 0.521] 0.998 2 𝜃 𝑀 (0.0222) Substitutability (0.0159) ESR [0.600, 0.576] 0.999 1 𝜃 𝐴 (0.0236) Allied access (0.0211) CS [0.531, 0.461] 0.993 2 𝜃 𝑀 (0.0197) Replenishment demand (0.0317)   
+
+> Note: The second column reports the mean country score under the [Low-intensity, High-intensity] calibration for each scenario. Parameter effects report the mean absolute country effect between that parameter’s calibrated Low and High values around the central specification. Leave-one-channel-out values report the mean recovery in 𝑅 when the named stress channel is neutralised. The two diagnostics answer different questions and need not identify the same parameter as most influential.
+
+effect, followed by substitutability and allied access. In the leave-one-channel-out exercise, however, replenishment demand produces the largest mean CS recovery (0.0317 ), followed by substitutability ( 0.0204 ), import availability ( 0.0179 ), and allied access ( 0.0169 ). This difference reflects the distinction between variation within an evidence-supported calibration interval and complete neutralisation of a channel. The scenarios also differ in the cross-country pattern of vulnerability they generate. TRS and PR vulnerability vectors are almost identical in rank terms ( 𝜌 = 0.999 ), showing that the two scenarios do not generate distinct country vulnerability rankings despite their different horizons. By contrast, SCF is negatively correlated with TRS ( 𝜌 = −0.247 ) and PR ( 𝜌 = −0.259 ), and ESR is only weakly associated with the replenishment-oriented scenarios. Proposition 2 is therefore supported unevenly: supply-chain fragmentation and external-support reduction reveal distinct channels, whereas TRS and PR largely identify the same replenishment vulnerability. CS remains strongly correlated with TRS and PR ( 𝜌 = 0.992 and 0.991 ), indicating that replenishment-related constraints remain important when several channels are activated simultaneously. The combined-stress scenario also passes the pre-specified dominance diagnostic. For all 28 countries, CS vulnerability is at least as large as the maximum of TRS, SCF, and ESR vulnerability; there are no dominance exceptions. This is consistent with Proposition 4. The outcome is not mechanically imposed because CS is directly calibrated rather than constructed as a product of the constituent scenarios. One specification issue remains visible in the validation results. The surge-activation parameter 𝜙 enters 𝐷 1.3 in every stress state. Consequently, SCF and ESR produce a small 𝐷 1.3 effect even though 𝜃 𝑆 = 1 in those scenarios. Neutralising this spillover raises mean 𝑅 by only 0.00095 in SCF and 0.00081 in ESR, with rank correlations of 0.998 and 
+
+1.000 , respectively, relative to the full specification. The effect is therefore quantitatively small, but it weakens the interpretation of ESR as a fully isolated external-access shock. The issue is retained and documented in the online appendix. 22 7 External validation 
+
+External validation assesses whether the estimated readiness index behaves as expected relative to independent measures of industrial capability, innovation, logistics, and economic integration. The exercise is a test of our framework’s coherence rather than a search for a benchmark that reproduces the index. No external series is treated as a criterion measure of readiness-enabling conversion capacity, because the conceptual framework presented in Section 2 combines mechanisms that existing indicators measure only partially. 
+
+# 7.1 Validation design 
+
+The validation design follows three principles. First, the comparison is conducted against benchmarks that are independent of the readiness index and are not used in its construction. Second, Spearman rank correlation is the primary statistic because the paper is concerned principally with cross-country ordering and because several external measures are ranks or non-linear proxies. Pearson correlation is reported as a supplementary measure of linear association. Third, interpretation emphasises effect size, expected sign, sample size, and conceptual relevance rather than statistical significance as a pass–fail criterion. The principal benchmarks are the World Bank Logistics Performance Index (LPI), the UNIDO Competitive Industrial Performance (CIP) rank, UNIDO manufacturing-depth and technology-intensity indicators, SIPRI Top 100 arms-industry revenues and firm presence, the WIPO Global Innovation Index (GII), World Bank manufacturing value added as a share of GDP, and the European Commission Single Market goods-trade integration measure (World Bank, 2023; UNIDO, 2023, 2024; SIPRI, 2025; WIPO, 2025; World Bank, 2024; European Commission, 2024b). For interpretation, absolute Spearman correlations below 0.20 are classified as weak or no evidence, values from 0.20 to below 0.40 as modest, values from 0.40 to below 0.60 as meaningful, and values of 0.60 or above as strong. Table 8 reports the complete external-validation set. All tests use the full 28-country sample except the supplementary SIPRI positive-revenue test, which conditions on the nine countries with a nationally attributed Top 100 arms-industry revenue observation greater than zero. 
+
+# 7.2 Defence-industrial convergent validity 
+
+The strongest external evidence concerns the defence-industrial component 𝐷 . Every defence-industrial benchmark has the expected sign. The association with the UNIDO CIP rank is particularly strong, with 𝜌 = −0.911 . Because lower CIP rank numbers indicate stronger industrial performance, the negative sign is the expected one. The result indicates that countries scoring highly on the defence-industrial component also tend to occupy stronger positions in an independent measure of industrial competitiveness. 
+
+𝐷 is meaningfully associated with manufacturing value added per capita ( 𝜌 = 0.587 ) and strongly associated with the medium-high and high-technology share of manufacturing 23 Table 8: External validation of the readiness-enabling conversion measure 
+
+> Target  External benchmark  𝑁  Pearson
+> 𝑟
+> Spearman
+> 𝜌
+> Sign met  Interpretation
+> 𝐿  World Bank LPI overall  28  0.096  0.094  Yes  Weak / no evidence
+> 𝐷  UNIDO CIP global rank  28  -0.844  -0.911  Yes  Strong
+> 𝐷  UNIDO manufacturing value added per capita  28  0.596  0.587  Yes  Meaningful
+> 𝐷  UNIDO medium-high/high-technology manufacturing share 28  0.682  0.617  Yes  Strong
+> 𝐷  SIPRI Top 100 arms revenues  28  0.532  0.658  Yes  Strong
+> 𝐷  SIPRI Top 100 firm presence  28  0.674  0.686  Yes  Strong
+> 𝐷  SIPRI Top 100 revenues, positive subset  9 0.461  0.683  Yes  Strong
+> 𝐷  WIPO Global Innovation Index  28  0.696  0.683  Yes  Strong
+> 𝐷  Manufacturing value added, % of GDP  28  0.397  0.322  Yes  Modest
+> 𝑆  EC Single Market goods-trade integration  28  -0.148  -0.255  No  Modest, opposite sign
+> 𝑅  World Bank LPI overall  28  0.704  0.703  Yes  Strong
+> 𝑅  UNIDO CIP global rank  28  -0.817  -0.880  Yes  Strong
+> 𝑅  WIPO Global Innovation Index  28  0.709  0.698  Yes  Strong
+> Note: Spearman rank correlation is the primary statistic. CIP is rank-coded with 1 denoting the strongest industrial performance, so the expected sign is negative. SIPRI all-country revenues retain true zeros, which denote the absence of a nationally headquartered 2024 SIPRI Top 100 firm rather than zero domestic arms production. The positive-revenue SIPRI test is supplementary and uses  𝑁  = 9. The EC measure captures Single Market goods-trade integration, not external strategic vulnerability.
+
+24 value added ( 𝜌 = 0.617 ). It is also strongly associated with the Global Innovation Index (𝜌 = 0.683 ). These relationships are consistent with the interpretation of 𝐷 as measuring more than the presence of defence firms: industrial depth, technological intensity, and innovation capacity all matter for the ability to expand and sustain complex defence production. The defence-specific tests point in the same direction. The correlation between 𝐷 and nationally attributed SIPRI Top 100 arms revenues is 𝜌 = 0.658 for the full 28-country sample, while the binary presence of at least one nationally headquartered Top 100 firm yields 𝜌 = 0.686 . Conditioning on the nine countries with positive nationally attributed Top 100 revenues gives 𝜌 = 0.683 . The positive-subset test is supplementary because of the small sample size, but its direction and magnitude are consistent with the full-sample results. By contrast, the association with manufacturing value added as a share of GDP is only modest ( 𝜌 = 0.322 ). We interpret this as informative rather than contradictory. A high manufacturing share is not equivalent to defence-industrial conversion capacity: sectoral composition, technology intensity, supplier depth, procurement activity, surge potential, qualification constraints, and access to allied supply all matter. Taken together, the 𝐷 
+
+results provide strong convergent evidence while also showing that the component is not a relabelled measure of aggregate manufacturing weight. 
+
+# 7.3 Logistics and sectoral resilience 
+
+External validation is unresolved for 𝐿 and 𝑆 , for which closely matched external benchmarks are scarce. The logistics-and-sustainment component 𝐿 has only a weak association with the World Bank LPI ( 𝜌 = 0.094 ), providing no evidence of convergent validity. Because the LPI measures commercial logistics rather than defence sustainment, this result does not test several mechanisms contained in 𝐿 , including maintenance, spare-parts support, pre-positioning, replenishment speed, and replacement capacity. The appropriate conclusion is therefore that external validation of 𝐿 remains open. The sectoral-resilience comparison is also non-confirmatory. The correlation between 
+
+𝑆 and the European Commission Single Market goods-trade integration measure is modest and negative ( 𝜌 = −0.255 ), contrary to the expected positive sign. The benchmark captures market integration rather than external strategic vulnerability, so it is an imperfect comparator; nevertheless, it does not validate 𝑆 . External validation of the sectoral-resilience component therefore also remains unresolved. Weak or oppositely signed relationships are reported as non-confirmatory rather than reinterpreted as supportive evidence. 
+
+# 7.4 Robustness of the composite index 
+
+The composite index 𝑅 exhibits strong external coherence across three broad and independent benchmarks. Its Spearman correlation with the World Bank LPI is 0.703 ,with the UNIDO CIP rank it is −0.880 , and with the Global Innovation Index it is 0.698 .The corresponding Pearson correlations are 0.704 , −0.817 , and 0.709 , respectively. 25 None of the three benchmarks is used in constructing 𝑅 . Their associations with the composite index therefore provide evidence of external coherence across industrial, innovation, and general logistics capability, while the weak direct 𝐿 -LPI relationship cautions against treating that coherence as component-level validation of defence sustainment. 
+
+# 8 Discussion 
+
+# 8.1 Interpretation of the empirical findings 
+
+Three implications emerge from the results. First, the persistence of the cross-country ordering under common shocks indicates that structural conversion capacity matters more for relative position than short-run scenario exposure. Combined stress lowers measured capacity substantially, yet countries with broad macroeconomic, industrial, and sustainment strengths remain comparatively strong. The contribution of stress testing is therefore not primarily to generate a new ranking, but to show how much capacity is lost and which mechanism accounts for that loss. Second, conceptually distinct scenarios do not always produce empirically distinct vulnerability rankings. TRS and PR are almost indistinguishable in rank terms, suggesting that their different horizons and calibration assumptions act on a common replenishment bottleneck. SCF, by contrast, produces a markedly different pattern centred on substitutability and upstream exposure, while ESR isolates the contingency created by foreign access. This finding is informative: scenario differentiation should be judged by the mechanisms and country patterns it reveals, not by scenario labels alone. Third, the validation evidence is uneven in a way that helps define where the index is mature and where further measurement work is needed. The defence-industrial component has strong convergent relationships with independent industrial, technolo-gical, innovation, and defence-firm measures. External validation of sectoral resilience and defence-oriented logistics remains unresolved because the available comparators either measure adjacent concepts or fail to correlate with the proposed component. The composite index is externally coherent, but that coherence should not be read as validating every component equally. 
+
+# 8.2 Policy implications 
+
+A central policy implication is to complement expenditure targets with measures of conversion performance. Relevant metrics include replacement time after inventory depletion, qualified substitute suppliers, the share of procurement covered by credible multi-year contracts, maintenance and spare-parts capacity under higher utilisation, crisis throughput on transport corridors, and dependence on concentrated external inputs. These measures identify the bottlenecks that determine whether additional expenditure can be converted into regeneration and sustainment within the relevant time horizon. The results also underline the value of coordinated procurement and industrial policy, 26 especially when coordination relaxes a binding constraint. Common procurement can create credible demand, standardise requirements, and support longer production runs. It can also intensify queues when governments compete for the same constrained energetic materials, electronics, testing facilities, or skilled labour. Similarly, investment in assembly capacity has limited value if upstream inputs, certification, maintenance, or transport remain binding. The component and indicator decompositions provide a way to distinguish these cases. Allied access is part of readiness rather than a separate dimension. Foreign supply can materially increase effective replenishment capacity, but its value depends on reliable contractual access, export and licensing conditions, transport, delivery schedules, supplier-country concentration, and competing allied demand. Policy assessments should therefore consider both domestic industrial capacity and the reliability and timing of external supply. 
+
+# 8.3 Limitations and avenues for future research 
+
+The scenario exercise is deliberately comparative rather than predictive. Within a given scenario and intensity, all countries are exposed to the same calibrated shock vector; the shock vector differs across scenarios and intensity levels. This symmetry makes it possible to attribute cross-country differences to baseline structures and exposures, but it abstracts from the strongly asymmetric way real crises affect countries. Actual shocks differ in timing, geography, physical destruction, battlefield attrition, infrastructure damage, political decisions, and access to external support. Ukraine after Russia’s full-scale invasion illustrates the magnitude of such asymmetry: destruction of productive capacity and infrastructure, equipment losses, disrupted logistics, and simultaneous military and civilian regeneration demands are qualitatively more severe than the common non-kinetic shocks imposed in this study. The simulated losses should not be interpreted as upper bounds on wartime deterioration. Data limitations also remain important. Open-source and licensable data do not fully reveal stockpiles, maintenance backlogs, supplier contracts, surge capacity, or the readiness state of specific production lines. Input-output data are often too aggregated to identify specific defence components, and some defence-industrial indicators require mapped or proxy observations. The confidence framework records these limitations without allowing disclosure intensity to determine the Central score. Future research should use more granular longitudinal data on procurement, production, inventories, maintenance, deliveries, and supply-chain disruptions to estimate how economic-industrial conditions affect realised mobilisation and replenishment outcomes. Such evidence could also inform data-driven component weights. Extending the present comparative statics to asymmetric country-specific shocks, stock depletion, endogenous investment, cross-border spillovers, and dynamic adaptation would provide a stronger account of how conversion capacity evolves during prolonged strategic stress. 27 9 Conclusion 
+
+European defence readiness in a protracted conflict depends not only on force structure and defence expenditure, but also on the capacity to convert economic, industrial, and logistical resources into replenishment and sustained military capability. This study operationalises that intermediate mechanism as readiness-enabling conversion capacity and measures it across 28 European NATO Allies using macroeconomic capacity, sectoral resilience, defence-industrial capability, and logistics and sustainment. The empirical results show substantial cross-country variation at baseline and sizeable deterioration under strategic stress. Combined stress reduces average measured capacity by 19.5 per cent relative to baseline, while the single-channel scenarios expose different vulnerabilities. Replenishment-oriented scenarios are driven mainly by defence-industrial and logistics constraints; supply-chain fragmentation is driven primarily by sectoral exposure and substitutability; and external-support reduction highlights the importance of reliable allied access. Country rankings remain comparatively stable, indicating that the simulated geoeconomic shocks alter capacity levels far more than they alter the cross-country ordering. External validation is strongest for the defence-industrial component and the composite index, while validation of sectoral resilience and defence-oriented logistics remains unresolved. The component decomposition nevertheless reveals why similar aggregate scores can conceal different bottlenecks and why the same country can be resilient to one form of stress while remaining exposed to another. The central policy implication is that defence resources should be assessed together with conversion performance—production lead times, supplier substitutability, re-plenishment speed, maintenance capacity, logistics throughput, and the reliability of allied supply. The symmetric stress tests used here provide a common comparative benchmark. Extending the framework to asymmetric shocks, dynamic investment responses, stockpile depletion, and cross-border production networks would provide a fuller account of how European defence capability can be sustained during protracted conflict. 
+
+# References 
+
+Acemoglu, D., Carvalho, V. M., Ozdaglar, A., & Tahbaz-Salehi, A. (2012). The network origins of aggregate fluctuations. Econometrica, 80 (5), 1977–2016. https://doi.org/ 10.3982/ECTA9623 
+
+Aiyar, S., Chen, J., Ebeke, C. H., Ebeke, C., Garcia-Saltos, R., Gudmundsson, T., Ilyina, A., Kangur, A., Kunaratskul, T., Rodriguez, S. L., Ruta, M., Schulze, T., Soderberg, G., & Trevino, J. P. (2023). Geoeconomic fragmentation and the future of multilateralism .International Monetary Fund Staff Discussion Note SDN/2023/001. Alloush, M., & Carter, M. (2024). On the definition and estimation of economic resilience using counterfactuals . NBER Working Paper 33290. Cambridge, MA: National Bureau of Economic Research. 28 Antràs, P., & Chor, D. (2013). Organizing the global value chain. Econometrica, 81 (6), 2127–2204. https://doi.org/10.3982/ECTA10813 
+
+Arkolakis, C., Costinot, A., & Rodríguez-Clare, A. (2012). New trade models, same old gains? American Economic Review, 102 (1), 94–130. https://doi.org/10.1257/aer. 102.1.94 
+
+Baldwin, R., & Freeman, R. (2022). Risks and global supply chains: What we know and what we need to know. Annual Review of Economics, 14 , 153–180. https://doi.org/ 10.1146/annurev-economics-051420-113737 
+
+Baqaee, D. R., & Farhi, E. (2024). Networks, barriers, and trade. Econometrica, 92 (2), 505–541. https://doi.org/10.3982/ECTA17513 
+
+Betts, R. K. (1995). Military Readiness: Concepts, Choices, Consequences . Washington, DC: Brookings Institution Press. Boehm, C. E., Flaaen, A., & Pandalai-Nayar, N. (2019). Input linkages and the trans-mission of shocks: Firm-level evidence from the 2011 T ¯ ohoku earthquake. Review of Economics and Statistics, 101 (1), 60–75. https://doi.org/10.1162/rest_a_00750 
+
+Bonadio, B., Huo, Z., Levchenko, A. A., & Pandalai-Nayar, N. (2021). Global supply chains in the pandemic. Journal of International Economics, 133 , 103534. https://doi. org/10.1016/j.jinteco.2021.103534 
+
+Brzoska, M. (2005). Trends in global military and civilian research and development and their changing interface. Security Dialogue, 36 (2), 151–164. https://doi.org/10. 1177/0967010605054647 
+
+Cancian, M. F., & Park, C. H. (2026). Last rounds? Status of key munitions at the Iran war ceasefire . Center for Strategic and International Studies. https://www.csis.org/ analysis/last-rounds-status-key-munitions-iran-war-ceasefire 
+
+Dunne, J. P. (1995). The defense industrial base. In K. Hartley & T. Sandler (Eds.), 
+
+Handbook of defense economics (Vol. 1, pp. 399–430). Elsevier. Eaton, J., & Kortum, S. (2002). Technology, geography, and trade. Econometrica, 70 (5), 1741–1779. https://doi.org/10.1111/1468-0262.00352 
+
+European Commission. (2023). Study on the critical raw materials for the EU 2023: Final report . Publications Office of the European Union. European Commission. (2024). European Defence Industrial Strategy: Achieving EU readiness through a responsive and resilient European defence industry . Joint Communication, JOIN(2024) 10 final. European Commission. (2024b). Single Market Scoreboard: Integration of goods trade .European Commission. https://single-market-scoreboard.ec.europa.eu/node/ 263_en 
+
+European Union. (2025). Regulation (EU) 2025/2643 of the European Parliament and of the Council of 16 December 2025 establishing the European Defence Industry Programme and a framework of measures to ensure the timely availability and supply of defence products (EDIP Regulation) . Official Journal of the European Union. .Farrell, H., & Newman, A. L. (2019). Weaponised interdependence: How global economic networks shape state coercion. International Security, 44 (1), 42–79. https: 
+
+29 //doi.org/10.1162/isec_a_00351 
+
+García-Benito, J. C., & Martín-Peña, M.-L. (2021). A redistribution model with minimum backorders of spare parts: A proposal for the defence sector. European Journal of Operational Research, 291 (1), 178–193. https://doi.org/10.1016/j.ejor.2020.09. 014 
+
+Graedel, T. E., Harper, E. M., Nassar, N. T., Nuss, P., & Reck, B. K. (2015). Criticality of metals and metalloids. Proceedings of the National Academy of Sciences, 112 (14), 4257–4262. https://doi.org/10.1073/pnas.1500415112 
+
+Harrison, M. (1988). Resource mobilization for World War II: The U.S.A., U.K., U.S.S.R., and Germany, 1938–1945. The Economic History Review, 41 (2), 171–192. https://doi. org/10.1111/j.1468-0289.1988.tb00461.x 
+
+Hartley, K. (2007). The arms industry, procurement and industrial policies. In T. Sandler & K. Hartley (Eds.), Handbook of defense economics (Vol. 2, pp. 1139–1176). Elsevier. Hartley, K. (2012). Conflict and defence output: An economic perspective. Revue d’économie politique, 122 (2), 171–195. Cancian, M. F., Saxton, A., Bryan, L. A., & Helman, O. (2020). Industrial mobilization: Assessing surge capabilities, wartime risk, and system brittleness. Naval Engineers Journal, 132 (2), 39–49. Hummels, D., Ishii, J., & Yi, K.-M. (2001). The nature and growth of vertical specialization in world trade. Journal of International Economics, 54 (1), 75–96. https://doi.org/10. 1016/S0022-1996(00)00093-3 
+
+International Institute for Strategic Studies. (2022). Military expenditure: Transparency, defence inflation and purchasing power parity . IISS Research Paper. Kancs, d’A. (2024). Uncertainty of supply chains: Risk and ambiguity. The World Economy, 47 (5), 2009–2033. https://doi.org/10.1111/twec.13534 
+
+Kancs, d’A. (2026a). Defence preparedness and readiness. Defense & Security Analysis, 42 (1), 83–113. https://doi.org/10.1080/14751798.2025.2531708 
+
+Kancs, d’A. (2026b). Cold War 2.0 and defence readiness. European Journal of Futures Research, 14 , (13). https://doi.org/10.1186/s40309-025-00262-8 
+
+Kendall-Taylor, A., Townsend, J., Johnston, K., & Weaver, G. (2025). Understanding Russia’s calculus on opportunistic aggression in Europe . Center for a New American Security. Lee, J. (2024). NATO and a Taiwan contingency . Outlook 2024/02. NATO Defence College. McGee, J. B., Rossetti, M. D., & Mason, S. J. (2005). Quantifying the effect of transportation practices in military supply chains. The Journal of Defense Modeling and Simulation, 2 (2), 87–100. https://doi.org/10.1177/154851290500200204 
+
+Mueller, T. (2025). Strategic options for the European defence industry in the 2020s. 
+
+Defense & Security Analysis, 41 (1), 49–80. https://doi.org/10.1080/14751798.2024. 2418163 
+
+Nassar, N. T., Graedel, T. E., & Harper, E. M. (2015). By-product metals are technologically essential but have problematic supply. Science Advances, 1 (3), e1400180. https://doi. 
+
+30 org/10.1126/sciadv.1400180 
+
+NATO. (2024). NATO Industrial Capacity Expansion Pledge . Washington Summit, 10 July 2024. NATO. (2025). Updated Defence Production Action Plan . 13 February 2025. OECD. (2023). Raw materials critical for the green transition: Production, international trade and export restrictions . OECD Publishing. Posen, B. R. (2003). Command of the commons: The military foundation of U.S. hegemony. International Security, 28 (1), 5–46. https://doi.org/10.1162/ 016228803322427965 
+
+Sandler, T., & Hartley, K. (1995). The economics of defense . Cambridge University Press. Smith, R. P. (2022). Defence acquisition and procurement . Cambridge University Press. 
+
+https://doi.org/10.1017/9781009189644 
+
+Stockholm International Peace Research Institute. (2025). SIPRI Arms Industry Database: Top 100 arms-producing and military services companies, 2024 . SIPRI. https://www.sipri. org/databases/armsindustry 
+
+United Nations Industrial Development Organization. (2023). Competitive Industrial Performance Index . UNIDO Statistics Data Portal. https://stat.unido.org/data/ table?dataset=cip 
+
+United Nations Industrial Development Organization. (2024). Manufacturing indicators .UNIDO Statistics Data Portal. https://stat.unido.org/ 
+
+U.S. Department of Defense. (2024). DoD Instruction 7730.66: Readiness Reporting Guidance .Washington, DC: Department of Defense. U.S. Marine Corps. (2020). DRRS-MC Commander’s Readiness Handbook . Washington, DC: United States Marine Corps. World Bank. (2023). Logistics Performance Index: International scorecard . World Bank. 
+
+https://lpi.worldbank.org/international/global 
+
+World Bank. (2024). Manufacturing, value added (% of GDP) . World Development Indicat-ors. https://data.worldbank.org/indicator/NV.IND.MANF.ZS 
+
+World Intellectual Property Organization. (2025). Global Innovation Index 2025 . WIPO. 
+
+https://www.wipo.int/web-publications/global-innovation-index-2025/en/ 
+
+ZPP & Defence Institute. (2026). Economic Costs of War for Poland . Technical Report 2026/01, ZPP and Defence Institute, Warsaw, Poland. 31
